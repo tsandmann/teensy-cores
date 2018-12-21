@@ -1,6 +1,10 @@
+#pragma once
 #include <stdint.h>
 
-#if !defined(KINETISL) && !defined(KINETISK)
+// Definitions based these documents:
+//   i.MX RT1050 Reference Manual, Rev. 1, 03/2018
+//   ARM v7-M Architecture Reference Manual (DDI 0403E.b)
+
 enum IRQ_NUMBER_t {
         IRQ_DMA_CH0 =           0,
         IRQ_DMA_CH1 =           1,
@@ -64,7 +68,7 @@ enum IRQ_NUMBER_t {
         IRQ_SAI3_TX =           59,
         IRQ_SPDIF =             60,
         IRQ_BROWNOUT0 =         61,
-        IRQ_BROWNOUT1 =         62,
+        IRQ_Reserved13 =        62,
         IRQ_TEMPERATURE =       63,
         IRQ_TEMPERATURE_PANIC = 64,
         IRQ_USBPHY0 =           65,
@@ -95,7 +99,7 @@ enum IRQ_NUMBER_t {
         IRQ_FLEXIO1 =           90,
         IRQ_FLEXIO2 =           91,
         IRQ_WDOG1 =             92,
-        IRQ_WDOG3 =             93,
+        IRQ_RTWDOG =            93,
         IRQ_EWM =               94,
         IRQ_CCM1 =              95,
         IRQ_CCM2 =              96,
@@ -109,7 +113,7 @@ enum IRQ_NUMBER_t {
         IRQ_FLEXPWM1_2 =        104,
         IRQ_FLEXPWM1_3 =        105,
         IRQ_FLEXPWM1_FAULT =    106,
-        IRQ_Reserved4 =         107,
+        IRQ_FLEXSPI2 =          107, // RT1060 only
         IRQ_FLEXSPI =           108,
         IRQ_SEMC =              109,
         IRQ_SDHC1 =             110,
@@ -154,16 +158,176 @@ enum IRQ_NUMBER_t {
         IRQ_FLEXPWM4_2 =        149,
         IRQ_FLEXPWM4_3 =        150,
         IRQ_FLEXPWM4_FAULT =    151,
-        IRQ_Reserved7 =         152,
-        IRQ_Reserved8 =         153,
+        IRQ_ENET2 =             152, // RT1060 only
+        IRQ_ENET2_TIMER =       153, // RT1060 only
         IRQ_Reserved9 =         154,
         IRQ_Reserved10 =        155,
-        IRQ_Reserved11 =        156,
-        IRQ_Reserved12 =        157,
+        IRQ_CAN3 =              156, // RT1060 only
+        IRQ_GPIO6789 =          157, // RT1060 only
         IRQ_SJC_DEBUG =         158,
         IRQ_NMI_WAKEUP =        159
 };
+#define NVIC_NUM_INTERRUPTS     160
+#define DMA_NUM_CHANNELS        32
+
+#ifdef __cplusplus
+extern "C" void (* _VectorsRam[NVIC_NUM_INTERRUPTS+16])(void);
+static inline void attachInterruptVector(IRQ_NUMBER_t irq, void (*function)(void)) __attribute__((always_inline, unused));
+static inline void attachInterruptVector(IRQ_NUMBER_t irq, void (*function)(void)) { _VectorsRam[irq + 16] = function; }
+#else
+extern void (* _VectorsRam[NVIC_NUM_INTERRUPTS+16])(void);
+static inline void attachInterruptVector(enum IRQ_NUMBER_t irq, void (*function)(void)) __attribute__((always_inline, unused));
+static inline void attachInterruptVector(enum IRQ_NUMBER_t irq, void (*function)(void)) { _VectorsRam[irq + 16] = function; }
 #endif
+
+
+#define DMAMUX_SOURCE_FLEXIO1_REQUEST0		0
+#define DMAMUX_SOURCE_FLEXIO1_REQUEST1		0
+#define DMAMUX_SOURCE_FLEXIO2_REQUEST0		1
+#define DMAMUX_SOURCE_FLEXIO2_REQUEST1		1
+#define DMAMUX_SOURCE_LPUART1_RX		2
+#define DMAMUX_SOURCE_LPUART1_TX		3
+#define DMAMUX_SOURCE_LPUART3_RX		4
+#define DMAMUX_SOURCE_LPUART3_TX		5
+#define DMAMUX_SOURCE_LPUART5_RX		6
+#define DMAMUX_SOURCE_LPUART5_TX		7
+#define DMAMUX_SOURCE_LPUART7_RX		8
+#define DMAMUX_SOURCE_LPUART7_TX		9
+#define DMAMUX_SOURCE_FLEXCAN3			11
+#define DMAMUX_SOURCE_CSI			12
+#define DMAMUX_SOURCE_LPSPI1_RX			13
+#define DMAMUX_SOURCE_LPSPI1_TX			14
+#define DMAMUX_SOURCE_LPSPI3_RX			15
+#define DMAMUX_SOURCE_LPSPI3_TX			16
+#define DMAMUX_SOURCE_LPI2C1			17
+#define DMAMUX_SOURCE_LPI2C3			18
+#define DMAMUX_SOURCE_SAI1_RX			19
+#define DMAMUX_SOURCE_SAI1_TX			20
+#define DMAMUX_SOURCE_SAI2_RX			21
+#define DMAMUX_SOURCE_SAI2_TX			22
+#define DMAMUX_SOURCE_ADC_ETC			23
+#define DMAMUX_SOURCE_ADC1			24
+#define DMAMUX_SOURCE_ACMP1			25
+#define DMAMUX_SOURCE_ACMP3			26
+#define DMAMUX_SOURCE_FLEXSPI_RX		28
+#define DMAMUX_SOURCE_FLEXSPI_TX		29
+#define DMAMUX_SOURCE_XBAR1_0			30
+#define DMAMUX_SOURCE_XBAR1_1			31
+#define DMAMUX_SOURCE_FLEXPWM1_READ0		32
+#define DMAMUX_SOURCE_FLEXPWM1_READ1		33
+#define DMAMUX_SOURCE_FLEXPWM1_READ2		34
+#define DMAMUX_SOURCE_FLEXPWM1_READ3		35
+#define DMAMUX_SOURCE_FLEXPWM1_WRITE0		36
+#define DMAMUX_SOURCE_FLEXPWM1_WRITE1		37
+#define DMAMUX_SOURCE_FLEXPWM1_WRITE2		38
+#define DMAMUX_SOURCE_FLEXPWM1_WRITE3		39
+#define DMAMUX_SOURCE_FLEXPWM3_READ0		40
+#define DMAMUX_SOURCE_FLEXPWM3_READ1		41
+#define DMAMUX_SOURCE_FLEXPWM3_READ2		42
+#define DMAMUX_SOURCE_FLEXPWM3_READ3		43
+#define DMAMUX_SOURCE_FLEXPWM3_WRITE0		44
+#define DMAMUX_SOURCE_FLEXPWM3_WRITE1		45
+#define DMAMUX_SOURCE_FLEXPWM3_WRITE2		46
+#define DMAMUX_SOURCE_FLEXPWM3_WRITE3		47
+#define DMAMUX_SOURCE_QTIMER1_READ0		48
+#define DMAMUX_SOURCE_QTIMER1_READ1		49
+#define DMAMUX_SOURCE_QTIMER1_READ2		50
+#define DMAMUX_SOURCE_QTIMER1_READ3		51
+#define DMAMUX_SOURCE_QTIMER1_WRITE0_CMPLD1	52
+#define DMAMUX_SOURCE_QTIMER1_WRITE1_CMPLD1	53
+#define DMAMUX_SOURCE_QTIMER1_WRITE2_CMPLD1	54
+#define DMAMUX_SOURCE_QTIMER1_WRITE3_CMPLD1	55
+#define DMAMUX_SOURCE_QTIMER1_WRITE1_CMPLD2	52
+#define DMAMUX_SOURCE_QTIMER1_WRITE0_CMPLD2	53
+#define DMAMUX_SOURCE_QTIMER1_WRITE3_CMPLD2	54
+#define DMAMUX_SOURCE_QTIMER1_WRITE2_CMPLD2	55
+#define DMAMUX_SOURCE_QTIMER3_READ0		56
+#define DMAMUX_SOURCE_QTIMER3_READ1		57
+#define DMAMUX_SOURCE_QTIMER3_READ2		58
+#define DMAMUX_SOURCE_QTIMER3_READ3		59
+#define DMAMUX_SOURCE_QTIMER3_WRITE0_CMPLD1	56
+#define DMAMUX_SOURCE_QTIMER3_WRITE1_CMPLD1	57
+#define DMAMUX_SOURCE_QTIMER3_WRITE2_CMPLD1	58
+#define DMAMUX_SOURCE_QTIMER3_WRITE3_CMPLD1	59
+#define DMAMUX_SOURCE_QTIMER3_WRITE1_CMPLD2	56
+#define DMAMUX_SOURCE_QTIMER3_WRITE0_CMPLD2	57
+#define DMAMUX_SOURCE_QTIMER3_WRITE3_CMPLD2	58
+#define DMAMUX_SOURCE_QTIMER3_WRITE2_CMPLD2	59
+#define DMAMUX_SOURCE_FLEXSPI2_RX		60
+#define DMAMUX_SOURCE_FLEXSPI2_TX		61
+#define DMAMUX_SOURCE_FLEXIO1_REQUEST2		64
+#define DMAMUX_SOURCE_FLEXIO1_REQUEST3		64
+#define DMAMUX_SOURCE_FLEXIO2_REQUEST2		65
+#define DMAMUX_SOURCE_FLEXIO2_REQUEST3		65
+#define DMAMUX_SOURCE_LPUART2_RX		66
+#define DMAMUX_SOURCE_LPUART2_TX		67
+#define DMAMUX_SOURCE_LPUART4_RX		68
+#define DMAMUX_SOURCE_LPUART4_TX		69
+#define DMAMUX_SOURCE_LPUART6_RX		70
+#define DMAMUX_SOURCE_LPUART6_TX		71
+#define DMAMUX_SOURCE_LPUART8_RX		72
+#define DMAMUX_SOURCE_LPUART8_TX		73
+#define DMAMUX_SOURCE_PXP			75
+#define DMAMUX_SOURCE_LCDIF			76
+#define DMAMUX_SOURCE_LPSPI2_RX			77
+#define DMAMUX_SOURCE_LPSPI2_TX			78
+#define DMAMUX_SOURCE_LPSPI4_RX			79
+#define DMAMUX_SOURCE_LPSPI4_TX			80
+#define DMAMUX_SOURCE_LPI2C2			81
+#define DMAMUX_SOURCE_LPI2C4			82
+#define DMAMUX_SOURCE_SAI3_RX			83
+#define DMAMUX_SOURCE_SAI3_TX			84
+#define DMAMUX_SOURCE_SPDIF_RX			85
+#define DMAMUX_SOURCE_SPDIF_TX			86
+#define DMAMUX_SOURCE_ADC2			88
+#define DMAMUX_SOURCE_ACMP2			89
+#define DMAMUX_SOURCE_ACMP4			90
+#define DMAMUX_SOURCE_ENET1_TIMER0		92
+#define DMAMUX_SOURCE_ENET1_TIMER1		93
+#define DMAMUX_SOURCE_XBAR1_2			94
+#define DMAMUX_SOURCE_XBAR1_3			95
+#define DMAMUX_SOURCE_FLEXPWM2_READ0		96
+#define DMAMUX_SOURCE_FLEXPWM2_READ1		97
+#define DMAMUX_SOURCE_FLEXPWM2_READ2		98
+#define DMAMUX_SOURCE_FLEXPWM2_READ3		99
+#define DMAMUX_SOURCE_FLEXPWM2_WRITE0		100
+#define DMAMUX_SOURCE_FLEXPWM2_WRITE1		101
+#define DMAMUX_SOURCE_FLEXPWM2_WRITE2		102
+#define DMAMUX_SOURCE_FLEXPWM2_WRITE3		103
+#define DMAMUX_SOURCE_FLEXPWM4_READ0		104
+#define DMAMUX_SOURCE_FLEXPWM4_READ1		105
+#define DMAMUX_SOURCE_FLEXPWM4_READ2		106
+#define DMAMUX_SOURCE_FLEXPWM4_READ3		107
+#define DMAMUX_SOURCE_FLEXPWM4_WRITE0		108
+#define DMAMUX_SOURCE_FLEXPWM4_WRITE1		109
+#define DMAMUX_SOURCE_FLEXPWM4_WRITE2		110
+#define DMAMUX_SOURCE_FLEXPWM4_WRITE3		111
+#define DMAMUX_SOURCE_QTIMER2_READ0		112
+#define DMAMUX_SOURCE_QTIMER2_READ1		113
+#define DMAMUX_SOURCE_QTIMER2_READ2		114
+#define DMAMUX_SOURCE_QTIMER2_READ3		115
+#define DMAMUX_SOURCE_QTIMER2_WRITE0_CMPLD1	116
+#define DMAMUX_SOURCE_QTIMER2_WRITE1_CMPLD1	117
+#define DMAMUX_SOURCE_QTIMER2_WRITE2_CMPLD1	118
+#define DMAMUX_SOURCE_QTIMER2_WRITE3_CMPLD1	119
+#define DMAMUX_SOURCE_QTIMER2_WRITE1_CMPLD2	116
+#define DMAMUX_SOURCE_QTIMER2_WRITE0_CMPLD2	117
+#define DMAMUX_SOURCE_QTIMER2_WRITE3_CMPLD2	118
+#define DMAMUX_SOURCE_QTIMER2_WRITE2_CMPLD2	119
+#define DMAMUX_SOURCE_QTIMER4_READ0		120
+#define DMAMUX_SOURCE_QTIMER4_READ1		121
+#define DMAMUX_SOURCE_QTIMER4_READ2		122
+#define DMAMUX_SOURCE_QTIMER4_READ3		123
+#define DMAMUX_SOURCE_QTIMER4_WRITE0_CMPLD1	120
+#define DMAMUX_SOURCE_QTIMER4_WRITE1_CMPLD1	121
+#define DMAMUX_SOURCE_QTIMER4_WRITE2_CMPLD1	122
+#define DMAMUX_SOURCE_QTIMER4_WRITE3_CMPLD1	123
+#define DMAMUX_SOURCE_QTIMER4_WRITE1_CMPLD2	120
+#define DMAMUX_SOURCE_QTIMER4_WRITE0_CMPLD2	121
+#define DMAMUX_SOURCE_QTIMER4_WRITE3_CMPLD2	122
+#define DMAMUX_SOURCE_QTIMER4_WRITE2_CMPLD2	123
+#define DMAMUX_SOURCE_ENET2_TIMER0		124
+#define DMAMUX_SOURCE_ENET2_TIMER1		125
 
 
 typedef struct {
@@ -703,29 +867,226 @@ typedef struct {
 	volatile uint8_t offset0F;
 } IMXRT_REGISTER8_t;
 
-// page 684
+// 13.3: page 456
+#define IMXRT_CMP1		(*(IMXRT_REGISTER8_t *)0x40094000)
+#define CMP1_CR0			(IMXRT_CMP1.offset00)
+#define CMP1_CR1			(IMXRT_CMP1.offset01)
+#define CMP1_FPR			(IMXRT_CMP1.offset02)
+#define CMP1_SCR			(IMXRT_CMP1.offset03)
+#define CMP1_DACCR			(IMXRT_CMP1.offset04)
+#define CMP1_MUXCR			(IMXRT_CMP1.offset05)
+#define IMXRT_CMP2		(*(IMXRT_REGISTER8_t *)0x40094008)
+#define CMP2_CR0			(IMXRT_CMP2.offset00)
+#define CMP2_CR1			(IMXRT_CMP2.offset01)
+#define CMP2_FPR			(IMXRT_CMP2.offset02)
+#define CMP2_SCR			(IMXRT_CMP2.offset03)
+#define CMP2_DACCR			(IMXRT_CMP2.offset04)
+#define CMP2_MUXCR			(IMXRT_CMP2.offset05)
+#define IMXRT_CMP3		(*(IMXRT_REGISTER8_t *)0x40094010)
+#define CMP3_CR0			(IMXRT_CMP3.offset00)
+#define CMP3_CR1			(IMXRT_CMP3.offset01)
+#define CMP3_FPR			(IMXRT_CMP3.offset02)
+#define CMP3_SCR			(IMXRT_CMP3.offset03)
+#define CMP3_DACCR			(IMXRT_CMP3.offset04)
+#define CMP3_MUXCR			(IMXRT_CMP3.offset05)
+#define IMXRT_CMP4		(*(IMXRT_REGISTER8_t *)0x40094018)
+#define CMP4_CR0			(IMXRT_CMP4.offset00)
+#define CMP4_CR1			(IMXRT_CMP4.offset01)
+#define CMP4_FPR			(IMXRT_CMP4.offset02)
+#define CMP4_SCR			(IMXRT_CMP4.offset03)
+#define CMP4_DACCR			(IMXRT_CMP4.offset04)
+#define CMP4_MUXCR			(IMXRT_CMP4.offset05)
+
+// 14.6: page 505
+#define IMXRT_ADC1		(*(IMXRT_REGISTER32_t *)0x400C4000)
+#define ADC1_HC0			(IMXRT_ADC1.offset000)
+#define ADC1_HC1			(IMXRT_ADC1.offset004)
+#define ADC1_HC2			(IMXRT_ADC1.offset008)
+#define ADC1_HC3			(IMXRT_ADC1.offset00C)
+#define ADC1_HC4			(IMXRT_ADC1.offset010)
+#define ADC1_HC5			(IMXRT_ADC1.offset014)
+#define ADC1_HC6			(IMXRT_ADC1.offset018)
+#define ADC1_HC7			(IMXRT_ADC1.offset01C)
+#define ADC1_HS				(IMXRT_ADC1.offset020)
+#define ADC1_R0				(IMXRT_ADC1.offset024)
+#define ADC1_R1				(IMXRT_ADC1.offset028)
+#define ADC1_R2				(IMXRT_ADC1.offset02C)
+#define ADC1_R3				(IMXRT_ADC1.offset030)
+#define ADC1_R4				(IMXRT_ADC1.offset034)
+#define ADC1_R5				(IMXRT_ADC1.offset038)
+#define ADC1_R6				(IMXRT_ADC1.offset03C)
+#define ADC1_R7				(IMXRT_ADC1.offset040)
+#define ADC1_CFG			(IMXRT_ADC1.offset044)
+#define ADC1_GC				(IMXRT_ADC1.offset048)
+#define ADC1_GS				(IMXRT_ADC1.offset04C)
+#define ADC1_CV				(IMXRT_ADC1.offset050)
+#define ADC1_OFS			(IMXRT_ADC1.offset054)
+#define ADC1_CAL			(IMXRT_ADC1.offset058)
+#define IMXRT_ADC2		(*(IMXRT_REGISTER32_t *)0x400C8000)
+#define ADC2_HC0			(IMXRT_ADC2.offset000)
+#define ADC2_HC1			(IMXRT_ADC2.offset004)
+#define ADC2_HC2			(IMXRT_ADC2.offset008)
+#define ADC2_HC3			(IMXRT_ADC2.offset00C)
+#define ADC2_HC4			(IMXRT_ADC2.offset010)
+#define ADC2_HC5			(IMXRT_ADC2.offset014)
+#define ADC2_HC6			(IMXRT_ADC2.offset018)
+#define ADC2_HC7			(IMXRT_ADC2.offset01C)
+#define ADC2_HS				(IMXRT_ADC2.offset020)
+#define ADC2_R0				(IMXRT_ADC2.offset024)
+#define ADC2_R1				(IMXRT_ADC2.offset028)
+#define ADC2_R2				(IMXRT_ADC2.offset02C)
+#define ADC2_R3				(IMXRT_ADC2.offset030)
+#define ADC2_R4				(IMXRT_ADC2.offset034)
+#define ADC2_R5				(IMXRT_ADC2.offset038)
+#define ADC2_R6				(IMXRT_ADC2.offset03C)
+#define ADC2_R7				(IMXRT_ADC2.offset040)
+#define ADC2_CFG			(IMXRT_ADC2.offset044)
+#define ADC2_GC				(IMXRT_ADC2.offset048)
+#define ADC2_GS				(IMXRT_ADC2.offset04C)
+#define ADC2_CV				(IMXRT_ADC2.offset050)
+#define ADC2_OFS			(IMXRT_ADC2.offset054)
+#define ADC2_CAL			(IMXRT_ADC2.offset058)
+#define ADC_HC_AIEN				((uint32_t)(1<<7))
+#define ADC_HC_ADCH(n)				((uint32_t)(((n) & 0x1F) << 0))
+#define ADC_HS_COCO0				((uint32_t)(1<<0))
+#define ADC_CFG_OVWREN				((uint32_t)(1<<16))
+#define ADC_CFG_AVGS(n)				((uint32_t)(((n) & 0x03) << 14))
+#define ADC_CFG_ADTRG				((uint32_t)(1<<13))
+#define ADC_CFG_REFSEL(n)			((uint32_t)(((n) & 0x03) << 11))
+#define ADC_CFG_ADHSC				((uint32_t)(1<<10))
+#define ADC_CFG_ADSTS(n)			((uint32_t)(((n) & 0x03) << 8))
+#define ADC_CFG_ADLPC				((uint32_t)(1<<7))
+#define ADC_CFG_ADIV(n)				((uint32_t)(((n) & 0x03) << 5))
+#define ADC_CFG_ADLSMP				((uint32_t)(1<<4))
+#define ADC_CFG_MODE(n)				((uint32_t)(((n) & 0x03) << 2))
+#define ADC_CFG_ADICLK(n)			((uint32_t)(((n) & 0x03) << 0))
+#define ADC_GC_CAL				((uint32_t)(1<<7))
+#define ADC_GC_ADCO				((uint32_t)(1<<6))
+#define ADC_GC_AVGE				((uint32_t)(1<<5))
+#define ADC_GC_ACFE				((uint32_t)(1<<4))
+#define ADC_GC_ACFGT				((uint32_t)(1<<3))
+#define ADC_GC_ACREN				((uint32_t)(1<<2))
+#define ADC_GC_DMAEN				((uint32_t)(1<<1))
+#define ADC_GC_ADACKEN				((uint32_t)(1<<0))
+#define ADC_GS_AWKST				((uint32_t)(1<<2))
+#define ADC_GS_CALF				((uint32_t)(1<<1))
+#define ADC_GS_ADACT				((uint32_t)(1<<0))
+#define ADC_CV_CV2(n)				((uint32_t)(((n) & 0xFFF) << 16))
+#define ADC_CV_CV1(n)				((uint32_t)(((n) & 0xFFF) << 0))
+#define ADC_OFS_SIGN				((uint32_t)(1<<12))
+#define ADC_OFS_OFS(n)				((uint32_t)(((n) & 0xFFF) << 0))
+#define ADC_CAL_CAL_CODE(n)			((uint32_t)(((n) & 0x0F) << 0))
+
+// 15.4.1.1: page 527
+#define IMXRT_ADC_ETC		(*(IMXRT_REGISTER32_t *)0x403B0000)
+#define ADC_ETC_CTRL			(IMXRT_ADC_ETC.offset000)
+#define ADC_ETC_DONE0_1_IRQ		(IMXRT_ADC_ETC.offset004)
+#define ADC_ETC_DONE2_ERR_IRQ		(IMXRT_ADC_ETC.offset008)
+#define ADC_ETC_DMA_CTRL		(IMXRT_ADC_ETC.offset00C)
+#define ADC_ETC_TRIG0_CTRL		(IMXRT_ADC_ETC.offset010)
+#define ADC_ETC_TRIG0_COUNTER		(IMXRT_ADC_ETC.offset014)
+#define ADC_ETC_TRIG0_CHAIN_1_0		(IMXRT_ADC_ETC.offset018)
+#define ADC_ETC_TRIG0_CHAIN_3_2		(IMXRT_ADC_ETC.offset01C)
+#define ADC_ETC_TRIG0_CHAIN_5_4		(IMXRT_ADC_ETC.offset020)
+#define ADC_ETC_TRIG0_CHAIN_7_6		(IMXRT_ADC_ETC.offset024)
+#define ADC_ETC_TRIG0_RESULT_1_0	(IMXRT_ADC_ETC.offset028)
+#define ADC_ETC_TRIG0_RESULT_3_2	(IMXRT_ADC_ETC.offset02C)
+#define ADC_ETC_TRIG0_RESULT_5_4	(IMXRT_ADC_ETC.offset030)
+#define ADC_ETC_TRIG0_RESULT_7_6	(IMXRT_ADC_ETC.offset034)
+#define ADC_ETC_TRIG1_CTRL		(IMXRT_ADC_ETC.offset038)
+#define ADC_ETC_TRIG1_COUNTER		(IMXRT_ADC_ETC.offset03C)
+#define ADC_ETC_TRIG1_CHAIN_1_0		(IMXRT_ADC_ETC.offset040)
+#define ADC_ETC_TRIG1_CHAIN_3_2		(IMXRT_ADC_ETC.offset044)
+#define ADC_ETC_TRIG1_CHAIN_5_4		(IMXRT_ADC_ETC.offset048)
+#define ADC_ETC_TRIG1_CHAIN_7_6		(IMXRT_ADC_ETC.offset04C)
+#define ADC_ETC_TRIG1_RESULT_1_0	(IMXRT_ADC_ETC.offset050)
+#define ADC_ETC_TRIG1_RESULT_3_2	(IMXRT_ADC_ETC.offset054)
+#define ADC_ETC_TRIG1_RESULT_5_4	(IMXRT_ADC_ETC.offset058)
+#define ADC_ETC_TRIG1_RESULT_7_6	(IMXRT_ADC_ETC.offset05C)
+#define ADC_ETC_TRIG2_CTRL		(IMXRT_ADC_ETC.offset060)
+#define ADC_ETC_TRIG2_COUNTER		(IMXRT_ADC_ETC.offset064)
+#define ADC_ETC_TRIG2_CHAIN_1_0		(IMXRT_ADC_ETC.offset068)
+#define ADC_ETC_TRIG2_CHAIN_3_2		(IMXRT_ADC_ETC.offset06C)
+#define ADC_ETC_TRIG2_CHAIN_5_4		(IMXRT_ADC_ETC.offset070)
+#define ADC_ETC_TRIG2_CHAIN_7_6		(IMXRT_ADC_ETC.offset074)
+#define ADC_ETC_TRIG2_RESULT_1_0	(IMXRT_ADC_ETC.offset078)
+#define ADC_ETC_TRIG2_RESULT_3_2	(IMXRT_ADC_ETC.offset07C)
+#define ADC_ETC_TRIG2_RESULT_5_4	(IMXRT_ADC_ETC.offset080)
+#define ADC_ETC_TRIG2_RESULT_7_6	(IMXRT_ADC_ETC.offset084)
+#define ADC_ETC_TRIG3_CTRL		(IMXRT_ADC_ETC.offset088)
+#define ADC_ETC_TRIG3_COUNTER		(IMXRT_ADC_ETC.offset08C)
+#define ADC_ETC_TRIG3_CHAIN_1_0		(IMXRT_ADC_ETC.offset090)
+#define ADC_ETC_TRIG3_CHAIN_3_2		(IMXRT_ADC_ETC.offset094)
+#define ADC_ETC_TRIG3_CHAIN_5_4		(IMXRT_ADC_ETC.offset098)
+#define ADC_ETC_TRIG3_CHAIN_7_6		(IMXRT_ADC_ETC.offset09C)
+#define ADC_ETC_TRIG3_RESULT_1_0	(IMXRT_ADC_ETC.offset0A0)
+#define ADC_ETC_TRIG3_RESULT_3_2	(IMXRT_ADC_ETC.offset0A4)
+#define ADC_ETC_TRIG3_RESULT_5_4	(IMXRT_ADC_ETC.offset0A8)
+#define ADC_ETC_TRIG3_RESULT_7_6	(IMXRT_ADC_ETC.offset0AC)
+#define ADC_ETC_TRIG4_CTRL		(IMXRT_ADC_ETC.offset0B0)
+#define ADC_ETC_TRIG4_COUNTER		(IMXRT_ADC_ETC.offset0B4)
+#define ADC_ETC_TRIG4_CHAIN_1_0		(IMXRT_ADC_ETC.offset0B8)
+#define ADC_ETC_TRIG4_CHAIN_3_2		(IMXRT_ADC_ETC.offset0BC)
+#define ADC_ETC_TRIG4_CHAIN_5_4		(IMXRT_ADC_ETC.offset0C0)
+#define ADC_ETC_TRIG4_CHAIN_7_6		(IMXRT_ADC_ETC.offset0C4)
+#define ADC_ETC_TRIG4_RESULT_1_0	(IMXRT_ADC_ETC.offset0C8)
+#define ADC_ETC_TRIG4_RESULT_3_2	(IMXRT_ADC_ETC.offset0CC)
+#define ADC_ETC_TRIG4_RESULT_5_4	(IMXRT_ADC_ETC.offset0D0)
+#define ADC_ETC_TRIG4_RESULT_7_6	(IMXRT_ADC_ETC.offset0D4)
+#define ADC_ETC_TRIG5_CTRL		(IMXRT_ADC_ETC.offset0D8)
+#define ADC_ETC_TRIG5_COUNTER		(IMXRT_ADC_ETC.offset0DC)
+#define ADC_ETC_TRIG5_CHAIN_1_0		(IMXRT_ADC_ETC.offset0E0)
+#define ADC_ETC_TRIG5_CHAIN_3_2		(IMXRT_ADC_ETC.offset0E4)
+#define ADC_ETC_TRIG5_CHAIN_5_4		(IMXRT_ADC_ETC.offset0E8)
+#define ADC_ETC_TRIG5_CHAIN_7_6		(IMXRT_ADC_ETC.offset0EC)
+#define ADC_ETC_TRIG5_RESULT_1_0	(IMXRT_ADC_ETC.offset0F0)
+#define ADC_ETC_TRIG5_RESULT_3_2	(IMXRT_ADC_ETC.offset0F4)
+#define ADC_ETC_TRIG5_RESULT_5_4	(IMXRT_ADC_ETC.offset0F8)
+#define ADC_ETC_TRIG5_RESULT_7_6	(IMXRT_ADC_ETC.offset0FC)
+#define ADC_ETC_TRIG6_CTRL		(IMXRT_ADC_ETC.offset100)
+#define ADC_ETC_TRIG6_COUNTER		(IMXRT_ADC_ETC.offset104)
+#define ADC_ETC_TRIG6_CHAIN_1_0		(IMXRT_ADC_ETC.offset108)
+#define ADC_ETC_TRIG6_CHAIN_3_2		(IMXRT_ADC_ETC.offset10C)
+#define ADC_ETC_TRIG6_CHAIN_5_4		(IMXRT_ADC_ETC.offset110)
+#define ADC_ETC_TRIG6_CHAIN_7_6		(IMXRT_ADC_ETC.offset114)
+#define ADC_ETC_TRIG6_RESULT_1_0	(IMXRT_ADC_ETC.offset118)
+#define ADC_ETC_TRIG6_RESULT_3_2	(IMXRT_ADC_ETC.offset11C)
+#define ADC_ETC_TRIG6_RESULT_5_4	(IMXRT_ADC_ETC.offset120)
+#define ADC_ETC_TRIG6_RESULT_7_6	(IMXRT_ADC_ETC.offset124)
+#define ADC_ETC_TRIG7_CTRL		(IMXRT_ADC_ETC.offset128)
+#define ADC_ETC_TRIG7_COUNTER		(IMXRT_ADC_ETC.offset12C)
+#define ADC_ETC_TRIG7_CHAIN_1_0		(IMXRT_ADC_ETC.offset130)
+#define ADC_ETC_TRIG7_CHAIN_3_2		(IMXRT_ADC_ETC.offset134)
+#define ADC_ETC_TRIG7_CHAIN_5_4		(IMXRT_ADC_ETC.offset138)
+#define ADC_ETC_TRIG7_CHAIN_7_6		(IMXRT_ADC_ETC.offset13C)
+#define ADC_ETC_TRIG7_RESULT_1_0	(IMXRT_ADC_ETC.offset140)
+#define ADC_ETC_TRIG7_RESULT_3_2	(IMXRT_ADC_ETC.offset144)
+#define ADC_ETC_TRIG7_RESULT_5_4	(IMXRT_ADC_ETC.offset148)
+#define ADC_ETC_TRIG7_RESULT_7_6	(IMXRT_ADC_ETC.offset14C)
+
+// 16.7: page 640
 #define IMXRT_AIPSTZ1		(*(IMXRT_REGISTER32_t *)0x4007C000)
-#define IMXRT_AIPSTZ2		(*(IMXRT_REGISTER32_t *)0x4017C000)
-#define IMXRT_AIPSTZ3		(*(IMXRT_REGISTER32_t *)0x4027C000)
-#define IMXRT_AIPSTZ4		(*(IMXRT_REGISTER32_t *)0x4037C000)
 #define AIPSTZ1_MPR			(IMXRT_AIPSTZ1.offset000)
 #define AIPSTZ1_OPACR			(IMXRT_AIPSTZ1.offset040)
 #define AIPSTZ1_OPACR1			(IMXRT_AIPSTZ1.offset044)
 #define AIPSTZ1_OPACR2			(IMXRT_AIPSTZ1.offset048)
 #define AIPSTZ1_OPACR3			(IMXRT_AIPSTZ1.offset04C)
 #define AIPSTZ1_OPACR4			(IMXRT_AIPSTZ1.offset050)
+#define IMXRT_AIPSTZ2		(*(IMXRT_REGISTER32_t *)0x4017C000)
 #define AIPSTZ2_MPR			(IMXRT_AIPSTZ2.offset000)
 #define AIPSTZ2_OPACR			(IMXRT_AIPSTZ2.offset040)
 #define AIPSTZ2_OPACR1			(IMXRT_AIPSTZ2.offset044)
 #define AIPSTZ2_OPACR2			(IMXRT_AIPSTZ2.offset048)
 #define AIPSTZ2_OPACR3			(IMXRT_AIPSTZ2.offset04C)
 #define AIPSTZ2_OPACR4			(IMXRT_AIPSTZ2.offset050)
+#define IMXRT_AIPSTZ3		(*(IMXRT_REGISTER32_t *)0x4027C000)
 #define AIPSTZ3_MPR			(IMXRT_AIPSTZ3.offset000)
 #define AIPSTZ3_OPACR			(IMXRT_AIPSTZ3.offset040)
 #define AIPSTZ3_OPACR1			(IMXRT_AIPSTZ3.offset044)
 #define AIPSTZ3_OPACR2			(IMXRT_AIPSTZ3.offset048)
 #define AIPSTZ3_OPACR3			(IMXRT_AIPSTZ3.offset04C)
 #define AIPSTZ3_OPACR4			(IMXRT_AIPSTZ3.offset050)
+#define IMXRT_AIPSTZ4		(*(IMXRT_REGISTER32_t *)0x4037C000)
 #define AIPSTZ4_MPR			(IMXRT_AIPSTZ4.offset000)
 #define AIPSTZ4_OPACR			(IMXRT_AIPSTZ4.offset040)
 #define AIPSTZ4_OPACR1			(IMXRT_AIPSTZ4.offset044)
@@ -733,7 +1094,7 @@ typedef struct {
 #define AIPSTZ4_OPACR3			(IMXRT_AIPSTZ4.offset04C)
 #define AIPSTZ4_OPACR4			(IMXRT_AIPSTZ4.offset050)
 
-// page 706  (offsets are wrong)
+// 17.3: page 662
 #define IMXRT_AOI1		(*(IMXRT_REGISTER16_t *)0x403B4000)
 #define AOI1_BFCRT010			(IMXRT_AOI1.offset000)
 #define AOI1_BFCRT230			(IMXRT_AOI1.offset002)
@@ -753,7 +1114,7 @@ typedef struct {
 #define AOI2_BFCRT013			(IMXRT_AOI2.offset00C)
 #define AOI2_BFCRT233			(IMXRT_AOI2.offset00E)
 
-// page 708
+// 18.7: page 703
 #define IMXRT_CCM		(*(IMXRT_REGISTER32_t *)0x400FC000)
 #define CCM_CCR				(IMXRT_CCM.offset000)
 #define CCM_CSR				(IMXRT_CCM.offset008)
@@ -783,36 +1144,43 @@ typedef struct {
 #define CCM_CCGR5			(IMXRT_CCM.offset07C)
 #define CCM_CCGR6			(IMXRT_CCM.offset080)
 #define CCM_CMEOR			(IMXRT_CCM.offset088)
-#define CCM_CCR_RBC_EN				((uint32_t)0x08000000)
+#define CCM_CCR_RBC_EN				((uint32_t)(1<<27))
 #define CCM_CCR_REG_BYPASS_COUNT(n)		((uint32_t)(((n) & 0x3F) << 21))
-#define CCM_CCR_COSC_EN				((uint32_t)0x00001000)
+#define CCM_CCR_COSC_EN				((uint32_t)(1<<12))
 #define CCM_CCR_OSCNT(n)			((uint32_t)(((n) & 0xFF) << 0))
-#define CCM_CSR_COSC_READY			((uint32_t)0x00000020)
-#define CCM_CSR_CAMP2_READY			((uint32_t)0x00000008)
-#define CCM_CSR_REF_EN_B			((uint32_t)0x00000001)
-#define CCM_CCSR_PLL3_SW_CLK_SEL		((uint32_t)0x00000001)
+#define CCM_CSR_COSC_READY			((uint32_t)(1<<5))
+#define CCM_CSR_CAMP2_READY			((uint32_t)(1<<3))
+#define CCM_CSR_REF_EN_B			((uint32_t)(1<<0))
+#define CCM_CCSR_PLL3_SW_CLK_SEL		((uint32_t)(1<<0))
 #define CCM_CACRR_ARM_PODF(n)			((uint32_t)(((n) & 0x07) << 0))
 #define CCM_CBCDR_PERIPH_CLK2_PODF(n)		((uint32_t)(((n) & 0x07) << 27))
-#define CCM_CBCDR_PERIPH_CLK_SEL		((uint32_t)0x02000000)
+#define CCM_CBCDR_PERIPH_CLK_SEL		((uint32_t)(1<<25))
 #define CCM_CBCDR_SEMC_PODF(n)			((uint32_t)(((n) & 0x07) << 16))
 #define CCM_CBCDR_AHB_PODF(n)			((uint32_t)(((n) & 0x07) << 10))
 #define CCM_CBCDR_IPG_PODF(n)			((uint32_t)(((n) & 0x03) << 8))
-#define CCM_CBCDR_SEMC_ALT_CLK_SEL		((uint32_t)0x00000080)
-#define CCM_CBCDR_SEMC_CLK_SEL			((uint32_t)0x00000040)
+#define CCM_CBCDR_IPG_PODF_MASK			((uint32_t)(0x03 << 8))
+#define CCM_CBCDR_SEMC_ALT_CLK_SEL		((uint32_t)(1<<7))
+#define CCM_CBCDR_SEMC_CLK_SEL			((uint32_t)(1<<6))
 #define CCM_CBCMR_LPSPI_PODF(n)			((uint32_t)(((n) & 0x07) << 26))
 #define CCM_CBCMR_LCDIF_PODF(n)			((uint32_t)(((n) & 0x07) << 23))
 #define CCM_CBCMR_PRE_PERIPH_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 18))
 #define CCM_CBCMR_TRACE_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 14))
 #define CCM_CBCMR_PERIPH_CLK2_SEL(n)		((uint32_t)(((n) & 0x03) << 12))
-#define CCM_CBCMR_LPSPI_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 5))
+#define CCM_CBCMR_LPSPI_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 4))
+#define CCM_CBCMR_LPSPI_PODF_MASK		((uint32_t)(0x07 << 26))
+#define CCM_CBCMR_LCDIF_PODF_MASK		((uint32_t)(0x07 << 23))
+#define CCM_CBCMR_PRE_PERIPH_CLK_SEL_MASK	((uint32_t)(0x03 << 18))
+#define CCM_CBCMR_TRACE_CLK_SEL_MASK		((uint32_t)(0x03 << 14))
+#define CCM_CBCMR_PERIPH_CLK2_SEL_MASK		((uint32_t)(0x03 << 12))
+#define CCM_CBCMR_LPSPI_CLK_SEL_MASK		((uint32_t)(0x03 << 4))
 #define CCM_CSCMR1_FLEXSPI_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 29))
 #define CCM_CSCMR1_FLEXSPI_PODF(n)		((uint32_t)(((n) & 0x07) << 23))
-#define CCM_CSCMR1_USDHC2_CLK_SEL		((uint32_t)0x00020000)
-#define CCM_CSCMR1_USDHC1_CLK_SEL		((uint32_t)0x00010000)
+#define CCM_CSCMR1_USDHC2_CLK_SEL		((uint32_t)(1<<17))
+#define CCM_CSCMR1_USDHC1_CLK_SEL		((uint32_t)(1<<16))
 #define CCM_CSCMR1_SAI3_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 14))
 #define CCM_CSCMR1_SAI2_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 12))
 #define CCM_CSCMR1_SAI1_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 10))
-#define CCM_CSCMR1_PERCLK_CLK_SEL		((uint32_t)0x00000040)
+#define CCM_CSCMR1_PERCLK_CLK_SEL		((uint32_t)(1<<6))
 #define CCM_CSCMR1_PERCLK_PODF(n)		((uint32_t)(((n) & 0x3F) << 0))
 #define CCM_CSCMR2_FLEXIO2_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 19))
 #define CCM_CSCMR2_CAN_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 8))
@@ -820,8 +1188,8 @@ typedef struct {
 #define CCM_CSCDR1_TRACE_PODF(n)		((uint32_t)(((n) & 0x07) << 25))
 #define CCM_CSCDR1_USDHC2_PODF(n)		((uint32_t)(((n) & 0x07) << 16))
 #define CCM_CSCDR1_USDHC1_PODF(n)		((uint32_t)(((n) & 0x07) << 11))
-#define CCM_CSCDR1_UART_CLK_SEL			((uint32_t)0x00000040)
-#define CCM_CSCDR1_UART_CLK_PODF(n)		((uint32_t)(((n) & 0x1F) << 0))
+#define CCM_CSCDR1_UART_CLK_SEL			((uint32_t)(1<<6))
+#define CCM_CSCDR1_UART_CLK_PODF(n)		((uint32_t)(((n) & 0x3F) << 0))
 #define CCM_CS1CDR_FLEXIO2_CLK_PODF(n)		((uint32_t)(((n) & 0x07) << 25))
 #define CCM_CS1CDR_SAI3_CLK_PRED(n)		((uint32_t)(((n) & 0x07) << 22))
 #define CCM_CS1CDR_SAI3_CLK_PODF(n)		((uint32_t)(((n) & 0x1F) << 16))
@@ -837,55 +1205,55 @@ typedef struct {
 #define CCM_CDCDR_FLEXIO1_CLK_PODF(n)		((uint32_t)(((n) & 0x07) << 9))
 #define CCM_CDCDR_FLEXIO1_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 7))
 #define CCM_CSCDR2_LPI2C_CLK_PODF(n)		((uint32_t)(((n) & 0x1F) << 19))
-#define CCM_CSCDR2_LPI2C_CLK_SEL		((uint32_t)0x00040000)
+#define CCM_CSCDR2_LPI2C_CLK_SEL		((uint32_t)(1<<18))
 #define CCM_CSCDR2_LCDIF_PRE_CLK_SEL(n)		((uint32_t)(((n) & 0x07) << 15))
 #define CCM_CSCDR2_LCDIF_PRED(n)		((uint32_t)(((n) & 0x07) << 12))
 #define CCM_CSCDR2_LCDIF_CLK_SEL(n)		((uint32_t)(((n) & 0x07) << 9))
 #define CCM_CSCDR3_CSI_PODF(n)			((uint32_t)(((n) & 0x07) << 11))
 #define CCM_CSCDR3_CSI_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 9))
-#define CCM_CDHIPR_ARM_PODF_BUSY		((uint32_t)0x00010000)
-#define CCM_CDHIPR_PERIPH_CLK_SEL_BUSY		((uint32_t)0x00000020)
-#define CCM_CDHIPR_PERIPH2_CLK_SEL_BUSY		((uint32_t)0x00000008)
-#define CCM_CDHIPR_AHB_PODF_BUSY		((uint32_t)0x00000002)
-#define CCM_CDHIPR_SEMC_PODF_BUSY		((uint32_t)0x00000001)
-#define CCM_CLPCR_MASK_L2CC_IDLE		((uint32_t)0x08000000)
-#define CCM_CLPCR_MASK_SCU_IDLE			((uint32_t)0x04000000)
-#define CCM_CLPCR_MASK_CORE0_WFI		((uint32_t)0x00400000)
-#define CCM_CLPCR_BYPASS_LPM_HS0		((uint32_t)0x00200000)
-#define CCM_CLPCR_BYPASS_LPM_HS1		((uint32_t)0x00080000)
-#define CCM_CLPCR_COSC_PWRDOWN			((uint32_t)0x00000800)
+#define CCM_CDHIPR_ARM_PODF_BUSY		((uint32_t)(1<<16))
+#define CCM_CDHIPR_PERIPH_CLK_SEL_BUSY		((uint32_t)(1<<5))
+#define CCM_CDHIPR_PERIPH2_CLK_SEL_BUSY		((uint32_t)(1<<3))
+#define CCM_CDHIPR_AHB_PODF_BUSY		((uint32_t)(1<<1))
+#define CCM_CDHIPR_SEMC_PODF_BUSY		((uint32_t)(1<<0))
+#define CCM_CLPCR_MASK_L2CC_IDLE		((uint32_t)(1<<27))
+#define CCM_CLPCR_MASK_SCU_IDLE			((uint32_t)(1<<26))
+#define CCM_CLPCR_MASK_CORE0_WFI		((uint32_t)(1<<22))
+#define CCM_CLPCR_BYPASS_LPM_HS0		((uint32_t)(1<<21))
+#define CCM_CLPCR_BYPASS_LPM_HS1		((uint32_t)(1<<19))
+#define CCM_CLPCR_COSC_PWRDOWN			((uint32_t)(1<<11))
 #define CCM_CLPCR_STBY_COUNT(n)			((uint32_t)(((n) & 0x03) << 9))
-#define CCM_CLPCR_VSTBY				((uint32_t)0x00000100)
-#define CCM_CLPCR_DIS_REF_OSC			((uint32_t)0x00000080)
-#define CCM_CLPCR_SBYOS				((uint32_t)0x00000040)
-#define CCM_CLPCR_ARM_CLK_DIS_ON_LPM		((uint32_t)0x00000020)
+#define CCM_CLPCR_VSTBY				((uint32_t)(1<<8))
+#define CCM_CLPCR_DIS_REF_OSC			((uint32_t)(1<<7))
+#define CCM_CLPCR_SBYOS				((uint32_t)(1<<6))
+#define CCM_CLPCR_ARM_CLK_DIS_ON_LPM		((uint32_t)(1<<5))
 #define CCM_CLPCR_LPM(n)			((uint32_t)(((n) & 0x03) << 0))
-#define CCM_CISR_ARM_PODF_LOADED		((uint32_t)0x04000000)
-#define CCM_CISR_PERIPH_CLK_SEL_LOADED		((uint32_t)0x00400000)
-#define CCM_CISR_AHB_PODF_LOADED		((uint32_t)0x00100000)
-#define CCM_CISR_PERIPH2_CLK_SEL_LOADED		((uint32_t)0x00080000)
-#define CCM_CISR_SEMC_PODF_LOADED		((uint32_t)0x00020000)
-#define CCM_CISR_COSC_READY			((uint32_t)0x00000040)
-#define CCM_CISR_LRF_PLL			((uint32_t)0x00000001)
-#define CCM_CIMR_ARM_PODF_LOADED		((uint32_t)0x04000000)
-#define CCM_CIMR_MASK_PERIPH_CLK_SEL_LOADED	((uint32_t)0x00400000)
-#define CCM_CIMR_MASK_AHB_PODF_LOADED		((uint32_t)0x00100000)
-#define CCM_CIMR_MASK_PERIPH2_CLK_SEL_LOADED	((uint32_t)0x00080000)
-#define CCM_CIMR_MASK_SEMC_PODF_LOADED		((uint32_t)0x00020000)
-#define CCM_CIMR_MASK_COSC_READY		((uint32_t)0x00000040)
-#define CCM_CIMR_MASK_LRF_PLL			((uint32_t)0x00000001)
-#define CCM_CCOSR_CLKO2_EN			((uint32_t)0x01000000)
+#define CCM_CISR_ARM_PODF_LOADED		((uint32_t)(1<<26))
+#define CCM_CISR_PERIPH_CLK_SEL_LOADED		((uint32_t)(1<<22))
+#define CCM_CISR_AHB_PODF_LOADED		((uint32_t)(1<<20))
+#define CCM_CISR_PERIPH2_CLK_SEL_LOADED		((uint32_t)(1<<19))
+#define CCM_CISR_SEMC_PODF_LOADED		((uint32_t)(1<<17))
+#define CCM_CISR_COSC_READY			((uint32_t)(1<<6))
+#define CCM_CISR_LRF_PLL			((uint32_t)(1<<0))
+#define CCM_CIMR_ARM_PODF_LOADED		((uint32_t)(1<<26))
+#define CCM_CIMR_MASK_PERIPH_CLK_SEL_LOADED	((uint32_t)(1<<22))
+#define CCM_CIMR_MASK_AHB_PODF_LOADED		((uint32_t)(1<<20))
+#define CCM_CIMR_MASK_PERIPH2_CLK_SEL_LOADED	((uint32_t)(1<<19))
+#define CCM_CIMR_MASK_SEMC_PODF_LOADED		((uint32_t)(1<<17))
+#define CCM_CIMR_MASK_COSC_READY		((uint32_t)(1<<6))
+#define CCM_CIMR_MASK_LRF_PLL			((uint32_t)(1<<0))
+#define CCM_CCOSR_CLKO2_EN			((uint32_t)(1<<24))
 #define CCM_CCOSR_CLKO2_DIV(n)			((uint32_t)(((n) & 0x07) << 21))
 #define CCM_CCOSR_CLKO2_SEL(n)			((uint32_t)(((n) & 0x1F) << 16))
-#define CCM_CCOSR_CLK_OUT_SEL			((uint32_t)0x00000100)
-#define CCM_CCOSR_CLKO1_EN			((uint32_t)0x00000080)
+#define CCM_CCOSR_CLK_OUT_SEL			((uint32_t)(1<<8))
+#define CCM_CCOSR_CLKO1_EN			((uint32_t)(1<<7))
 #define CCM_CCOSR_CLKO1_DIV(n)			((uint32_t)(((n) & 0x07) << 4))
 #define CCM_CCOSR_CLKO1_SEL(n)			((uint32_t)(((n) & 0x0F) << 0))
-#define CCM_CGPR_INT_MEM_CLK_LPM		((uint32_t)0x00020000)
-#define CCM_CGPR_FPL				((uint32_t)0x00010000)
+#define CCM_CGPR_INT_MEM_CLK_LPM		((uint32_t)(1<<17))
+#define CCM_CGPR_FPL				((uint32_t)(1<<16))
 #define CCM_CGPR_SYS_MEM_DS_CTRL(n)		((uint32_t)(((n) & 0x03) << 14))
-#define CCM_CGPR_EFUSE_PROG_SUPPLY_GATE		((uint32_t)0x00000010)
-#define CCM_CGPR_PMIC_DELAY_SCALER		((uint32_t)0x00000001)
+#define CCM_CGPR_EFUSE_PROG_SUPPLY_GATE		((uint32_t)(1<<4))
+#define CCM_CGPR_PMIC_DELAY_SCALER		((uint32_t)(1<<0))
 #define CCM_CCGR_OFF				0
 #define CCM_CCGR_ON_RUNONLY			1
 #define CCM_CCGR_ON				3
@@ -902,7 +1270,7 @@ typedef struct {
 #define CCM_CCGR0_DCP(n)			((uint32_t)(((n) & 0x03) << 10))
 #define CCM_CCGR0_MQS_HMCLK(n)			((uint32_t)(((n) & 0x03) << 4))
 #define CCM_CCGR0_AIPS_TZ2(n)			((uint32_t)(((n) & 0x03) << 2))
-#define CCM_CCGR0_aips_tz1(n)			((uint32_t)(((n) & 0x03) << 0))
+#define CCM_CCGR0_AIPS_TZ1(n)			((uint32_t)(((n) & 0x03) << 0))
 #define CCM_CCGR1_CSU(n)			((uint32_t)(((n) & 0x03) << 28))
 #define CCM_CCGR1_GPIO1(n)			((uint32_t)(((n) & 0x03) << 26))
 #define CCM_CCGR1_LPUART4(n)			((uint32_t)(((n) & 0x03) << 24))
@@ -932,7 +1300,6 @@ typedef struct {
 #define CCM_CCGR2_LPI2C1(n)			((uint32_t)(((n) & 0x03) << 6))
 #define CCM_CCGR2_IOMUXC_SNVS(n)		((uint32_t)(((n) & 0x03) << 4))
 #define CCM_CCGR2_CSI(n)			((uint32_t)(((n) & 0x03) << 2))
-#define CCM_CCGR2_(n)				((uint32_t)(((n) & 0x03) << 0))
 #define CCM_CCGR3_IOMUXC_SNVS_GPR(n)		((uint32_t)(((n) & 0x03) << 30))
 #define CCM_CCGR3_OCRAM(n)			((uint32_t)(((n) & 0x03) << 28))
 #define CCM_CCGR3_ACMP4(n)			((uint32_t)(((n) & 0x03) << 26))
@@ -980,30 +1347,30 @@ typedef struct {
 #define CCM_CCGR5_WDOG3(n)			((uint32_t)(((n) & 0x03) << 4))
 #define CCM_CCGR5_FLEXIO1(n)			((uint32_t)(((n) & 0x03) << 2))
 #define CCM_CCGR5_ROM(n)			((uint32_t)(((n) & 0x03) << 0))
-#define CCM_CCGR6_TIMER3(n)			((uint32_t)(((n) & 0x03) << 30))
-#define CCM_CCGR6_TIMER2(n)			((uint32_t)(((n) & 0x03) << 28))
-#define CCM_CCGR6_TIMER1(n)			((uint32_t)(((n) & 0x03) << 26))
+#define CCM_CCGR6_QTIMER3(n)			((uint32_t)(((n) & 0x03) << 30))
+#define CCM_CCGR6_QTIMER2(n)			((uint32_t)(((n) & 0x03) << 28))
+#define CCM_CCGR6_QTIMER1(n)			((uint32_t)(((n) & 0x03) << 26))
 #define CCM_CCGR6_LPI2C4_SERIAL(n)		((uint32_t)(((n) & 0x03) << 24))
 #define CCM_CCGR6_ANADIG(n)			((uint32_t)(((n) & 0x03) << 22))
 #define CCM_CCGR6_SIM_PER(n)			((uint32_t)(((n) & 0x03) << 20))
 #define CCM_CCGR6_AIPS_TZ3(n)			((uint32_t)(((n) & 0x03) << 18))
-#define CCM_CCGR6_TIMER4(n)			((uint32_t)(((n) & 0x03) << 16))
+#define CCM_CCGR6_QTIMER4(n)			((uint32_t)(((n) & 0x03) << 16))
 #define CCM_CCGR6_LPUART8(n)			((uint32_t)(((n) & 0x03) << 14))
 #define CCM_CCGR6_TRNG(n)			((uint32_t)(((n) & 0x03) << 12))
-#define CCM_CCGR6_FLEXSPi(n)			((uint32_t)(((n) & 0x03) << 10))
+#define CCM_CCGR6_FLEXSPI(n)			((uint32_t)(((n) & 0x03) << 10))
 #define CCM_CCGR6_IPMUX4(n)			((uint32_t)(((n) & 0x03) << 8))
 #define CCM_CCGR6_DCDC(n)			((uint32_t)(((n) & 0x03) << 6))
 #define CCM_CCGR6_USDHC2(n)			((uint32_t)(((n) & 0x03) << 4))
 #define CCM_CCGR6_USDHC1(n)			((uint32_t)(((n) & 0x03) << 2))
 #define CCM_CCGR6_USBOH3(n)			((uint32_t)(((n) & 0x03) << 0))
-#define CCM_CMEOR_MOD_EN_OV_CAN1_CPI		((uint32_t)0x40000000)
-#define CCM_CMEOR_MOD_EN_OV_CAN2_CPI		((uint32_t)0x10000000)
-#define CCM_CMEOR_MOD_EN_OV_TRNG		((uint32_t)0x00000200)
-#define CCM_CMEOR_MOD_EN_USDHC			((uint32_t)0x00000080)
-#define CCM_CMEOR_MOD_EN_OV_PIT			((uint32_t)0x00000040)
-#define CCM_CMEOR_MOD_EN_OV_GPT			((uint32_t)0x00000020)
+#define CCM_CMEOR_MOD_EN_OV_CAN1_CPI		((uint32_t)(1<<30))
+#define CCM_CMEOR_MOD_EN_OV_CAN2_CPI		((uint32_t)(1<<28))
+#define CCM_CMEOR_MOD_EN_OV_TRNG		((uint32_t)(1<<9))
+#define CCM_CMEOR_MOD_EN_USDHC			((uint32_t)(1<<7))
+#define CCM_CMEOR_MOD_EN_OV_PIT			((uint32_t)(1<<6))
+#define CCM_CMEOR_MOD_EN_OV_GPT			((uint32_t)(1<<5))
 
-// page 796
+// 18.8: page 752
 #define IMXRT_CCM_ANALOG	(*(IMXRT_REGISTER32_t *)0x400D8000)
 #define CCM_ANALOG_PLL_ARM		(IMXRT_CCM_ANALOG.offset000)
 #define CCM_ANALOG_PLL_ARM_SET		(IMXRT_CCM_ANALOG.offset004)
@@ -1060,8 +1427,25 @@ typedef struct {
 #define CCM_ANALOG_MISC2_SET		(IMXRT_CCM_ANALOG.offset174)
 #define CCM_ANALOG_MISC2_CLR		(IMXRT_CCM_ANALOG.offset178)
 #define CCM_ANALOG_MISC2_TOG		(IMXRT_CCM_ANALOG.offset17C)
+#define CCM_ANALOG_PLL_ARM_LOCK			((uint32_t)(1<<31))
+#define CCM_ANALOG_PLL_ARM_BYPASS		((uint32_t)(1<<11))
+#define CCM_ANALOG_PLL_ARM_ENABLE		((uint32_t)(1<<11))
+#define CCM_ANALOG_PLL_ARM_POWERDOWN		((uint32_t)(1<<11))
+#define CCM_ANALOG_PLL_ARM_DIV_SELECT(n)	((uint32_t)(((n) & 0x3F) << 0))
+#define CCM_ANALOG_PLL_ARM_DIV_SELECT_MASK	((uint32_t)(0x3F << 0))
+#define CCM_ANALOG_PLL_USB1_LOCK		((uint32_t)(1<<31))
+#define CCM_ANALOG_PLL_USB1_BYPASS		((uint32_t)(1<<16))
+#define CCM_ANALOG_PLL_USB1_ENABLE		((uint32_t)(1<<13))
+#define CCM_ANALOG_PLL_USB1_POWER		((uint32_t)(1<<12))
+#define CCM_ANALOG_PLL_USB1_EN_USB_CLKS		((uint32_t)(1<<6))
+#define CCM_ANALOG_PLL_USB1_DIV_SELECT		((uint32_t)(1<<1))
+#define CCM_ANALOG_PLL_SYS_LOCK			((uint32_t)(1<<31))
+#define CCM_ANALOG_PLL_SYS_BYPASS		((uint32_t)(1<<16))
+#define CCM_ANALOG_PLL_SYS_ENABLE		((uint32_t)(1<<13))
+#define CCM_ANALOG_PLL_SYS_POWERDOWN		((uint32_t)(1<<12))
+#define CCM_ANALOG_PLL_SYS_DIV_SELECT		((uint32_t)(1<<1))
 
-// page 852
+// 19.7: page 810
 #define IMXRT_CSI		(*(IMXRT_REGISTER32_t *)0x402BC000)
 #define CSI_CSICR1			(IMXRT_CSI.offset000)
 #define CSI_CSICR2			(IMXRT_CSI.offset004)
@@ -1076,81 +1460,17 @@ typedef struct {
 #define CSI_CSIDMASA_FB2		(IMXRT_CSI.offset02C)
 #define CSI_CSIFBUF_PARA		(IMXRT_CSI.offset030)
 #define CSI_CSIIMAG_PARA		(IMXRT_CSI.offset034)
-#define CSI_CSICR18			(IMXRT_CSI.offset038)
-#define CSI_CSICR19			(IMXRT_CSI.offset03C)
+#define CSI_CSICR18			(IMXRT_CSI.offset048)
+#define CSI_CSICR19			(IMXRT_CSI.offset04C)
 
-// page 878
+// 20.6.1.1: page 837
 #define IMXRT_DCDC		(*(IMXRT_REGISTER32_t *)0x40080000)
 #define DCDC_REG0			(IMXRT_DCDC.offset000)
 #define DCDC_REG1			(IMXRT_DCDC.offset004)
 #define DCDC_REG2			(IMXRT_DCDC.offset008)
 #define DCDC_REG3			(IMXRT_DCDC.offset00C)
 
-// page 489
-#define IMXRT_CMP1		(*(IMXRT_REGISTER8_t *)0x40094000)
-#define CMP1_CR0			(IMXRT_CMP1.offset00)
-#define CMP1_CR1			(IMXRT_CMP1.offset01)
-#define CMP1_FPR			(IMXRT_CMP1.offset02)
-#define CMP1_SCR			(IMXRT_CMP1.offset03)
-#define CMP1_DACCR			(IMXRT_CMP1.offset04)
-#define CMP1_MUXCR			(IMXRT_CMP1.offset05)
-#define IMXRT_CMP2		(*(IMXRT_REGISTER8_t *)0x40094008)
-#define CMP2_CR0			(IMXRT_CMP2.offset00)
-#define CMP2_CR1			(IMXRT_CMP2.offset01)
-#define CMP2_FPR			(IMXRT_CMP2.offset02)
-#define CMP2_SCR			(IMXRT_CMP2.offset03)
-#define CMP2_DACCR			(IMXRT_CMP2.offset04)
-#define CMP2_MUXCR			(IMXRT_CMP2.offset05)
-#define IMXRT_CMP3		(*(IMXRT_REGISTER8_t *)0x40094010)
-#define CMP3_CR0			(IMXRT_CMP3.offset00)
-#define CMP3_CR1			(IMXRT_CMP3.offset01)
-#define CMP3_FPR			(IMXRT_CMP3.offset02)
-#define CMP3_SCR			(IMXRT_CMP3.offset03)
-#define CMP3_DACCR			(IMXRT_CMP3.offset04)
-#define CMP3_MUXCR			(IMXRT_CMP3.offset05)
-#define IMXRT_CMP4		(*(IMXRT_REGISTER8_t *)0x40094018)
-#define CMP4_CR0			(IMXRT_CMP4.offset00)
-#define CMP4_CR1			(IMXRT_CMP4.offset01)
-#define CMP4_FPR			(IMXRT_CMP4.offset02)
-#define CMP4_SCR			(IMXRT_CMP4.offset03)
-#define CMP4_DACCR			(IMXRT_CMP4.offset04)
-#define CMP4_MUXCR			(IMXRT_CMP4.offset05)
-
-// page 538
-#define IMXRT_ADC1		(*(IMXRT_REGISTER32_t *)0x400C4000)
-#define ADC1_HC0			(IMXRT_ADC1.offset000)
-#define ADC1_HC1			(IMXRT_ADC1.offset004)
-#define ADC1_HS				(IMXRT_ADC1.offset008)
-#define ADC1_R0				(IMXRT_ADC1.offset00C)
-#define ADC1_R1				(IMXRT_ADC1.offset010)
-#define ADC1_CFG			(IMXRT_ADC1.offset014)
-#define ADC1_GC				(IMXRT_ADC1.offset018)
-#define ADC1_GS				(IMXRT_ADC1.offset01C)
-#define ADC1_CV				(IMXRT_ADC1.offset020)
-#define ADC1_OFS			(IMXRT_ADC1.offset024)
-#define ADC1_CAL			(IMXRT_ADC1.offset028)
-
-// page 552
-#define IMXRT_ADC2		(*(IMXRT_REGISTER32_t *)0x400C8000)
-#define ADC2_HC0			(IMXRT_ADC2.offset000)
-#define ADC2_HC1			(IMXRT_ADC2.offset004)
-#define ADC2_HC2			(IMXRT_ADC2.offset008)
-#define ADC2_HC3			(IMXRT_ADC2.offset00C)
-#define ADC2_HC4			(IMXRT_ADC2.offset010)
-#define ADC2_HS				(IMXRT_ADC2.offset014)
-#define ADC2_R0				(IMXRT_ADC2.offset018)
-#define ADC2_R1				(IMXRT_ADC2.offset01C)
-#define ADC2_R2				(IMXRT_ADC2.offset020)
-#define ADC2_R3				(IMXRT_ADC2.offset024)
-#define ADC2_R4				(IMXRT_ADC2.offset028)
-#define ADC2_CFG			(IMXRT_ADC2.offset02C)
-#define ADC2_GC				(IMXRT_ADC2.offset030)
-#define ADC2_GS				(IMXRT_ADC2.offset034)
-#define ADC2_CV				(IMXRT_ADC2.offset038)
-#define ADC2_OFS			(IMXRT_ADC2.offset03C)
-#define ADC2_CAL			(IMXRT_ADC2.offset040)
-
-// page 891
+// 21.4.1.1: page 849
 #define IMXRT_DMAMUX		(*(IMXRT_REGISTER32_t *)0x400EC000)
 #define DMAMUX_CHCFG0			(IMXRT_DMAMUX.offset000)
 #define DMAMUX_CHCFG1			(IMXRT_DMAMUX.offset004)
@@ -1185,10 +1505,758 @@ typedef struct {
 #define DMAMUX_CHCFG30			(IMXRT_DMAMUX.offset078)
 #define DMAMUX_CHCFG31			(IMXRT_DMAMUX.offset07C)
 
-// page 906
-// TODO: DMA is complicated...
+// 22.3.5.1: page 864
+typedef struct {
+	volatile uint32_t CR;	// 0
+	volatile uint32_t ES;	// 4
+	uint32_t unused1;	// 8
+	volatile uint32_t ERQ;	// C
+	uint32_t unused2;	// 10
+	volatile uint32_t EEI;	// 14
+	volatile uint8_t CEEI;	// 18
+	volatile uint8_t SEEI;	// 19
+	volatile uint8_t CERQ;	// 1A
+	volatile uint8_t SERQ;	// 1B
+	volatile uint8_t CDNE;	// 1C
+	volatile uint8_t SSRT;	// 1D
+	volatile uint8_t CERR;	// 1E
+	volatile uint8_t CINT;	// 1F
+	uint32_t unused3;	// 20
+	volatile uint32_t INT;	// 24
+	uint32_t unused4;	// 28
+	volatile uint32_t ERR;	// 2C
+	uint32_t unused5;	// 30
+	volatile uint32_t HRS;	// 34
+	uint32_t unused6;	// 38
+	uint32_t unused7;	// 3C
+	uint32_t unused8;	// 40
+	volatile uint32_t EARS;	// 44
+	uint32_t unused[46];
+	volatile uint8_t DCHPRI3;
+	volatile uint8_t DCHPRI2;
+	volatile uint8_t DCHPRI1;
+	volatile uint8_t DCHPRI0;
+	volatile uint8_t DCHPRI7;
+	volatile uint8_t DCHPRI6;
+	volatile uint8_t DCHPRI5;
+	volatile uint8_t DCHPRI4;
+	volatile uint8_t DCHPRI11;
+	volatile uint8_t DCHPRI10;
+	volatile uint8_t DCHPRI9;
+	volatile uint8_t DCHPRI8;
+	volatile uint8_t DCHPRI15;
+	volatile uint8_t DCHPRI14;
+	volatile uint8_t DCHPRI13;
+	volatile uint8_t DCHPRI12;
+	volatile uint8_t DCHPRI19;
+	volatile uint8_t DCHPRI18;
+	volatile uint8_t DCHPRI17;
+	volatile uint8_t DCHPRI16;
+	volatile uint8_t DCHPRI23;
+	volatile uint8_t DCHPRI22;
+	volatile uint8_t DCHPRI21;
+	volatile uint8_t DCHPRI20;
+	volatile uint8_t DCHPRI27;
+	volatile uint8_t DCHPRI26;
+	volatile uint8_t DCHPRI25;
+	volatile uint8_t DCHPRI24;
+	volatile uint8_t DCHPRI31;
+	volatile uint8_t DCHPRI30;
+	volatile uint8_t DCHPRI29;
+	volatile uint8_t DCHPRI28;
+} IMXRT_DMA_t;
+typedef struct {
+	volatile const void * volatile SADDR;
+	int16_t SOFF;
+	union {
+		uint16_t ATTR;
+		struct {
+			uint8_t ATTR_DST;
+			uint8_t ATTR_SRC;
+		};
+	};
+	union {
+		uint32_t NBYTES;
+		uint32_t NBYTES_MLNO;
+		uint32_t NBYTES_MLOFFNO;
+		uint32_t NBYTES_MLOFFYES;
+	};
+	int32_t SLAST;
+	volatile void * volatile DADDR;
+	int16_t DOFF;
+	union {
+		volatile uint16_t CITER;
+		volatile uint16_t CITER_ELINKYES;
+		volatile uint16_t CITER_ELINKNO;
+	};
+	int32_t DLASTSGA;
+	volatile uint16_t CSR;
+	union {
+		volatile uint16_t BITER;
+		volatile uint16_t BITER_ELINKYES;
+		volatile uint16_t BITER_ELINKNO;
+	};
+} IMXRT_DMA_TCD_t;
+#define IMXRT_DMA		(*(IMXRT_DMA_t *)0x400E8000)
+#define DMA_CR				(IMXRT_DMA.CR)
+#define DMA_ES				(IMXRT_DMA.ES)
+#define DMA_ERQ				(IMXRT_DMA.ERQ)
+#define DMA_EEI				(IMXRT_DMA.EEI)
+#define DMA_CEEI			(IMXRT_DMA.CEEI)
+#define DMA_SEEI			(IMXRT_DMA.SEEI)
+#define DMA_CERQ			(IMXRT_DMA.CERQ)
+#define DMA_SERQ			(IMXRT_DMA.SERQ)
+#define DMA_CDNE			(IMXRT_DMA.CDNE)
+#define DMA_SSRT			(IMXRT_DMA.SSRT)
+#define DMA_CERR			(IMXRT_DMA.CERR)
+#define DMA_CINT			(IMXRT_DMA.CINT)
+#define DMA_INT				(IMXRT_DMA.INT)
+#define DMA_ERR				(IMXRT_DMA.ERR)
+#define DMA_HRS				(IMXRT_DMA.HRS)
+#define DMA_EARS			(IMXRT_DMA.EARS)
+#define DMA_DCHPRI3			(IMXRT_DMA.DCHPRI3)
+#define DMA_DCHPRI2			(IMXRT_DMA.DCHPRI2)
+#define DMA_DCHPRI1			(IMXRT_DMA.DCHPRI1)
+#define DMA_DCHPRI0			(IMXRT_DMA.DCHPRI0)
+#define DMA_DCHPRI7			(IMXRT_DMA.DCHPRI7)
+#define DMA_DCHPRI6			(IMXRT_DMA.DCHPRI6)
+#define DMA_DCHPRI5			(IMXRT_DMA.DCHPRI5)
+#define DMA_DCHPRI4			(IMXRT_DMA.DCHPRI4)
+#define DMA_DCHPRI11			(IMXRT_DMA.DCHPRI11)
+#define DMA_DCHPRI10			(IMXRT_DMA.DCHPRI10)
+#define DMA_DCHPRI9			(IMXRT_DMA.DCHPRI9)
+#define DMA_DCHPRI8			(IMXRT_DMA.DCHPRI8)
+#define DMA_DCHPRI15			(IMXRT_DMA.DCHPRI15)
+#define DMA_DCHPRI14			(IMXRT_DMA.DCHPRI14)
+#define DMA_DCHPRI13			(IMXRT_DMA.DCHPRI13)
+#define DMA_DCHPRI12			(IMXRT_DMA.DCHPRI12)
+#define DMA_DCHPRI19			(IMXRT_DMA.DCHPRI19)
+#define DMA_DCHPRI18			(IMXRT_DMA.DCHPRI18)
+#define DMA_DCHPRI17			(IMXRT_DMA.DCHPRI17)
+#define DMA_DCHPRI16			(IMXRT_DMA.DCHPRI16)
+#define DMA_DCHPRI23			(IMXRT_DMA.DCHPRI23)
+#define DMA_DCHPRI22			(IMXRT_DMA.DCHPRI22)
+#define DMA_DCHPRI21			(IMXRT_DMA.DCHPRI21)
+#define DMA_DCHPRI20			(IMXRT_DMA.DCHPRI20)
+#define DMA_DCHPRI27			(IMXRT_DMA.DCHPRI27)
+#define DMA_DCHPRI26			(IMXRT_DMA.DCHPRI26)
+#define DMA_DCHPRI25			(IMXRT_DMA.DCHPRI25)
+#define DMA_DCHPRI24			(IMXRT_DMA.DCHPRI24)
+#define DMA_DCHPRI31			(IMXRT_DMA.DCHPRI31)
+#define DMA_DCHPRI30			(IMXRT_DMA.DCHPRI30)
+#define DMA_DCHPRI29			(IMXRT_DMA.DCHPRI29)
+#define DMA_DCHPRI28			(IMXRT_DMA.DCHPRI28)
 
-// page 1063 (offsets are wrong)
+#define IMXRT_DMA_TCD		((IMXRT_DMA_TCD_t *)0x400E9000)
+#define DMA_TCD0_SADDR			(IMXRT_DMA_TCD[0].SADDR)
+#define DMA_TCD0_SOFF			(IMXRT_DMA_TCD[0].SOFF)
+#define DMA_TCD0_ATTR			(IMXRT_DMA_TCD[0].ATTR)
+#define DMA_TCD0_NBYTES			(IMXRT_DMA_TCD[0].NBYTES)
+#define DMA_TCD0_NBYTES_MLNO		(IMXRT_DMA_TCD[0].NBYTES_MLNO)
+#define DMA_TCD0_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[0].NBYTES_MLOFFNO)
+#define DMA_TCD0_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[0].NBYTES_MLOFFYES)
+#define DMA_TCD0_SLAST			(IMXRT_DMA_TCD[0].SLAST)
+#define DMA_TCD0_DADDR			(IMXRT_DMA_TCD[0].DADDR)
+#define DMA_TCD0_DOFF			(IMXRT_DMA_TCD[0].DOFF)
+#define DMA_TCD0_CITER			(IMXRT_DMA_TCD[0].CITER)
+#define DMA_TCD0_CITER_ELINKYES		(IMXRT_DMA_TCD[0].CITER_ELINKYES)
+#define DMA_TCD0_CITER_ELINKNO		(IMXRT_DMA_TCD[0].CITER_ELINKNO)
+#define DMA_TCD0_DLASTSGA		(IMXRT_DMA_TCD[0].DLASTSGA)
+#define DMA_TCD0_CSR			(IMXRT_DMA_TCD[0].CSR)
+#define DMA_TCD0_BITER			(IMXRT_DMA_TCD[0].BITER)
+#define DMA_TCD0_BITER_ELINKYES		(IMXRT_DMA_TCD[0].BITER_ELINKYES)
+#define DMA_TCD0_BITER_ELINKNO		(IMXRT_DMA_TCD[0].BITER_ELINKNO)
+
+#define DMA_TCD1_SADDR			(IMXRT_DMA_TCD[1].SADDR)
+#define DMA_TCD1_SOFF			(IMXRT_DMA_TCD[1].SOFF)
+#define DMA_TCD1_ATTR			(IMXRT_DMA_TCD[1].ATTR)
+#define DMA_TCD1_NBYTES			(IMXRT_DMA_TCD[1].NBYTES)
+#define DMA_TCD1_NBYTES_MLNO		(IMXRT_DMA_TCD[1].NBYTES_MLNO)
+#define DMA_TCD1_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[1].NBYTES_MLOFFNO)
+#define DMA_TCD1_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[1].NBYTES_MLOFFYES)
+#define DMA_TCD1_SLAST			(IMXRT_DMA_TCD[1].SLAST)
+#define DMA_TCD1_DADDR			(IMXRT_DMA_TCD[1].DADDR)
+#define DMA_TCD1_DOFF			(IMXRT_DMA_TCD[1].DOFF)
+#define DMA_TCD1_CITER			(IMXRT_DMA_TCD[1].CITER)
+#define DMA_TCD1_CITER_ELINKYES		(IMXRT_DMA_TCD[1].CITER_ELINKYES)
+#define DMA_TCD1_CITER_ELINKNO		(IMXRT_DMA_TCD[1].CITER_ELINKNO)
+#define DMA_TCD1_DLASTSGA		(IMXRT_DMA_TCD[1].DLASTSGA)
+#define DMA_TCD1_CSR			(IMXRT_DMA_TCD[1].CSR)
+#define DMA_TCD1_BITER			(IMXRT_DMA_TCD[1].BITER)
+#define DMA_TCD1_BITER_ELINKYES		(IMXRT_DMA_TCD[1].BITER_ELINKYES)
+#define DMA_TCD1_BITER_ELINKNO		(IMXRT_DMA_TCD[1].BITER_ELINKNO)
+
+#define DMA_TCD2_SADDR			(IMXRT_DMA_TCD[2].SADDR)
+#define DMA_TCD2_SOFF			(IMXRT_DMA_TCD[2].SOFF)
+#define DMA_TCD2_ATTR			(IMXRT_DMA_TCD[2].ATTR)
+#define DMA_TCD2_NBYTES			(IMXRT_DMA_TCD[2].NBYTES)
+#define DMA_TCD2_NBYTES_MLNO		(IMXRT_DMA_TCD[2].NBYTES_MLNO)
+#define DMA_TCD2_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[2].NBYTES_MLOFFNO)
+#define DMA_TCD2_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[2].NBYTES_MLOFFYES)
+#define DMA_TCD2_SLAST			(IMXRT_DMA_TCD[2].SLAST)
+#define DMA_TCD2_DADDR			(IMXRT_DMA_TCD[2].DADDR)
+#define DMA_TCD2_DOFF			(IMXRT_DMA_TCD[2].DOFF)
+#define DMA_TCD2_CITER			(IMXRT_DMA_TCD[2].CITER)
+#define DMA_TCD2_CITER_ELINKYES		(IMXRT_DMA_TCD[2].CITER_ELINKYES)
+#define DMA_TCD2_CITER_ELINKNO		(IMXRT_DMA_TCD[2].CITER_ELINKNO)
+#define DMA_TCD2_DLASTSGA		(IMXRT_DMA_TCD[2].DLASTSGA)
+#define DMA_TCD2_CSR			(IMXRT_DMA_TCD[2].CSR)
+#define DMA_TCD2_BITER			(IMXRT_DMA_TCD[2].BITER)
+#define DMA_TCD2_BITER_ELINKYES		(IMXRT_DMA_TCD[2].BITER_ELINKYES)
+#define DMA_TCD2_BITER_ELINKNO		(IMXRT_DMA_TCD[2].BITER_ELINKNO)
+
+#define DMA_TCD3_SADDR			(IMXRT_DMA_TCD[3].SADDR)
+#define DMA_TCD3_SOFF			(IMXRT_DMA_TCD[3].SOFF)
+#define DMA_TCD3_ATTR			(IMXRT_DMA_TCD[3].ATTR)
+#define DMA_TCD3_NBYTES			(IMXRT_DMA_TCD[3].NBYTES)
+#define DMA_TCD3_NBYTES_MLNO		(IMXRT_DMA_TCD[3].NBYTES_MLNO)
+#define DMA_TCD3_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[3].NBYTES_MLOFFNO)
+#define DMA_TCD3_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[3].NBYTES_MLOFFYES)
+#define DMA_TCD3_SLAST			(IMXRT_DMA_TCD[3].SLAST)
+#define DMA_TCD3_DADDR			(IMXRT_DMA_TCD[3].DADDR)
+#define DMA_TCD3_DOFF			(IMXRT_DMA_TCD[3].DOFF)
+#define DMA_TCD3_CITER			(IMXRT_DMA_TCD[3].CITER)
+#define DMA_TCD3_CITER_ELINKYES		(IMXRT_DMA_TCD[3].CITER_ELINKYES)
+#define DMA_TCD3_CITER_ELINKNO		(IMXRT_DMA_TCD[3].CITER_ELINKNO)
+#define DMA_TCD3_DLASTSGA		(IMXRT_DMA_TCD[3].DLASTSGA)
+#define DMA_TCD3_CSR			(IMXRT_DMA_TCD[3].CSR)
+#define DMA_TCD3_BITER			(IMXRT_DMA_TCD[3].BITER)
+#define DMA_TCD3_BITER_ELINKYES		(IMXRT_DMA_TCD[3].BITER_ELINKYES)
+#define DMA_TCD3_BITER_ELINKNO		(IMXRT_DMA_TCD[3].BITER_ELINKNO)
+
+#define DMA_TCD4_SADDR			(IMXRT_DMA_TCD[4].SADDR)
+#define DMA_TCD4_SOFF			(IMXRT_DMA_TCD[4].SOFF)
+#define DMA_TCD4_ATTR			(IMXRT_DMA_TCD[4].ATTR)
+#define DMA_TCD4_NBYTES			(IMXRT_DMA_TCD[4].NBYTES)
+#define DMA_TCD4_NBYTES_MLNO		(IMXRT_DMA_TCD[4].NBYTES_MLNO)
+#define DMA_TCD4_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[4].NBYTES_MLOFFNO)
+#define DMA_TCD4_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[4].NBYTES_MLOFFYES)
+#define DMA_TCD4_SLAST			(IMXRT_DMA_TCD[4].SLAST)
+#define DMA_TCD4_DADDR			(IMXRT_DMA_TCD[4].DADDR)
+#define DMA_TCD4_DOFF			(IMXRT_DMA_TCD[4].DOFF)
+#define DMA_TCD4_CITER			(IMXRT_DMA_TCD[4].CITER)
+#define DMA_TCD4_CITER_ELINKYES		(IMXRT_DMA_TCD[4].CITER_ELINKYES)
+#define DMA_TCD4_CITER_ELINKNO		(IMXRT_DMA_TCD[4].CITER_ELINKNO)
+#define DMA_TCD4_DLASTSGA		(IMXRT_DMA_TCD[4].DLASTSGA)
+#define DMA_TCD4_CSR			(IMXRT_DMA_TCD[4].CSR)
+#define DMA_TCD4_BITER			(IMXRT_DMA_TCD[4].BITER)
+#define DMA_TCD4_BITER_ELINKYES		(IMXRT_DMA_TCD[4].BITER_ELINKYES)
+#define DMA_TCD4_BITER_ELINKNO		(IMXRT_DMA_TCD[4].BITER_ELINKNO)
+
+#define DMA_TCD5_SADDR			(IMXRT_DMA_TCD[5].SADDR)
+#define DMA_TCD5_SOFF			(IMXRT_DMA_TCD[5].SOFF)
+#define DMA_TCD5_ATTR			(IMXRT_DMA_TCD[5].ATTR)
+#define DMA_TCD5_NBYTES			(IMXRT_DMA_TCD[5].NBYTES)
+#define DMA_TCD5_NBYTES_MLNO		(IMXRT_DMA_TCD[5].NBYTES_MLNO)
+#define DMA_TCD5_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[5].NBYTES_MLOFFNO)
+#define DMA_TCD5_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[5].NBYTES_MLOFFYES)
+#define DMA_TCD5_SLAST			(IMXRT_DMA_TCD[5].SLAST)
+#define DMA_TCD5_DADDR			(IMXRT_DMA_TCD[5].DADDR)
+#define DMA_TCD5_DOFF			(IMXRT_DMA_TCD[5].DOFF)
+#define DMA_TCD5_CITER			(IMXRT_DMA_TCD[5].CITER)
+#define DMA_TCD5_CITER_ELINKYES		(IMXRT_DMA_TCD[5].CITER_ELINKYES)
+#define DMA_TCD5_CITER_ELINKNO		(IMXRT_DMA_TCD[5].CITER_ELINKNO)
+#define DMA_TCD5_DLASTSGA		(IMXRT_DMA_TCD[5].DLASTSGA)
+#define DMA_TCD5_CSR			(IMXRT_DMA_TCD[5].CSR)
+#define DMA_TCD5_BITER			(IMXRT_DMA_TCD[5].BITER)
+#define DMA_TCD5_BITER_ELINKYES		(IMXRT_DMA_TCD[5].BITER_ELINKYES)
+#define DMA_TCD5_BITER_ELINKNO		(IMXRT_DMA_TCD[5].BITER_ELINKNO)
+
+#define DMA_TCD6_SADDR			(IMXRT_DMA_TCD[6].SADDR)
+#define DMA_TCD6_SOFF			(IMXRT_DMA_TCD[6].SOFF)
+#define DMA_TCD6_ATTR			(IMXRT_DMA_TCD[6].ATTR)
+#define DMA_TCD6_NBYTES			(IMXRT_DMA_TCD[6].NBYTES)
+#define DMA_TCD6_NBYTES_MLNO		(IMXRT_DMA_TCD[6].NBYTES_MLNO)
+#define DMA_TCD6_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[6].NBYTES_MLOFFNO)
+#define DMA_TCD6_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[6].NBYTES_MLOFFYES)
+#define DMA_TCD6_SLAST			(IMXRT_DMA_TCD[6].SLAST)
+#define DMA_TCD6_DADDR			(IMXRT_DMA_TCD[6].DADDR)
+#define DMA_TCD6_DOFF			(IMXRT_DMA_TCD[6].DOFF)
+#define DMA_TCD6_CITER			(IMXRT_DMA_TCD[6].CITER)
+#define DMA_TCD6_CITER_ELINKYES		(IMXRT_DMA_TCD[6].CITER_ELINKYES)
+#define DMA_TCD6_CITER_ELINKNO		(IMXRT_DMA_TCD[6].CITER_ELINKNO)
+#define DMA_TCD6_DLASTSGA		(IMXRT_DMA_TCD[6].DLASTSGA)
+#define DMA_TCD6_CSR			(IMXRT_DMA_TCD[6].CSR)
+#define DMA_TCD6_BITER			(IMXRT_DMA_TCD[6].BITER)
+#define DMA_TCD6_BITER_ELINKYES		(IMXRT_DMA_TCD[6].BITER_ELINKYES)
+#define DMA_TCD6_BITER_ELINKNO		(IMXRT_DMA_TCD[6].BITER_ELINKNO)
+
+#define DMA_TCD7_SADDR			(IMXRT_DMA_TCD[7].SADDR)
+#define DMA_TCD7_SOFF			(IMXRT_DMA_TCD[7].SOFF)
+#define DMA_TCD7_ATTR			(IMXRT_DMA_TCD[7].ATTR)
+#define DMA_TCD7_NBYTES			(IMXRT_DMA_TCD[7].NBYTES)
+#define DMA_TCD7_NBYTES_MLNO		(IMXRT_DMA_TCD[7].NBYTES_MLNO)
+#define DMA_TCD7_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[7].NBYTES_MLOFFNO)
+#define DMA_TCD7_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[7].NBYTES_MLOFFYES)
+#define DMA_TCD7_SLAST			(IMXRT_DMA_TCD[7].SLAST)
+#define DMA_TCD7_DADDR			(IMXRT_DMA_TCD[7].DADDR)
+#define DMA_TCD7_DOFF			(IMXRT_DMA_TCD[7].DOFF)
+#define DMA_TCD7_CITER			(IMXRT_DMA_TCD[7].CITER)
+#define DMA_TCD7_CITER_ELINKYES		(IMXRT_DMA_TCD[7].CITER_ELINKYES)
+#define DMA_TCD7_CITER_ELINKNO		(IMXRT_DMA_TCD[7].CITER_ELINKNO)
+#define DMA_TCD7_DLASTSGA		(IMXRT_DMA_TCD[7].DLASTSGA)
+#define DMA_TCD7_CSR			(IMXRT_DMA_TCD[7].CSR)
+#define DMA_TCD7_BITER			(IMXRT_DMA_TCD[7].BITER)
+#define DMA_TCD7_BITER_ELINKYES		(IMXRT_DMA_TCD[7].BITER_ELINKYES)
+#define DMA_TCD7_BITER_ELINKNO		(IMXRT_DMA_TCD[7].BITER_ELINKNO)
+
+#define DMA_TCD8_SADDR			(IMXRT_DMA_TCD[8].SADDR)
+#define DMA_TCD8_SOFF			(IMXRT_DMA_TCD[8].SOFF)
+#define DMA_TCD8_ATTR			(IMXRT_DMA_TCD[8].ATTR)
+#define DMA_TCD8_NBYTES			(IMXRT_DMA_TCD[8].NBYTES)
+#define DMA_TCD8_NBYTES_MLNO		(IMXRT_DMA_TCD[8].NBYTES_MLNO)
+#define DMA_TCD8_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[8].NBYTES_MLOFFNO)
+#define DMA_TCD8_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[8].NBYTES_MLOFFYES)
+#define DMA_TCD8_SLAST			(IMXRT_DMA_TCD[8].SLAST)
+#define DMA_TCD8_DADDR			(IMXRT_DMA_TCD[8].DADDR)
+#define DMA_TCD8_DOFF			(IMXRT_DMA_TCD[8].DOFF)
+#define DMA_TCD8_CITER			(IMXRT_DMA_TCD[8].CITER)
+#define DMA_TCD8_CITER_ELINKYES		(IMXRT_DMA_TCD[8].CITER_ELINKYES)
+#define DMA_TCD8_CITER_ELINKNO		(IMXRT_DMA_TCD[8].CITER_ELINKNO)
+#define DMA_TCD8_DLASTSGA		(IMXRT_DMA_TCD[8].DLASTSGA)
+#define DMA_TCD8_CSR			(IMXRT_DMA_TCD[8].CSR)
+#define DMA_TCD8_BITER			(IMXRT_DMA_TCD[8].BITER)
+#define DMA_TCD8_BITER_ELINKYES		(IMXRT_DMA_TCD[8].BITER_ELINKYES)
+#define DMA_TCD8_BITER_ELINKNO		(IMXRT_DMA_TCD[8].BITER_ELINKNO)
+
+#define DMA_TCD9_SADDR			(IMXRT_DMA_TCD[9].SADDR)
+#define DMA_TCD9_SOFF			(IMXRT_DMA_TCD[9].SOFF)
+#define DMA_TCD9_ATTR			(IMXRT_DMA_TCD[9].ATTR)
+#define DMA_TCD9_NBYTES			(IMXRT_DMA_TCD[9].NBYTES)
+#define DMA_TCD9_NBYTES_MLNO		(IMXRT_DMA_TCD[9].NBYTES_MLNO)
+#define DMA_TCD9_NBYTES_MLOFFNO		(IMXRT_DMA_TCD[9].NBYTES_MLOFFNO)
+#define DMA_TCD9_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[9].NBYTES_MLOFFYES)
+#define DMA_TCD9_SLAST			(IMXRT_DMA_TCD[9].SLAST)
+#define DMA_TCD9_DADDR			(IMXRT_DMA_TCD[9].DADDR)
+#define DMA_TCD9_DOFF			(IMXRT_DMA_TCD[9].DOFF)
+#define DMA_TCD9_CITER			(IMXRT_DMA_TCD[9].CITER)
+#define DMA_TCD9_CITER_ELINKYES		(IMXRT_DMA_TCD[9].CITER_ELINKYES)
+#define DMA_TCD9_CITER_ELINKNO		(IMXRT_DMA_TCD[9].CITER_ELINKNO)
+#define DMA_TCD9_DLASTSGA		(IMXRT_DMA_TCD[9].DLASTSGA)
+#define DMA_TCD9_CSR			(IMXRT_DMA_TCD[9].CSR)
+#define DMA_TCD9_BITER			(IMXRT_DMA_TCD[9].BITER)
+#define DMA_TCD9_BITER_ELINKYES		(IMXRT_DMA_TCD[9].BITER_ELINKYES)
+#define DMA_TCD9_BITER_ELINKNO		(IMXRT_DMA_TCD[9].BITER_ELINKNO)
+
+#define DMA_TCD10_SADDR			(IMXRT_DMA_TCD[10].SADDR)
+#define DMA_TCD10_SOFF			(IMXRT_DMA_TCD[10].SOFF)
+#define DMA_TCD10_ATTR			(IMXRT_DMA_TCD[10].ATTR)
+#define DMA_TCD10_NBYTES		(IMXRT_DMA_TCD[10].NBYTES)
+#define DMA_TCD10_NBYTES_MLNO		(IMXRT_DMA_TCD[10].NBYTES_MLNO)
+#define DMA_TCD10_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[10].NBYTES_MLOFFNO)
+#define DMA_TCD10_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[10].NBYTES_MLOFFYES)
+#define DMA_TCD10_SLAST			(IMXRT_DMA_TCD[10].SLAST)
+#define DMA_TCD10_DADDR			(IMXRT_DMA_TCD[10].DADDR)
+#define DMA_TCD10_DOFF			(IMXRT_DMA_TCD[10].DOFF)
+#define DMA_TCD10_CITER			(IMXRT_DMA_TCD[10].CITER)
+#define DMA_TCD10_CITER_ELINKYES	(IMXRT_DMA_TCD[10].CITER_ELINKYES)
+#define DMA_TCD10_CITER_ELINKNO		(IMXRT_DMA_TCD[10].CITER_ELINKNO)
+#define DMA_TCD10_DLASTSGA		(IMXRT_DMA_TCD[10].DLASTSGA)
+#define DMA_TCD10_CSR			(IMXRT_DMA_TCD[10].CSR)
+#define DMA_TCD10_BITER			(IMXRT_DMA_TCD[10].BITER)
+#define DMA_TCD10_BITER_ELINKYES	(IMXRT_DMA_TCD[10].BITER_ELINKYES)
+#define DMA_TCD10_BITER_ELINKNO		(IMXRT_DMA_TCD[10].BITER_ELINKNO)
+
+#define DMA_TCD11_SADDR			(IMXRT_DMA_TCD[11].SADDR)
+#define DMA_TCD11_SOFF			(IMXRT_DMA_TCD[11].SOFF)
+#define DMA_TCD11_ATTR			(IMXRT_DMA_TCD[11].ATTR)
+#define DMA_TCD11_NBYTES		(IMXRT_DMA_TCD[11].NBYTES)
+#define DMA_TCD11_NBYTES_MLNO		(IMXRT_DMA_TCD[11].NBYTES_MLNO)
+#define DMA_TCD11_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[11].NBYTES_MLOFFNO)
+#define DMA_TCD11_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[11].NBYTES_MLOFFYES)
+#define DMA_TCD11_SLAST			(IMXRT_DMA_TCD[11].SLAST)
+#define DMA_TCD11_DADDR			(IMXRT_DMA_TCD[11].DADDR)
+#define DMA_TCD11_DOFF			(IMXRT_DMA_TCD[11].DOFF)
+#define DMA_TCD11_CITER			(IMXRT_DMA_TCD[11].CITER)
+#define DMA_TCD11_CITER_ELINKYES	(IMXRT_DMA_TCD[11].CITER_ELINKYES)
+#define DMA_TCD11_CITER_ELINKNO		(IMXRT_DMA_TCD[11].CITER_ELINKNO)
+#define DMA_TCD11_DLASTSGA		(IMXRT_DMA_TCD[11].DLASTSGA)
+#define DMA_TCD11_CSR			(IMXRT_DMA_TCD[11].CSR)
+#define DMA_TCD11_BITER			(IMXRT_DMA_TCD[11].BITER)
+#define DMA_TCD11_BITER_ELINKYES	(IMXRT_DMA_TCD[11].BITER_ELINKYES)
+#define DMA_TCD11_BITER_ELINKNO		(IMXRT_DMA_TCD[11].BITER_ELINKNO)
+
+#define DMA_TCD12_SADDR			(IMXRT_DMA_TCD[12].SADDR)
+#define DMA_TCD12_SOFF			(IMXRT_DMA_TCD[12].SOFF)
+#define DMA_TCD12_ATTR			(IMXRT_DMA_TCD[12].ATTR)
+#define DMA_TCD12_NBYTES		(IMXRT_DMA_TCD[12].NBYTES)
+#define DMA_TCD12_NBYTES_MLNO		(IMXRT_DMA_TCD[12].NBYTES_MLNO)
+#define DMA_TCD12_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[12].NBYTES_MLOFFNO)
+#define DMA_TCD12_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[12].NBYTES_MLOFFYES)
+#define DMA_TCD12_SLAST			(IMXRT_DMA_TCD[12].SLAST)
+#define DMA_TCD12_DADDR			(IMXRT_DMA_TCD[12].DADDR)
+#define DMA_TCD12_DOFF			(IMXRT_DMA_TCD[12].DOFF)
+#define DMA_TCD12_CITER			(IMXRT_DMA_TCD[12].CITER)
+#define DMA_TCD12_CITER_ELINKYES	(IMXRT_DMA_TCD[12].CITER_ELINKYES)
+#define DMA_TCD12_CITER_ELINKNO		(IMXRT_DMA_TCD[12].CITER_ELINKNO)
+#define DMA_TCD12_DLASTSGA		(IMXRT_DMA_TCD[12].DLASTSGA)
+#define DMA_TCD12_CSR			(IMXRT_DMA_TCD[12].CSR)
+#define DMA_TCD12_BITER			(IMXRT_DMA_TCD[12].BITER)
+#define DMA_TCD12_BITER_ELINKYES	(IMXRT_DMA_TCD[12].BITER_ELINKYES)
+#define DMA_TCD12_BITER_ELINKNO		(IMXRT_DMA_TCD[12].BITER_ELINKNO)
+
+#define DMA_TCD13_SADDR			(IMXRT_DMA_TCD[13].SADDR)
+#define DMA_TCD13_SOFF			(IMXRT_DMA_TCD[13].SOFF)
+#define DMA_TCD13_ATTR			(IMXRT_DMA_TCD[13].ATTR)
+#define DMA_TCD13_NBYTES		(IMXRT_DMA_TCD[13].NBYTES)
+#define DMA_TCD13_NBYTES_MLNO		(IMXRT_DMA_TCD[13].NBYTES_MLNO)
+#define DMA_TCD13_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[13].NBYTES_MLOFFNO)
+#define DMA_TCD13_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[13].NBYTES_MLOFFYES)
+#define DMA_TCD13_SLAST			(IMXRT_DMA_TCD[13].SLAST)
+#define DMA_TCD13_DADDR			(IMXRT_DMA_TCD[13].DADDR)
+#define DMA_TCD13_DOFF			(IMXRT_DMA_TCD[13].DOFF)
+#define DMA_TCD13_CITER			(IMXRT_DMA_TCD[13].CITER)
+#define DMA_TCD13_CITER_ELINKYES	(IMXRT_DMA_TCD[13].CITER_ELINKYES)
+#define DMA_TCD13_CITER_ELINKNO		(IMXRT_DMA_TCD[13].CITER_ELINKNO)
+#define DMA_TCD13_DLASTSGA		(IMXRT_DMA_TCD[13].DLASTSGA)
+#define DMA_TCD13_CSR			(IMXRT_DMA_TCD[13].CSR)
+#define DMA_TCD13_BITER			(IMXRT_DMA_TCD[13].BITER)
+#define DMA_TCD13_BITER_ELINKYES	(IMXRT_DMA_TCD[13].BITER_ELINKYES)
+#define DMA_TCD13_BITER_ELINKNO		(IMXRT_DMA_TCD[13].BITER_ELINKNO)
+
+#define DMA_TCD14_SADDR			(IMXRT_DMA_TCD[14].SADDR)
+#define DMA_TCD14_SOFF			(IMXRT_DMA_TCD[14].SOFF)
+#define DMA_TCD14_ATTR			(IMXRT_DMA_TCD[14].ATTR)
+#define DMA_TCD14_NBYTES		(IMXRT_DMA_TCD[14].NBYTES)
+#define DMA_TCD14_NBYTES_MLNO		(IMXRT_DMA_TCD[14].NBYTES_MLNO)
+#define DMA_TCD14_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[14].NBYTES_MLOFFNO)
+#define DMA_TCD14_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[14].NBYTES_MLOFFYES)
+#define DMA_TCD14_SLAST			(IMXRT_DMA_TCD[14].SLAST)
+#define DMA_TCD14_DADDR			(IMXRT_DMA_TCD[14].DADDR)
+#define DMA_TCD14_DOFF			(IMXRT_DMA_TCD[14].DOFF)
+#define DMA_TCD14_CITER			(IMXRT_DMA_TCD[14].CITER)
+#define DMA_TCD14_CITER_ELINKYES	(IMXRT_DMA_TCD[14].CITER_ELINKYES)
+#define DMA_TCD14_CITER_ELINKNO		(IMXRT_DMA_TCD[14].CITER_ELINKNO)
+#define DMA_TCD14_DLASTSGA		(IMXRT_DMA_TCD[14].DLASTSGA)
+#define DMA_TCD14_CSR			(IMXRT_DMA_TCD[14].CSR)
+#define DMA_TCD14_BITER			(IMXRT_DMA_TCD[14].BITER)
+#define DMA_TCD14_BITER_ELINKYES	(IMXRT_DMA_TCD[14].BITER_ELINKYES)
+#define DMA_TCD14_BITER_ELINKNO		(IMXRT_DMA_TCD[14].BITER_ELINKNO)
+
+#define DMA_TCD15_SADDR			(IMXRT_DMA_TCD[15].SADDR)
+#define DMA_TCD15_SOFF			(IMXRT_DMA_TCD[15].SOFF)
+#define DMA_TCD15_ATTR			(IMXRT_DMA_TCD[15].ATTR)
+#define DMA_TCD15_NBYTES		(IMXRT_DMA_TCD[15].NBYTES)
+#define DMA_TCD15_NBYTES_MLNO		(IMXRT_DMA_TCD[15].NBYTES_MLNO)
+#define DMA_TCD15_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[15].NBYTES_MLOFFNO)
+#define DMA_TCD15_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[15].NBYTES_MLOFFYES)
+#define DMA_TCD15_SLAST			(IMXRT_DMA_TCD[15].SLAST)
+#define DMA_TCD15_DADDR			(IMXRT_DMA_TCD[15].DADDR)
+#define DMA_TCD15_DOFF			(IMXRT_DMA_TCD[15].DOFF)
+#define DMA_TCD15_CITER			(IMXRT_DMA_TCD[15].CITER)
+#define DMA_TCD15_CITER_ELINKYES	(IMXRT_DMA_TCD[15].CITER_ELINKYES)
+#define DMA_TCD15_CITER_ELINKNO		(IMXRT_DMA_TCD[15].CITER_ELINKNO)
+#define DMA_TCD15_DLASTSGA		(IMXRT_DMA_TCD[15].DLASTSGA)
+#define DMA_TCD15_CSR			(IMXRT_DMA_TCD[15].CSR)
+#define DMA_TCD15_BITER			(IMXRT_DMA_TCD[15].BITER)
+#define DMA_TCD15_BITER_ELINKYES	(IMXRT_DMA_TCD[15].BITER_ELINKYES)
+#define DMA_TCD15_BITER_ELINKNO		(IMXRT_DMA_TCD[15].BITER_ELINKNO)
+
+#define DMA_TCD16_SADDR			(IMXRT_DMA_TCD[16].SADDR)
+#define DMA_TCD16_SOFF			(IMXRT_DMA_TCD[16].SOFF)
+#define DMA_TCD16_ATTR			(IMXRT_DMA_TCD[16].ATTR)
+#define DMA_TCD16_NBYTES		(IMXRT_DMA_TCD[16].NBYTES)
+#define DMA_TCD16_NBYTES_MLNO		(IMXRT_DMA_TCD[16].NBYTES_MLNO)
+#define DMA_TCD16_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[16].NBYTES_MLOFFNO)
+#define DMA_TCD16_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[16].NBYTES_MLOFFYES)
+#define DMA_TCD16_SLAST			(IMXRT_DMA_TCD[16].SLAST)
+#define DMA_TCD16_DADDR			(IMXRT_DMA_TCD[16].DADDR)
+#define DMA_TCD16_DOFF			(IMXRT_DMA_TCD[16].DOFF)
+#define DMA_TCD16_CITER			(IMXRT_DMA_TCD[16].CITER)
+#define DMA_TCD16_CITER_ELINKYES	(IMXRT_DMA_TCD[16].CITER_ELINKYES)
+#define DMA_TCD16_CITER_ELINKNO		(IMXRT_DMA_TCD[16].CITER_ELINKNO)
+#define DMA_TCD16_DLASTSGA		(IMXRT_DMA_TCD[16].DLASTSGA)
+#define DMA_TCD16_CSR			(IMXRT_DMA_TCD[16].CSR)
+#define DMA_TCD16_BITER			(IMXRT_DMA_TCD[16].BITER)
+#define DMA_TCD16_BITER_ELINKYES	(IMXRT_DMA_TCD[16].BITER_ELINKYES)
+#define DMA_TCD16_BITER_ELINKNO		(IMXRT_DMA_TCD[16].BITER_ELINKNO)
+
+#define DMA_TCD17_SADDR			(IMXRT_DMA_TCD[17].SADDR)
+#define DMA_TCD17_SOFF			(IMXRT_DMA_TCD[17].SOFF)
+#define DMA_TCD17_ATTR			(IMXRT_DMA_TCD[17].ATTR)
+#define DMA_TCD17_NBYTES		(IMXRT_DMA_TCD[17].NBYTES)
+#define DMA_TCD17_NBYTES_MLNO		(IMXRT_DMA_TCD[17].NBYTES_MLNO)
+#define DMA_TCD17_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[17].NBYTES_MLOFFNO)
+#define DMA_TCD17_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[17].NBYTES_MLOFFYES)
+#define DMA_TCD17_SLAST			(IMXRT_DMA_TCD[17].SLAST)
+#define DMA_TCD17_DADDR			(IMXRT_DMA_TCD[17].DADDR)
+#define DMA_TCD17_DOFF			(IMXRT_DMA_TCD[17].DOFF)
+#define DMA_TCD17_CITER			(IMXRT_DMA_TCD[17].CITER)
+#define DMA_TCD17_CITER_ELINKYES	(IMXRT_DMA_TCD[17].CITER_ELINKYES)
+#define DMA_TCD17_CITER_ELINKNO		(IMXRT_DMA_TCD[17].CITER_ELINKNO)
+#define DMA_TCD17_DLASTSGA		(IMXRT_DMA_TCD[17].DLASTSGA)
+#define DMA_TCD17_CSR			(IMXRT_DMA_TCD[17].CSR)
+#define DMA_TCD17_BITER			(IMXRT_DMA_TCD[17].BITER)
+#define DMA_TCD17_BITER_ELINKYES	(IMXRT_DMA_TCD[17].BITER_ELINKYES)
+#define DMA_TCD17_BITER_ELINKNO		(IMXRT_DMA_TCD[17].BITER_ELINKNO)
+
+#define DMA_TCD18_SADDR			(IMXRT_DMA_TCD[18].SADDR)
+#define DMA_TCD18_SOFF			(IMXRT_DMA_TCD[18].SOFF)
+#define DMA_TCD18_ATTR			(IMXRT_DMA_TCD[18].ATTR)
+#define DMA_TCD18_NBYTES		(IMXRT_DMA_TCD[18].NBYTES)
+#define DMA_TCD18_NBYTES_MLNO		(IMXRT_DMA_TCD[18].NBYTES_MLNO)
+#define DMA_TCD18_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[18].NBYTES_MLOFFNO)
+#define DMA_TCD18_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[18].NBYTES_MLOFFYES)
+#define DMA_TCD18_SLAST			(IMXRT_DMA_TCD[18].SLAST)
+#define DMA_TCD18_DADDR			(IMXRT_DMA_TCD[18].DADDR)
+#define DMA_TCD18_DOFF			(IMXRT_DMA_TCD[18].DOFF)
+#define DMA_TCD18_CITER			(IMXRT_DMA_TCD[18].CITER)
+#define DMA_TCD18_CITER_ELINKYES	(IMXRT_DMA_TCD[18].CITER_ELINKYES)
+#define DMA_TCD18_CITER_ELINKNO		(IMXRT_DMA_TCD[18].CITER_ELINKNO)
+#define DMA_TCD18_DLASTSGA		(IMXRT_DMA_TCD[18].DLASTSGA)
+#define DMA_TCD18_CSR			(IMXRT_DMA_TCD[18].CSR)
+#define DMA_TCD18_BITER			(IMXRT_DMA_TCD[18].BITER)
+#define DMA_TCD18_BITER_ELINKYES	(IMXRT_DMA_TCD[18].BITER_ELINKYES)
+#define DMA_TCD18_BITER_ELINKNO		(IMXRT_DMA_TCD[18].BITER_ELINKNO)
+
+#define DMA_TCD19_SADDR			(IMXRT_DMA_TCD[19].SADDR)
+#define DMA_TCD19_SOFF			(IMXRT_DMA_TCD[19].SOFF)
+#define DMA_TCD19_ATTR			(IMXRT_DMA_TCD[19].ATTR)
+#define DMA_TCD19_NBYTES		(IMXRT_DMA_TCD[19].NBYTES)
+#define DMA_TCD19_NBYTES_MLNO		(IMXRT_DMA_TCD[19].NBYTES_MLNO)
+#define DMA_TCD19_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[19].NBYTES_MLOFFNO)
+#define DMA_TCD19_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[19].NBYTES_MLOFFYES)
+#define DMA_TCD19_SLAST			(IMXRT_DMA_TCD[19].SLAST)
+#define DMA_TCD19_DADDR			(IMXRT_DMA_TCD[19].DADDR)
+#define DMA_TCD19_DOFF			(IMXRT_DMA_TCD[19].DOFF)
+#define DMA_TCD19_CITER			(IMXRT_DMA_TCD[19].CITER)
+#define DMA_TCD19_CITER_ELINKYES	(IMXRT_DMA_TCD[19].CITER_ELINKYES)
+#define DMA_TCD19_CITER_ELINKNO		(IMXRT_DMA_TCD[19].CITER_ELINKNO)
+#define DMA_TCD19_DLASTSGA		(IMXRT_DMA_TCD[19].DLASTSGA)
+#define DMA_TCD19_CSR			(IMXRT_DMA_TCD[19].CSR)
+#define DMA_TCD19_BITER			(IMXRT_DMA_TCD[19].BITER)
+#define DMA_TCD19_BITER_ELINKYES	(IMXRT_DMA_TCD[19].BITER_ELINKYES)
+#define DMA_TCD19_BITER_ELINKNO		(IMXRT_DMA_TCD[19].BITER_ELINKNO)
+
+#define DMA_TCD20_SADDR			(IMXRT_DMA_TCD[20].SADDR)
+#define DMA_TCD20_SOFF			(IMXRT_DMA_TCD[20].SOFF)
+#define DMA_TCD20_ATTR			(IMXRT_DMA_TCD[20].ATTR)
+#define DMA_TCD20_NBYTES		(IMXRT_DMA_TCD[20].NBYTES)
+#define DMA_TCD20_NBYTES_MLNO		(IMXRT_DMA_TCD[20].NBYTES_MLNO)
+#define DMA_TCD20_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[20].NBYTES_MLOFFNO)
+#define DMA_TCD20_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[20].NBYTES_MLOFFYES)
+#define DMA_TCD20_SLAST			(IMXRT_DMA_TCD[20].SLAST)
+#define DMA_TCD20_DADDR			(IMXRT_DMA_TCD[20].DADDR)
+#define DMA_TCD20_DOFF			(IMXRT_DMA_TCD[20].DOFF)
+#define DMA_TCD20_CITER			(IMXRT_DMA_TCD[20].CITER)
+#define DMA_TCD20_CITER_ELINKYES	(IMXRT_DMA_TCD[20].CITER_ELINKYES)
+#define DMA_TCD20_CITER_ELINKNO		(IMXRT_DMA_TCD[20].CITER_ELINKNO)
+#define DMA_TCD20_DLASTSGA		(IMXRT_DMA_TCD[20].DLASTSGA)
+#define DMA_TCD20_CSR			(IMXRT_DMA_TCD[20].CSR)
+#define DMA_TCD20_BITER			(IMXRT_DMA_TCD[20].BITER)
+#define DMA_TCD20_BITER_ELINKYES	(IMXRT_DMA_TCD[20].BITER_ELINKYES)
+#define DMA_TCD20_BITER_ELINKNO		(IMXRT_DMA_TCD[20].BITER_ELINKNO)
+
+#define DMA_TCD21_SADDR			(IMXRT_DMA_TCD[21].SADDR)
+#define DMA_TCD21_SOFF			(IMXRT_DMA_TCD[21].SOFF)
+#define DMA_TCD21_ATTR			(IMXRT_DMA_TCD[21].ATTR)
+#define DMA_TCD21_NBYTES		(IMXRT_DMA_TCD[21].NBYTES)
+#define DMA_TCD21_NBYTES_MLNO		(IMXRT_DMA_TCD[21].NBYTES_MLNO)
+#define DMA_TCD21_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[21].NBYTES_MLOFFNO)
+#define DMA_TCD21_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[21].NBYTES_MLOFFYES)
+#define DMA_TCD21_SLAST			(IMXRT_DMA_TCD[21].SLAST)
+#define DMA_TCD21_DADDR			(IMXRT_DMA_TCD[21].DADDR)
+#define DMA_TCD21_DOFF			(IMXRT_DMA_TCD[21].DOFF)
+#define DMA_TCD21_CITER			(IMXRT_DMA_TCD[21].CITER)
+#define DMA_TCD21_CITER_ELINKYES	(IMXRT_DMA_TCD[21].CITER_ELINKYES)
+#define DMA_TCD21_CITER_ELINKNO		(IMXRT_DMA_TCD[21].CITER_ELINKNO)
+#define DMA_TCD21_DLASTSGA		(IMXRT_DMA_TCD[21].DLASTSGA)
+#define DMA_TCD21_CSR			(IMXRT_DMA_TCD[21].CSR)
+#define DMA_TCD21_BITER			(IMXRT_DMA_TCD[21].BITER)
+#define DMA_TCD21_BITER_ELINKYES	(IMXRT_DMA_TCD[21].BITER_ELINKYES)
+#define DMA_TCD21_BITER_ELINKNO		(IMXRT_DMA_TCD[21].BITER_ELINKNO)
+
+#define DMA_TCD22_SADDR			(IMXRT_DMA_TCD[22].SADDR)
+#define DMA_TCD22_SOFF			(IMXRT_DMA_TCD[22].SOFF)
+#define DMA_TCD22_ATTR			(IMXRT_DMA_TCD[22].ATTR)
+#define DMA_TCD22_NBYTES		(IMXRT_DMA_TCD[22].NBYTES)
+#define DMA_TCD22_NBYTES_MLNO		(IMXRT_DMA_TCD[22].NBYTES_MLNO)
+#define DMA_TCD22_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[22].NBYTES_MLOFFNO)
+#define DMA_TCD22_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[22].NBYTES_MLOFFYES)
+#define DMA_TCD22_SLAST			(IMXRT_DMA_TCD[22].SLAST)
+#define DMA_TCD22_DADDR			(IMXRT_DMA_TCD[22].DADDR)
+#define DMA_TCD22_DOFF			(IMXRT_DMA_TCD[22].DOFF)
+#define DMA_TCD22_CITER			(IMXRT_DMA_TCD[22].CITER)
+#define DMA_TCD22_CITER_ELINKYES	(IMXRT_DMA_TCD[22].CITER_ELINKYES)
+#define DMA_TCD22_CITER_ELINKNO		(IMXRT_DMA_TCD[22].CITER_ELINKNO)
+#define DMA_TCD22_DLASTSGA		(IMXRT_DMA_TCD[22].DLASTSGA)
+#define DMA_TCD22_CSR			(IMXRT_DMA_TCD[22].CSR)
+#define DMA_TCD22_BITER			(IMXRT_DMA_TCD[22].BITER)
+#define DMA_TCD22_BITER_ELINKYES	(IMXRT_DMA_TCD[22].BITER_ELINKYES)
+#define DMA_TCD22_BITER_ELINKNO		(IMXRT_DMA_TCD[22].BITER_ELINKNO)
+
+#define DMA_TCD23_SADDR			(IMXRT_DMA_TCD[23].SADDR)
+#define DMA_TCD23_SOFF			(IMXRT_DMA_TCD[23].SOFF)
+#define DMA_TCD23_ATTR			(IMXRT_DMA_TCD[23].ATTR)
+#define DMA_TCD23_NBYTES		(IMXRT_DMA_TCD[23].NBYTES)
+#define DMA_TCD23_NBYTES_MLNO		(IMXRT_DMA_TCD[23].NBYTES_MLNO)
+#define DMA_TCD23_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[23].NBYTES_MLOFFNO)
+#define DMA_TCD23_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[23].NBYTES_MLOFFYES)
+#define DMA_TCD23_SLAST			(IMXRT_DMA_TCD[23].SLAST)
+#define DMA_TCD23_DADDR			(IMXRT_DMA_TCD[23].DADDR)
+#define DMA_TCD23_DOFF			(IMXRT_DMA_TCD[23].DOFF)
+#define DMA_TCD23_CITER			(IMXRT_DMA_TCD[23].CITER)
+#define DMA_TCD23_CITER_ELINKYES	(IMXRT_DMA_TCD[23].CITER_ELINKYES)
+#define DMA_TCD23_CITER_ELINKNO		(IMXRT_DMA_TCD[23].CITER_ELINKNO)
+#define DMA_TCD23_DLASTSGA		(IMXRT_DMA_TCD[23].DLASTSGA)
+#define DMA_TCD23_CSR			(IMXRT_DMA_TCD[23].CSR)
+#define DMA_TCD23_BITER			(IMXRT_DMA_TCD[23].BITER)
+#define DMA_TCD23_BITER_ELINKYES	(IMXRT_DMA_TCD[23].BITER_ELINKYES)
+#define DMA_TCD23_BITER_ELINKNO		(IMXRT_DMA_TCD[23].BITER_ELINKNO)
+
+#define DMA_TCD24_SADDR			(IMXRT_DMA_TCD[24].SADDR)
+#define DMA_TCD24_SOFF			(IMXRT_DMA_TCD[24].SOFF)
+#define DMA_TCD24_ATTR			(IMXRT_DMA_TCD[24].ATTR)
+#define DMA_TCD24_NBYTES		(IMXRT_DMA_TCD[24].NBYTES)
+#define DMA_TCD24_NBYTES_MLNO		(IMXRT_DMA_TCD[24].NBYTES_MLNO)
+#define DMA_TCD24_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[24].NBYTES_MLOFFNO)
+#define DMA_TCD24_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[24].NBYTES_MLOFFYES)
+#define DMA_TCD24_SLAST			(IMXRT_DMA_TCD[24].SLAST)
+#define DMA_TCD24_DADDR			(IMXRT_DMA_TCD[24].DADDR)
+#define DMA_TCD24_DOFF			(IMXRT_DMA_TCD[24].DOFF)
+#define DMA_TCD24_CITER			(IMXRT_DMA_TCD[24].CITER)
+#define DMA_TCD24_CITER_ELINKYES	(IMXRT_DMA_TCD[24].CITER_ELINKYES)
+#define DMA_TCD24_CITER_ELINKNO		(IMXRT_DMA_TCD[24].CITER_ELINKNO)
+#define DMA_TCD24_DLASTSGA		(IMXRT_DMA_TCD[24].DLASTSGA)
+#define DMA_TCD24_CSR			(IMXRT_DMA_TCD[24].CSR)
+#define DMA_TCD24_BITER			(IMXRT_DMA_TCD[24].BITER)
+#define DMA_TCD24_BITER_ELINKYES	(IMXRT_DMA_TCD[24].BITER_ELINKYES)
+#define DMA_TCD24_BITER_ELINKNO		(IMXRT_DMA_TCD[24].BITER_ELINKNO)
+
+#define DMA_TCD25_SADDR			(IMXRT_DMA_TCD[25].SADDR)
+#define DMA_TCD25_SOFF			(IMXRT_DMA_TCD[25].SOFF)
+#define DMA_TCD25_ATTR			(IMXRT_DMA_TCD[25].ATTR)
+#define DMA_TCD25_NBYTES		(IMXRT_DMA_TCD[25].NBYTES)
+#define DMA_TCD25_NBYTES_MLNO		(IMXRT_DMA_TCD[25].NBYTES_MLNO)
+#define DMA_TCD25_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[25].NBYTES_MLOFFNO)
+#define DMA_TCD25_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[25].NBYTES_MLOFFYES)
+#define DMA_TCD25_SLAST			(IMXRT_DMA_TCD[25].SLAST)
+#define DMA_TCD25_DADDR			(IMXRT_DMA_TCD[25].DADDR)
+#define DMA_TCD25_DOFF			(IMXRT_DMA_TCD[25].DOFF)
+#define DMA_TCD25_CITER			(IMXRT_DMA_TCD[25].CITER)
+#define DMA_TCD25_CITER_ELINKYES	(IMXRT_DMA_TCD[25].CITER_ELINKYES)
+#define DMA_TCD25_CITER_ELINKNO		(IMXRT_DMA_TCD[25].CITER_ELINKNO)
+#define DMA_TCD25_DLASTSGA		(IMXRT_DMA_TCD[25].DLASTSGA)
+#define DMA_TCD25_CSR			(IMXRT_DMA_TCD[25].CSR)
+#define DMA_TCD25_BITER			(IMXRT_DMA_TCD[25].BITER)
+#define DMA_TCD25_BITER_ELINKYES	(IMXRT_DMA_TCD[25].BITER_ELINKYES)
+#define DMA_TCD25_BITER_ELINKNO		(IMXRT_DMA_TCD[25].BITER_ELINKNO)
+
+#define DMA_TCD26_SADDR			(IMXRT_DMA_TCD[26].SADDR)
+#define DMA_TCD26_SOFF			(IMXRT_DMA_TCD[26].SOFF)
+#define DMA_TCD26_ATTR			(IMXRT_DMA_TCD[26].ATTR)
+#define DMA_TCD26_NBYTES		(IMXRT_DMA_TCD[26].NBYTES)
+#define DMA_TCD26_NBYTES_MLNO		(IMXRT_DMA_TCD[26].NBYTES_MLNO)
+#define DMA_TCD26_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[26].NBYTES_MLOFFNO)
+#define DMA_TCD26_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[26].NBYTES_MLOFFYES)
+#define DMA_TCD26_SLAST			(IMXRT_DMA_TCD[26].SLAST)
+#define DMA_TCD26_DADDR			(IMXRT_DMA_TCD[26].DADDR)
+#define DMA_TCD26_DOFF			(IMXRT_DMA_TCD[26].DOFF)
+#define DMA_TCD26_CITER			(IMXRT_DMA_TCD[26].CITER)
+#define DMA_TCD26_CITER_ELINKYES	(IMXRT_DMA_TCD[26].CITER_ELINKYES)
+#define DMA_TCD26_CITER_ELINKNO		(IMXRT_DMA_TCD[26].CITER_ELINKNO)
+#define DMA_TCD26_DLASTSGA		(IMXRT_DMA_TCD[26].DLASTSGA)
+#define DMA_TCD26_CSR			(IMXRT_DMA_TCD[26].CSR)
+#define DMA_TCD26_BITER			(IMXRT_DMA_TCD[26].BITER)
+#define DMA_TCD26_BITER_ELINKYES	(IMXRT_DMA_TCD[26].BITER_ELINKYES)
+#define DMA_TCD26_BITER_ELINKNO		(IMXRT_DMA_TCD[26].BITER_ELINKNO)
+
+#define DMA_TCD27_SADDR			(IMXRT_DMA_TCD[27].SADDR)
+#define DMA_TCD27_SOFF			(IMXRT_DMA_TCD[27].SOFF)
+#define DMA_TCD27_ATTR			(IMXRT_DMA_TCD[27].ATTR)
+#define DMA_TCD27_NBYTES		(IMXRT_DMA_TCD[27].NBYTES)
+#define DMA_TCD27_NBYTES_MLNO		(IMXRT_DMA_TCD[27].NBYTES_MLNO)
+#define DMA_TCD27_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[27].NBYTES_MLOFFNO)
+#define DMA_TCD27_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[27].NBYTES_MLOFFYES)
+#define DMA_TCD27_SLAST			(IMXRT_DMA_TCD[27].SLAST)
+#define DMA_TCD27_DADDR			(IMXRT_DMA_TCD[27].DADDR)
+#define DMA_TCD27_DOFF			(IMXRT_DMA_TCD[27].DOFF)
+#define DMA_TCD27_CITER			(IMXRT_DMA_TCD[27].CITER)
+#define DMA_TCD27_CITER_ELINKYES	(IMXRT_DMA_TCD[27].CITER_ELINKYES)
+#define DMA_TCD27_CITER_ELINKNO		(IMXRT_DMA_TCD[27].CITER_ELINKNO)
+#define DMA_TCD27_DLASTSGA		(IMXRT_DMA_TCD[27].DLASTSGA)
+#define DMA_TCD27_CSR			(IMXRT_DMA_TCD[27].CSR)
+#define DMA_TCD27_BITER			(IMXRT_DMA_TCD[27].BITER)
+#define DMA_TCD27_BITER_ELINKYES	(IMXRT_DMA_TCD[27].BITER_ELINKYES)
+#define DMA_TCD27_BITER_ELINKNO		(IMXRT_DMA_TCD[27].BITER_ELINKNO)
+
+#define DMA_TCD28_SADDR			(IMXRT_DMA_TCD[28].SADDR)
+#define DMA_TCD28_SOFF			(IMXRT_DMA_TCD[28].SOFF)
+#define DMA_TCD28_ATTR			(IMXRT_DMA_TCD[28].ATTR)
+#define DMA_TCD28_NBYTES		(IMXRT_DMA_TCD[28].NBYTES)
+#define DMA_TCD28_NBYTES_MLNO		(IMXRT_DMA_TCD[28].NBYTES_MLNO)
+#define DMA_TCD28_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[28].NBYTES_MLOFFNO)
+#define DMA_TCD28_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[28].NBYTES_MLOFFYES)
+#define DMA_TCD28_SLAST			(IMXRT_DMA_TCD[28].SLAST)
+#define DMA_TCD28_DADDR			(IMXRT_DMA_TCD[28].DADDR)
+#define DMA_TCD28_DOFF			(IMXRT_DMA_TCD[28].DOFF)
+#define DMA_TCD28_CITER			(IMXRT_DMA_TCD[28].CITER)
+#define DMA_TCD28_CITER_ELINKYES	(IMXRT_DMA_TCD[28].CITER_ELINKYES)
+#define DMA_TCD28_CITER_ELINKNO		(IMXRT_DMA_TCD[28].CITER_ELINKNO)
+#define DMA_TCD28_DLASTSGA		(IMXRT_DMA_TCD[28].DLASTSGA)
+#define DMA_TCD28_CSR			(IMXRT_DMA_TCD[28].CSR)
+#define DMA_TCD28_BITER			(IMXRT_DMA_TCD[28].BITER)
+#define DMA_TCD28_BITER_ELINKYES	(IMXRT_DMA_TCD[28].BITER_ELINKYES)
+#define DMA_TCD28_BITER_ELINKNO		(IMXRT_DMA_TCD[28].BITER_ELINKNO)
+
+#define DMA_TCD29_SADDR			(IMXRT_DMA_TCD[29].SADDR)
+#define DMA_TCD29_SOFF			(IMXRT_DMA_TCD[29].SOFF)
+#define DMA_TCD29_ATTR			(IMXRT_DMA_TCD[29].ATTR)
+#define DMA_TCD29_NBYTES		(IMXRT_DMA_TCD[29].NBYTES)
+#define DMA_TCD29_NBYTES_MLNO		(IMXRT_DMA_TCD[29].NBYTES_MLNO)
+#define DMA_TCD29_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[29].NBYTES_MLOFFNO)
+#define DMA_TCD29_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[29].NBYTES_MLOFFYES)
+#define DMA_TCD29_SLAST			(IMXRT_DMA_TCD[29].SLAST)
+#define DMA_TCD29_DADDR			(IMXRT_DMA_TCD[29].DADDR)
+#define DMA_TCD29_DOFF			(IMXRT_DMA_TCD[29].DOFF)
+#define DMA_TCD29_CITER			(IMXRT_DMA_TCD[29].CITER)
+#define DMA_TCD29_CITER_ELINKYES	(IMXRT_DMA_TCD[29].CITER_ELINKYES)
+#define DMA_TCD29_CITER_ELINKNO		(IMXRT_DMA_TCD[29].CITER_ELINKNO)
+#define DMA_TCD29_DLASTSGA		(IMXRT_DMA_TCD[29].DLASTSGA)
+#define DMA_TCD29_CSR			(IMXRT_DMA_TCD[29].CSR)
+#define DMA_TCD29_BITER			(IMXRT_DMA_TCD[29].BITER)
+#define DMA_TCD29_BITER_ELINKYES	(IMXRT_DMA_TCD[29].BITER_ELINKYES)
+#define DMA_TCD29_BITER_ELINKNO		(IMXRT_DMA_TCD[29].BITER_ELINKNO)
+
+#define DMA_TCD30_SADDR			(IMXRT_DMA_TCD[30].SADDR)
+#define DMA_TCD30_SOFF			(IMXRT_DMA_TCD[30].SOFF)
+#define DMA_TCD30_ATTR			(IMXRT_DMA_TCD[30].ATTR)
+#define DMA_TCD30_NBYTES		(IMXRT_DMA_TCD[30].NBYTES)
+#define DMA_TCD30_NBYTES_MLNO		(IMXRT_DMA_TCD[30].NBYTES_MLNO)
+#define DMA_TCD30_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[30].NBYTES_MLOFFNO)
+#define DMA_TCD30_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[30].NBYTES_MLOFFYES)
+#define DMA_TCD30_SLAST			(IMXRT_DMA_TCD[30].SLAST)
+#define DMA_TCD30_DADDR			(IMXRT_DMA_TCD[30].DADDR)
+#define DMA_TCD30_DOFF			(IMXRT_DMA_TCD[30].DOFF)
+#define DMA_TCD30_CITER			(IMXRT_DMA_TCD[30].CITER)
+#define DMA_TCD30_CITER_ELINKYES	(IMXRT_DMA_TCD[30].CITER_ELINKYES)
+#define DMA_TCD30_CITER_ELINKNO		(IMXRT_DMA_TCD[30].CITER_ELINKNO)
+#define DMA_TCD30_DLASTSGA		(IMXRT_DMA_TCD[30].DLASTSGA)
+#define DMA_TCD30_CSR			(IMXRT_DMA_TCD[30].CSR)
+#define DMA_TCD30_BITER			(IMXRT_DMA_TCD[30].BITER)
+#define DMA_TCD30_BITER_ELINKYES	(IMXRT_DMA_TCD[30].BITER_ELINKYES)
+#define DMA_TCD30_BITER_ELINKNO		(IMXRT_DMA_TCD[30].BITER_ELINKNO)
+
+#define DMA_TCD31_SADDR			(IMXRT_DMA_TCD[31].SADDR)
+#define DMA_TCD31_SOFF			(IMXRT_DMA_TCD[31].SOFF)
+#define DMA_TCD31_ATTR			(IMXRT_DMA_TCD[31].ATTR)
+#define DMA_TCD31_NBYTES		(IMXRT_DMA_TCD[31].NBYTES)
+#define DMA_TCD31_NBYTES_MLNO		(IMXRT_DMA_TCD[31].NBYTES_MLNO)
+#define DMA_TCD31_NBYTES_MLOFFNO	(IMXRT_DMA_TCD[31].NBYTES_MLOFFNO)
+#define DMA_TCD31_NBYTES_MLOFFYES	(IMXRT_DMA_TCD[31].NBYTES_MLOFFYES)
+#define DMA_TCD31_SLAST			(IMXRT_DMA_TCD[31].SLAST)
+#define DMA_TCD31_DADDR			(IMXRT_DMA_TCD[31].DADDR)
+#define DMA_TCD31_DOFF			(IMXRT_DMA_TCD[31].DOFF)
+#define DMA_TCD31_CITER			(IMXRT_DMA_TCD[31].CITER)
+#define DMA_TCD31_CITER_ELINKYES	(IMXRT_DMA_TCD[31].CITER_ELINKYES)
+#define DMA_TCD31_CITER_ELINKNO		(IMXRT_DMA_TCD[31].CITER_ELINKNO)
+#define DMA_TCD31_DLASTSGA		(IMXRT_DMA_TCD[31].DLASTSGA)
+#define DMA_TCD31_CSR			(IMXRT_DMA_TCD[31].CSR)
+#define DMA_TCD31_BITER			(IMXRT_DMA_TCD[31].BITER)
+#define DMA_TCD31_BITER_ELINKYES	(IMXRT_DMA_TCD[31].BITER_ELINKYES)
+#define DMA_TCD31_BITER_ELINKNO		(IMXRT_DMA_TCD[31].BITER_ELINKNO)
+
+// 23.7.1: page 1023
 #define IMXRT_ENC1		(*(IMXRT_REGISTER16_t *)0x403C8000)
 #define ENC1_CTRL			(IMXRT_ENC1.offset000)
 #define ENC1_FILT			(IMXRT_ENC1.offset002)
@@ -1274,7 +2342,7 @@ typedef struct {
 #define ENC4_UCOMP			(IMXRT_ENC4.offset024)
 #define ENC4_LCOMP			(IMXRT_ENC4.offset026)
 
-// page 1088
+// 24.5: page 1060
 #define IMXRT_ENET		(*(IMXRT_REGISTER32_t *)0x402D8000)
 #define IMXRT_ENET_TIMER	(*(IMXRT_REGISTER32_t *)0x402D8400)
 #define ENET_EIR			(IMXRT_ENET.offset004)
@@ -1382,7 +2450,7 @@ typedef struct {
 #define ENET_TCSR3			(IMXRT_ENET_TIMER.offset220)
 #define ENET_TCCR3			(IMXRT_ENET_TIMER.offset224)
 
-// page 1226
+// 25.3.1.1: page 1199
 #define IMXRT_EWM		(*(IMXRT_REGISTER8_t *)0x402D8000)
 #define EWM_CTRL			(IMXRT_EWM.offset00)
 #define EWM_SERV			(IMXRT_EWM.offset01)
@@ -1391,7 +2459,7 @@ typedef struct {
 #define EWM_CLKCTRL			(IMXRT_EWM.offset04)
 #define EWM_CLKPRESCALER		(IMXRT_EWM.offset05)
 
-// page 1277
+// 26.8: page 1249
 #define IMXRT_FLEXCAN1		(*(IMXRT_REGISTER32_t *)0x401D0000)
 #define IMXRT_FLEXCAN1_MASK	(*(IMXRT_REGISTER32_t *)0x401D0800)
 #define FLEXCAN1_MCR			(IMXRT_FLEXCAN1.offset000)
@@ -1561,7 +2629,7 @@ typedef struct {
 #define FLEXCAN2_RXIMR63		(IMXRT_FLEXCAN2_MASK.offset17C)
 #define FLEXCAN2_GFWR			(IMXRT_FLEXCAN2_MASK.offset1E0)
 
-// page 1320
+// 27.3.1.1: page 1292
 #define IMXRT_FLEXIO1		(*(IMXRT_REGISTER32_t *)0x401AC000)
 #define IMXRT_FLEXIO1_b		(*(IMXRT_REGISTER32_t *)0x401AC400)
 #define FLEXIO1_VERID			(IMXRT_FLEXIO1.offset000)
@@ -1686,807 +2754,1227 @@ typedef struct {
 #define FLEXIO2_SHIFTBUFNIS1		(IMXRT_FLEXIO2_b.offset384)
 #define FLEXIO2_SHIFTBUFNIS2		(IMXRT_FLEXIO2_b.offset388)
 #define FLEXIO2_SHIFTBUFNIS3		(IMXRT_FLEXIO2_b.offset38C)
+// FLEXIO3 only present in RT1062
+#define IMXRT_FLEXIO3		(*(IMXRT_REGISTER32_t *)0x42020000)
+#define IMXRT_FLEXIO3_b		(*(IMXRT_REGISTER32_t *)0x42020400)
+#define FLEXIO3_VERID			(IMXRT_FLEXIO3.offset000)
+#define FLEXIO3_PARAM			(IMXRT_FLEXIO3.offset004)
+#define FLEXIO3_CTRL			(IMXRT_FLEXIO3.offset008)
+#define FLEXIO3_PIN			(IMXRT_FLEXIO3.offset00C)
+#define FLEXIO3_SHIFTSTAT		(IMXRT_FLEXIO3.offset010)
+#define FLEXIO3_SHIFTERR		(IMXRT_FLEXIO3.offset014)
+#define FLEXIO3_TIMSTAT			(IMXRT_FLEXIO3.offset018)
+#define FLEXIO3_SHIFTSIEN		(IMXRT_FLEXIO3.offset020)
+#define FLEXIO3_SHIFTEIEN		(IMXRT_FLEXIO3.offset024)
+#define FLEXIO3_TIMIEN			(IMXRT_FLEXIO3.offset028)
+#define FLEXIO3_SHIFTSDEN		(IMXRT_FLEXIO3.offset030)
+#define FLEXIO3_SHIFTSTATE		(IMXRT_FLEXIO3.offset040)
+#define FLEXIO3_SHIFTCTL0		(IMXRT_FLEXIO3.offset080)
+#define FLEXIO3_SHIFTCTL1		(IMXRT_FLEXIO3.offset084)
+#define FLEXIO3_SHIFTCTL2		(IMXRT_FLEXIO3.offset088)
+#define FLEXIO3_SHIFTCTL3		(IMXRT_FLEXIO3.offset08C)
+#define FLEXIO3_SHIFTCFG0		(IMXRT_FLEXIO3.offset100)
+#define FLEXIO3_SHIFTCFG1		(IMXRT_FLEXIO3.offset104)
+#define FLEXIO3_SHIFTCFG2		(IMXRT_FLEXIO3.offset108)
+#define FLEXIO3_SHIFTCFG3		(IMXRT_FLEXIO3.offset10C)
+#define FLEXIO3_SHIFTBUF0		(IMXRT_FLEXIO3.offset200)
+#define FLEXIO3_SHIFTBUF1		(IMXRT_FLEXIO3.offset204)
+#define FLEXIO3_SHIFTBUF2		(IMXRT_FLEXIO3.offset208)
+#define FLEXIO3_SHIFTBUF3		(IMXRT_FLEXIO3.offset20C)
+#define FLEXIO3_SHIFTBUFBIS0		(IMXRT_FLEXIO3.offset280)
+#define FLEXIO3_SHIFTBUFBIS1		(IMXRT_FLEXIO3.offset284)
+#define FLEXIO3_SHIFTBUFBIS2		(IMXRT_FLEXIO3.offset288)
+#define FLEXIO3_SHIFTBUFBIS3		(IMXRT_FLEXIO3.offset28C)
+#define FLEXIO3_SHIFTBUFBYS0		(IMXRT_FLEXIO3.offset300)
+#define FLEXIO3_SHIFTBUFBYS1		(IMXRT_FLEXIO3.offset304)
+#define FLEXIO3_SHIFTBUFBYS2		(IMXRT_FLEXIO3.offset308)
+#define FLEXIO3_SHIFTBUFBYS3		(IMXRT_FLEXIO3.offset30C)
+#define FLEXIO3_SHIFTBUFBBS0		(IMXRT_FLEXIO3.offset380)
+#define FLEXIO3_SHIFTBUFBBS1		(IMXRT_FLEXIO3.offset384)
+#define FLEXIO3_SHIFTBUFBBS2		(IMXRT_FLEXIO3.offset388)
+#define FLEXIO3_SHIFTBUFBBS3		(IMXRT_FLEXIO3.offset38C)
+#define FLEXIO3_TIMCTL0			(IMXRT_FLEXIO3_b.offset000)
+#define FLEXIO3_TIMCTL1			(IMXRT_FLEXIO3_b.offset004)
+#define FLEXIO3_TIMCTL2			(IMXRT_FLEXIO3_b.offset008)
+#define FLEXIO3_TIMCTL3			(IMXRT_FLEXIO3_b.offset00C)
+#define FLEXIO3_TIMCFG0			(IMXRT_FLEXIO3_b.offset080)
+#define FLEXIO3_TIMCFG1			(IMXRT_FLEXIO3_b.offset084)
+#define FLEXIO3_TIMCFG2			(IMXRT_FLEXIO3_b.offset088)
+#define FLEXIO3_TIMCFG3			(IMXRT_FLEXIO3_b.offset08C)
+#define FLEXIO3_TIMCMP0			(IMXRT_FLEXIO3_b.offset100)
+#define FLEXIO3_TIMCMP1			(IMXRT_FLEXIO3_b.offset104)
+#define FLEXIO3_TIMCMP2			(IMXRT_FLEXIO3_b.offset108)
+#define FLEXIO3_TIMCMP3			(IMXRT_FLEXIO3_b.offset10C)
+#define FLEXIO3_SHIFTBUFNBS0		(IMXRT_FLEXIO3_b.offset280)
+#define FLEXIO3_SHIFTBUFNBS1		(IMXRT_FLEXIO3_b.offset284)
+#define FLEXIO3_SHIFTBUFNBS2		(IMXRT_FLEXIO3_b.offset288)
+#define FLEXIO3_SHIFTBUFNBS3		(IMXRT_FLEXIO3_b.offset28C)
+#define FLEXIO3_SHIFTBUFHWS0		(IMXRT_FLEXIO3_b.offset300)
+#define FLEXIO3_SHIFTBUFHWS1		(IMXRT_FLEXIO3_b.offset304)
+#define FLEXIO3_SHIFTBUFHWS2		(IMXRT_FLEXIO3_b.offset308)
+#define FLEXIO3_SHIFTBUFHWS3		(IMXRT_FLEXIO3_b.offset30C)
+#define FLEXIO3_SHIFTBUFNIS0		(IMXRT_FLEXIO3_b.offset380)
+#define FLEXIO3_SHIFTBUFNIS1		(IMXRT_FLEXIO3_b.offset384)
+#define FLEXIO3_SHIFTBUFNIS2		(IMXRT_FLEXIO3_b.offset388)
+#define FLEXIO3_SHIFTBUFNIS3		(IMXRT_FLEXIO3_b.offset38C)
+#define FLEXIO_CTRL_DOZEN			((uint16_t)(1<<31))
+#define FLEXIO_CTRL_DBGE			((uint16_t)(1<<30))
+#define FLEXIO_CTRL_FASTACC			((uint16_t)(1<<2))
+#define FLEXIO_CTRL_SWRST			((uint16_t)(1<<1))
+#define FLEXIO_CTRL_FLEXEN			((uint16_t)(1<<0))
+#define FLEXIO_SHIFTCTL_TIMSEL(n)		((uint16_t)(((n) & 0x03) << 24))
+#define FLEXIO_SHIFTCTL_TIMPOL			((uint16_t)(1<<23))
+#define FLEXIO_SHIFTCTL_PINCFG(n)		((uint16_t)(((n) & 0x03) << 16))
+#define FLEXIO_SHIFTCTL_PINSEL(n)		((uint16_t)(((n) & 0x1F) << 8))
+#define FLEXIO_SHIFTCTL_PINPOL			((uint16_t)(1<<7))
+#define FLEXIO_SHIFTCTL_SMOD(n)			((uint16_t)(((n) & 0x07) << 0))
+#define FLEXIO_SHIFTCFG_PWIDTH(n)		((uint16_t)(((n) & 0x1F) << 16))
+#define FLEXIO_SHIFTCFG_INSRC			((uint16_t)(1<<8))
+#define FLEXIO_SHIFTCFG_SSTOP(n)		((uint16_t)(((n) & 0x03) << 4))
+#define FLEXIO_SHIFTCFG_SSTART(n)		((uint16_t)(((n) & 0x03) << 0))
+#define FLEXIO_TIMCTL_TRGSEL(n)			((uint16_t)(((n) & 0x3F) << 24))
+#define FLEXIO_TIMCTL_TRGPOL			((uint16_t)(1<<23))
+#define FLEXIO_TIMCTL_TRGSRC			((uint16_t)(1<<22))
+#define FLEXIO_TIMCTL_PINCFG(n)			((uint16_t)(((n) & 0x03) << 16))
+#define FLEXIO_TIMCTL_PINSEL(n)			((uint16_t)(((n) & 0x1F) << 8))
+#define FLEXIO_TIMCTL_PINPOL			((uint16_t)(1<<7))
+#define FLEXIO_TIMCTL_TIMOD(n)			((uint16_t)(((n) & 0x03) << 0))
+#define FLEXIO_TIMCFG_TIMOUT(n)			((uint16_t)(((n) & 0x03) << 24))
+#define FLEXIO_TIMCFG_TIMDEC(n)			((uint16_t)(((n) & 0x03) << 20))
+#define FLEXIO_TIMCFG_TIMRST(n)			((uint16_t)(((n) & 0x07) << 16))
+#define FLEXIO_TIMCFG_TIMDIS(n)			((uint16_t)(((n) & 0x07) << 12))
+#define FLEXIO_TIMCFG_TIMENA(n)			((uint16_t)(((n) & 0x07) << 8))
+#define FLEXIO_TIMCFG_TSTOP(n)			((uint16_t)(((n) & 0x03) << 4))
+#define FLEXIO_TIMCFG_TSTART			((uint16_t)(1<<1))
 
-// page 1382
-#define IMXRT_FLEXPWM1		(*(IMXRT_REGISTER16_t *)0x403DC000)
-#define FLEXPWM1_SM0CNT			(IMXRT_FLEXPWM1.offset000)
-#define FLEXPWM1_SM0INIT		(IMXRT_FLEXPWM1.offset002)
-#define FLEXPWM1_SM0CTRL2		(IMXRT_FLEXPWM1.offset004)
-#define FLEXPWM1_SM0CTRL		(IMXRT_FLEXPWM1.offset006)
-#define FLEXPWM1_SM0VAL0		(IMXRT_FLEXPWM1.offset008)
-#define FLEXPWM1_SM0FRACVAL1		(IMXRT_FLEXPWM1.offset00A)
-#define FLEXPWM1_SM0VAL1		(IMXRT_FLEXPWM1.offset00C)
-#define FLEXPWM1_SM0FRACVAL2		(IMXRT_FLEXPWM1.offset00E)
-#define FLEXPWM1_SM0VAL2		(IMXRT_FLEXPWM1.offset010)
-#define FLEXPWM1_SM0FRACVAL3		(IMXRT_FLEXPWM1.offset012)
-#define FLEXPWM1_SM0VAL3		(IMXRT_FLEXPWM1.offset014)
-#define FLEXPWM1_SM0FRACVAL4		(IMXRT_FLEXPWM1.offset016)
-#define FLEXPWM1_SM0VAL4		(IMXRT_FLEXPWM1.offset018)
-#define FLEXPWM1_SM0FRACVAL5		(IMXRT_FLEXPWM1.offset01A)
-#define FLEXPWM1_SM0VAL5		(IMXRT_FLEXPWM1.offset01C)
-#define FLEXPWM1_SM0FRCTRL		(IMXRT_FLEXPWM1.offset01E)
-#define FLEXPWM1_SM0OCTRL		(IMXRT_FLEXPWM1.offset020)
-#define FLEXPWM1_SM0STS			(IMXRT_FLEXPWM1.offset022)
-#define FLEXPWM1_SM0INTEN		(IMXRT_FLEXPWM1.offset024)
-#define FLEXPWM1_SM0DMAEN		(IMXRT_FLEXPWM1.offset026)
-#define FLEXPWM1_SM0TCTRL		(IMXRT_FLEXPWM1.offset028)
-#define FLEXPWM1_SM0DISMAP0		(IMXRT_FLEXPWM1.offset02A)
-#define FLEXPWM1_SM0DISMAP1		(IMXRT_FLEXPWM1.offset02C)
-#define FLEXPWM1_SM0DTCNT0		(IMXRT_FLEXPWM1.offset02E)
-#define FLEXPWM1_SM0DTCNT1		(IMXRT_FLEXPWM1.offset030)
-#define FLEXPWM1_SM0CAPTCTRLA		(IMXRT_FLEXPWM1.offset032)
-#define FLEXPWM1_SM0CAPTCOMPA		(IMXRT_FLEXPWM1.offset034)
-#define FLEXPWM1_SM0CAPTCTRLB		(IMXRT_FLEXPWM1.offset036)
-#define FLEXPWM1_SM0CAPTCOMPB		(IMXRT_FLEXPWM1.offset038)
-#define FLEXPWM1_SM0CAPTCTRLX		(IMXRT_FLEXPWM1.offset03A)
-#define FLEXPWM1_SM0CAPTCOMPX		(IMXRT_FLEXPWM1.offset03C)
-#define FLEXPWM1_SM0CVAL0		(IMXRT_FLEXPWM1.offset03E)
-#define FLEXPWM1_SM0CVAL0CYC		(IMXRT_FLEXPWM1.offset040)
-#define FLEXPWM1_SM0CVAL1		(IMXRT_FLEXPWM1.offset042)
-#define FLEXPWM1_SM0CVAL1CYC		(IMXRT_FLEXPWM1.offset044)
-#define FLEXPWM1_SM0CVAL2		(IMXRT_FLEXPWM1.offset046)
-#define FLEXPWM1_SM0CVAL2CYC		(IMXRT_FLEXPWM1.offset048)
-#define FLEXPWM1_SM0CVAL3		(IMXRT_FLEXPWM1.offset04A)
-#define FLEXPWM1_SM0CVAL3CYC		(IMXRT_FLEXPWM1.offset04C)
-#define FLEXPWM1_SM0CVAL4		(IMXRT_FLEXPWM1.offset04E)
-#define FLEXPWM1_SM0CVAL4CYC		(IMXRT_FLEXPWM1.offset050)
-#define FLEXPWM1_SM0CVAL5		(IMXRT_FLEXPWM1.offset052)
-#define FLEXPWM1_SM0CVAL5CYC		(IMXRT_FLEXPWM1.offset054)
-#define FLEXPWM1_SM1CNT			(IMXRT_FLEXPWM1.offset060)
-#define FLEXPWM1_SM1INIT		(IMXRT_FLEXPWM1.offset062)
-#define FLEXPWM1_SM1CTRL2		(IMXRT_FLEXPWM1.offset064)
-#define FLEXPWM1_SM1CTRL		(IMXRT_FLEXPWM1.offset066)
-#define FLEXPWM1_SM1VAL0		(IMXRT_FLEXPWM1.offset068)
-#define FLEXPWM1_SM1FRACVAL1		(IMXRT_FLEXPWM1.offset06A)
-#define FLEXPWM1_SM1VAL1		(IMXRT_FLEXPWM1.offset06C)
-#define FLEXPWM1_SM1FRACVAL2		(IMXRT_FLEXPWM1.offset06E)
-#define FLEXPWM1_SM1VAL2		(IMXRT_FLEXPWM1.offset070)
-#define FLEXPWM1_SM1FRACVAL3		(IMXRT_FLEXPWM1.offset072)
-#define FLEXPWM1_SM1VAL3		(IMXRT_FLEXPWM1.offset074)
-#define FLEXPWM1_SM1FRACVAL4		(IMXRT_FLEXPWM1.offset076)
-#define FLEXPWM1_SM1VAL4		(IMXRT_FLEXPWM1.offset078)
-#define FLEXPWM1_SM1FRACVAL5		(IMXRT_FLEXPWM1.offset07A)
-#define FLEXPWM1_SM1VAL5		(IMXRT_FLEXPWM1.offset07C)
-#define FLEXPWM1_SM1FRCTRL		(IMXRT_FLEXPWM1.offset07E)
-#define FLEXPWM1_SM1OCTRL		(IMXRT_FLEXPWM1.offset080)
-#define FLEXPWM1_SM1STS			(IMXRT_FLEXPWM1.offset082)
-#define FLEXPWM1_SM1INTEN		(IMXRT_FLEXPWM1.offset084)
-#define FLEXPWM1_SM1DMAEN		(IMXRT_FLEXPWM1.offset086)
-#define FLEXPWM1_SM1TCTRL		(IMXRT_FLEXPWM1.offset088)
-#define FLEXPWM1_SM1DISMAP0		(IMXRT_FLEXPWM1.offset08A)
-#define FLEXPWM1_SM1DISMAP1		(IMXRT_FLEXPWM1.offset08C)
-#define FLEXPWM1_SM1DTCNT0		(IMXRT_FLEXPWM1.offset08E)
-#define FLEXPWM1_SM1DTCNT1		(IMXRT_FLEXPWM1.offset090)
-#define FLEXPWM1_SM1CAPTCTRLA		(IMXRT_FLEXPWM1.offset092)
-#define FLEXPWM1_SM1CAPTCOMPA		(IMXRT_FLEXPWM1.offset094)
-#define FLEXPWM1_SM1CAPTCTRLB		(IMXRT_FLEXPWM1.offset096)
-#define FLEXPWM1_SM1CAPTCOMPB		(IMXRT_FLEXPWM1.offset098)
-#define FLEXPWM1_SM1CAPTCTRLX		(IMXRT_FLEXPWM1.offset09A)
-#define FLEXPWM1_SM1CAPTCOMPX		(IMXRT_FLEXPWM1.offset09C)
-#define FLEXPWM1_SM1CVAL0		(IMXRT_FLEXPWM1.offset09E)
-#define FLEXPWM1_SM1CVAL0CYC		(IMXRT_FLEXPWM1.offset0A0)
-#define FLEXPWM1_SM1CVAL1		(IMXRT_FLEXPWM1.offset0A2)
-#define FLEXPWM1_SM1CVAL1CYC		(IMXRT_FLEXPWM1.offset0A4)
-#define FLEXPWM1_SM1CVAL2		(IMXRT_FLEXPWM1.offset0A6)
-#define FLEXPWM1_SM1CVAL2CYC		(IMXRT_FLEXPWM1.offset0A8)
-#define FLEXPWM1_SM1CVAL3		(IMXRT_FLEXPWM1.offset0AA)
-#define FLEXPWM1_SM1CVAL3CYC		(IMXRT_FLEXPWM1.offset0AC)
-#define FLEXPWM1_SM1CVAL4		(IMXRT_FLEXPWM1.offset0AE)
-#define FLEXPWM1_SM1CVAL4CYC		(IMXRT_FLEXPWM1.offset0B0)
-#define FLEXPWM1_SM1CVAL5		(IMXRT_FLEXPWM1.offset0B2)
-#define FLEXPWM1_SM1CVAL5CYC		(IMXRT_FLEXPWM1.offset0B4)
-#define FLEXPWM1_SM2CNT			(IMXRT_FLEXPWM1.offset0C0)
-#define FLEXPWM1_SM2INIT		(IMXRT_FLEXPWM1.offset0C2)
-#define FLEXPWM1_SM2CTRL2		(IMXRT_FLEXPWM1.offset0C4)
-#define FLEXPWM1_SM2CTRL		(IMXRT_FLEXPWM1.offset0C6)
-#define FLEXPWM1_SM2VAL0		(IMXRT_FLEXPWM1.offset0C8)
-#define FLEXPWM1_SM2FRACVAL1		(IMXRT_FLEXPWM1.offset0CA)
-#define FLEXPWM1_SM2VAL1		(IMXRT_FLEXPWM1.offset0CC)
-#define FLEXPWM1_SM2FRACVAL2		(IMXRT_FLEXPWM1.offset0CE)
-#define FLEXPWM1_SM2VAL2		(IMXRT_FLEXPWM1.offset0D0)
-#define FLEXPWM1_SM2FRACVAL3		(IMXRT_FLEXPWM1.offset0D2)
-#define FLEXPWM1_SM2VAL3		(IMXRT_FLEXPWM1.offset0D4)
-#define FLEXPWM1_SM2FRACVAL4		(IMXRT_FLEXPWM1.offset0D6)
-#define FLEXPWM1_SM2VAL4		(IMXRT_FLEXPWM1.offset0D8)
-#define FLEXPWM1_SM2FRACVAL5		(IMXRT_FLEXPWM1.offset0DA)
-#define FLEXPWM1_SM2VAL5		(IMXRT_FLEXPWM1.offset0DC)
-#define FLEXPWM1_SM2FRCTRL		(IMXRT_FLEXPWM1.offset0DE)
-#define FLEXPWM1_SM2OCTRL		(IMXRT_FLEXPWM1.offset0E0)
-#define FLEXPWM1_SM2STS			(IMXRT_FLEXPWM1.offset0E2)
-#define FLEXPWM1_SM2INTEN		(IMXRT_FLEXPWM1.offset0E4)
-#define FLEXPWM1_SM2DMAEN		(IMXRT_FLEXPWM1.offset0E6)
-#define FLEXPWM1_SM2TCTRL		(IMXRT_FLEXPWM1.offset0E8)
-#define FLEXPWM1_SM2DISMAP0		(IMXRT_FLEXPWM1.offset0EA)
-#define FLEXPWM1_SM2DISMAP1		(IMXRT_FLEXPWM1.offset0EC)
-#define FLEXPWM1_SM2DTCNT0		(IMXRT_FLEXPWM1.offset0EE)
-#define FLEXPWM1_SM2DTCNT1		(IMXRT_FLEXPWM1.offset0F0)
-#define FLEXPWM1_SM2CAPTCTRLA		(IMXRT_FLEXPWM1.offset0F2)
-#define FLEXPWM1_SM2CAPTCOMPA		(IMXRT_FLEXPWM1.offset0F4)
-#define FLEXPWM1_SM2CAPTCTRLB		(IMXRT_FLEXPWM1.offset0F6)
-#define FLEXPWM1_SM2CAPTCOMPB		(IMXRT_FLEXPWM1.offset0F8)
-#define FLEXPWM1_SM2CAPTCTRLX		(IMXRT_FLEXPWM1.offset0FA)
-#define FLEXPWM1_SM2CAPTCOMPX		(IMXRT_FLEXPWM1.offset0FC)
-#define FLEXPWM1_SM2CVAL0		(IMXRT_FLEXPWM1.offset0FE)
-#define FLEXPWM1_SM2CVAL0CYC		(IMXRT_FLEXPWM1.offset100)
-#define FLEXPWM1_SM2CVAL1		(IMXRT_FLEXPWM1.offset102)
-#define FLEXPWM1_SM2CVAL1CYC		(IMXRT_FLEXPWM1.offset104)
-#define FLEXPWM1_SM2CVAL2		(IMXRT_FLEXPWM1.offset106)
-#define FLEXPWM1_SM2CVAL2CYC		(IMXRT_FLEXPWM1.offset108)
-#define FLEXPWM1_SM2CVAL3		(IMXRT_FLEXPWM1.offset10A)
-#define FLEXPWM1_SM2CVAL3CYC		(IMXRT_FLEXPWM1.offset10C)
-#define FLEXPWM1_SM2CVAL4		(IMXRT_FLEXPWM1.offset10E)
-#define FLEXPWM1_SM2CVAL4CYC		(IMXRT_FLEXPWM1.offset110)
-#define FLEXPWM1_SM2CVAL5		(IMXRT_FLEXPWM1.offset112)
-#define FLEXPWM1_SM2CVAL5CYC		(IMXRT_FLEXPWM1.offset114)
-#define FLEXPWM1_SM3CNT			(IMXRT_FLEXPWM1.offset120)
-#define FLEXPWM1_SM3INIT		(IMXRT_FLEXPWM1.offset122)
-#define FLEXPWM1_SM3CTRL2		(IMXRT_FLEXPWM1.offset124)
-#define FLEXPWM1_SM3CTRL		(IMXRT_FLEXPWM1.offset126)
-#define FLEXPWM1_SM3VAL0		(IMXRT_FLEXPWM1.offset128)
-#define FLEXPWM1_SM3FRACVAL1		(IMXRT_FLEXPWM1.offset12A)
-#define FLEXPWM1_SM3VAL1		(IMXRT_FLEXPWM1.offset12C)
-#define FLEXPWM1_SM3FRACVAL2		(IMXRT_FLEXPWM1.offset12E)
-#define FLEXPWM1_SM3VAL2		(IMXRT_FLEXPWM1.offset130)
-#define FLEXPWM1_SM3FRACVAL3		(IMXRT_FLEXPWM1.offset132)
-#define FLEXPWM1_SM3VAL3		(IMXRT_FLEXPWM1.offset134)
-#define FLEXPWM1_SM3FRACVAL4		(IMXRT_FLEXPWM1.offset136)
-#define FLEXPWM1_SM3VAL4		(IMXRT_FLEXPWM1.offset138)
-#define FLEXPWM1_SM3FRACVAL5		(IMXRT_FLEXPWM1.offset13A)
-#define FLEXPWM1_SM3VAL5		(IMXRT_FLEXPWM1.offset13C)
-#define FLEXPWM1_SM3FRCTRL		(IMXRT_FLEXPWM1.offset13E)
-#define FLEXPWM1_SM3OCTRL		(IMXRT_FLEXPWM1.offset140)
-#define FLEXPWM1_SM3STS			(IMXRT_FLEXPWM1.offset142)
-#define FLEXPWM1_SM3INTEN		(IMXRT_FLEXPWM1.offset144)
-#define FLEXPWM1_SM3DMAEN		(IMXRT_FLEXPWM1.offset146)
-#define FLEXPWM1_SM3TCTRL		(IMXRT_FLEXPWM1.offset148)
-#define FLEXPWM1_SM3DISMAP0		(IMXRT_FLEXPWM1.offset14A)
-#define FLEXPWM1_SM3DISMAP1		(IMXRT_FLEXPWM1.offset14C)
-#define FLEXPWM1_SM3DTCNT0		(IMXRT_FLEXPWM1.offset15E)
-#define FLEXPWM1_SM3DTCNT1		(IMXRT_FLEXPWM1.offset150)
-#define FLEXPWM1_SM3CAPTCTRLA		(IMXRT_FLEXPWM1.offset152)
-#define FLEXPWM1_SM3CAPTCOMPA		(IMXRT_FLEXPWM1.offset154)
-#define FLEXPWM1_SM3CAPTCTRLB		(IMXRT_FLEXPWM1.offset156)
-#define FLEXPWM1_SM3CAPTCOMPB		(IMXRT_FLEXPWM1.offset158)
-#define FLEXPWM1_SM3CAPTCTRLX		(IMXRT_FLEXPWM1.offset15A)
-#define FLEXPWM1_SM3CAPTCOMPX		(IMXRT_FLEXPWM1.offset15C)
-#define FLEXPWM1_SM3CVAL0		(IMXRT_FLEXPWM1.offset15E)
-#define FLEXPWM1_SM3CVAL0CYC		(IMXRT_FLEXPWM1.offset160)
-#define FLEXPWM1_SM3CVAL1		(IMXRT_FLEXPWM1.offset162)
-#define FLEXPWM1_SM3CVAL1CYC		(IMXRT_FLEXPWM1.offset164)
-#define FLEXPWM1_SM3CVAL2		(IMXRT_FLEXPWM1.offset166)
-#define FLEXPWM1_SM3CVAL2CYC		(IMXRT_FLEXPWM1.offset168)
-#define FLEXPWM1_SM3CVAL3		(IMXRT_FLEXPWM1.offset16A)
-#define FLEXPWM1_SM3CVAL3CYC		(IMXRT_FLEXPWM1.offset16C)
-#define FLEXPWM1_SM3CVAL4		(IMXRT_FLEXPWM1.offset16E)
-#define FLEXPWM1_SM3CVAL4CYC		(IMXRT_FLEXPWM1.offset170)
-#define FLEXPWM1_SM3CVAL5		(IMXRT_FLEXPWM1.offset172)
-#define FLEXPWM1_SM3CVAL5CYC		(IMXRT_FLEXPWM1.offset174)
-#define FLEXPWM1_OUTEN			(IMXRT_FLEXPWM1.offset180)
-#define FLEXPWM1_MASK			(IMXRT_FLEXPWM1.offset182)
-#define FLEXPWM1_SWCOUT			(IMXRT_FLEXPWM1.offset184)
-#define FLEXPWM1_DTSRCSEL		(IMXRT_FLEXPWM1.offset186)
-#define FLEXPWM1_MCTRL			(IMXRT_FLEXPWM1.offset188)
-#define FLEXPWM1_MCTRL2			(IMXRT_FLEXPWM1.offset18A)
-#define FLEXPWM1_FCTRL0			(IMXRT_FLEXPWM1.offset18C)
-#define FLEXPWM1_FSTS0			(IMXRT_FLEXPWM1.offset18E)
-#define FLEXPWM1_FFILT0			(IMXRT_FLEXPWM1.offset190)
-#define FLEXPWM1_FTST0			(IMXRT_FLEXPWM1.offset192)
-#define FLEXPWM1_FCTRL20		(IMXRT_FLEXPWM1.offset194)
-#define IMXRT_FLEXPWM2		(*(IMXRT_REGISTER16_t *)0x403E0000)
-#define FLEXPWM2_SM0CNT			(IMXRT_FLEXPWM2.offset000)
-#define FLEXPWM2_SM0INIT		(IMXRT_FLEXPWM2.offset002)
-#define FLEXPWM2_SM0CTRL2		(IMXRT_FLEXPWM2.offset004)
-#define FLEXPWM2_SM0CTRL		(IMXRT_FLEXPWM2.offset006)
-#define FLEXPWM2_SM0VAL0		(IMXRT_FLEXPWM2.offset008)
-#define FLEXPWM2_SM0FRACVAL1		(IMXRT_FLEXPWM2.offset00A)
-#define FLEXPWM2_SM0VAL1		(IMXRT_FLEXPWM2.offset00C)
-#define FLEXPWM2_SM0FRACVAL2		(IMXRT_FLEXPWM2.offset00E)
-#define FLEXPWM2_SM0VAL2		(IMXRT_FLEXPWM2.offset010)
-#define FLEXPWM2_SM0FRACVAL3		(IMXRT_FLEXPWM2.offset012)
-#define FLEXPWM2_SM0VAL3		(IMXRT_FLEXPWM2.offset014)
-#define FLEXPWM2_SM0FRACVAL4		(IMXRT_FLEXPWM2.offset016)
-#define FLEXPWM2_SM0VAL4		(IMXRT_FLEXPWM2.offset018)
-#define FLEXPWM2_SM0FRACVAL5		(IMXRT_FLEXPWM2.offset01A)
-#define FLEXPWM2_SM0VAL5		(IMXRT_FLEXPWM2.offset01C)
-#define FLEXPWM2_SM0FRCTRL		(IMXRT_FLEXPWM2.offset01E)
-#define FLEXPWM2_SM0OCTRL		(IMXRT_FLEXPWM2.offset020)
-#define FLEXPWM2_SM0STS			(IMXRT_FLEXPWM2.offset022)
-#define FLEXPWM2_SM0INTEN		(IMXRT_FLEXPWM2.offset024)
-#define FLEXPWM2_SM0DMAEN		(IMXRT_FLEXPWM2.offset026)
-#define FLEXPWM2_SM0TCTRL		(IMXRT_FLEXPWM2.offset028)
-#define FLEXPWM2_SM0DISMAP0		(IMXRT_FLEXPWM2.offset02A)
-#define FLEXPWM2_SM0DISMAP1		(IMXRT_FLEXPWM2.offset02C)
-#define FLEXPWM2_SM0DTCNT0		(IMXRT_FLEXPWM2.offset02E)
-#define FLEXPWM2_SM0DTCNT1		(IMXRT_FLEXPWM2.offset030)
-#define FLEXPWM2_SM0CAPTCTRLA		(IMXRT_FLEXPWM2.offset032)
-#define FLEXPWM2_SM0CAPTCOMPA		(IMXRT_FLEXPWM2.offset034)
-#define FLEXPWM2_SM0CAPTCTRLB		(IMXRT_FLEXPWM2.offset036)
-#define FLEXPWM2_SM0CAPTCOMPB		(IMXRT_FLEXPWM2.offset038)
-#define FLEXPWM2_SM0CAPTCTRLX		(IMXRT_FLEXPWM2.offset03A)
-#define FLEXPWM2_SM0CAPTCOMPX		(IMXRT_FLEXPWM2.offset03C)
-#define FLEXPWM2_SM0CVAL0		(IMXRT_FLEXPWM2.offset03E)
-#define FLEXPWM2_SM0CVAL0CYC		(IMXRT_FLEXPWM2.offset040)
-#define FLEXPWM2_SM0CVAL1		(IMXRT_FLEXPWM2.offset042)
-#define FLEXPWM2_SM0CVAL1CYC		(IMXRT_FLEXPWM2.offset044)
-#define FLEXPWM2_SM0CVAL2		(IMXRT_FLEXPWM2.offset046)
-#define FLEXPWM2_SM0CVAL2CYC		(IMXRT_FLEXPWM2.offset048)
-#define FLEXPWM2_SM0CVAL3		(IMXRT_FLEXPWM2.offset04A)
-#define FLEXPWM2_SM0CVAL3CYC		(IMXRT_FLEXPWM2.offset04C)
-#define FLEXPWM2_SM0CVAL4		(IMXRT_FLEXPWM2.offset04E)
-#define FLEXPWM2_SM0CVAL4CYC		(IMXRT_FLEXPWM2.offset050)
-#define FLEXPWM2_SM0CVAL5		(IMXRT_FLEXPWM2.offset052)
-#define FLEXPWM2_SM0CVAL5CYC		(IMXRT_FLEXPWM2.offset054)
-#define FLEXPWM2_SM1CNT			(IMXRT_FLEXPWM2.offset060)
-#define FLEXPWM2_SM1INIT		(IMXRT_FLEXPWM2.offset062)
-#define FLEXPWM2_SM1CTRL2		(IMXRT_FLEXPWM2.offset064)
-#define FLEXPWM2_SM1CTRL		(IMXRT_FLEXPWM2.offset066)
-#define FLEXPWM2_SM1VAL0		(IMXRT_FLEXPWM2.offset068)
-#define FLEXPWM2_SM1FRACVAL1		(IMXRT_FLEXPWM2.offset06A)
-#define FLEXPWM2_SM1VAL1		(IMXRT_FLEXPWM2.offset06C)
-#define FLEXPWM2_SM1FRACVAL2		(IMXRT_FLEXPWM2.offset06E)
-#define FLEXPWM2_SM1VAL2		(IMXRT_FLEXPWM2.offset070)
-#define FLEXPWM2_SM1FRACVAL3		(IMXRT_FLEXPWM2.offset072)
-#define FLEXPWM2_SM1VAL3		(IMXRT_FLEXPWM2.offset074)
-#define FLEXPWM2_SM1FRACVAL4		(IMXRT_FLEXPWM2.offset076)
-#define FLEXPWM2_SM1VAL4		(IMXRT_FLEXPWM2.offset078)
-#define FLEXPWM2_SM1FRACVAL5		(IMXRT_FLEXPWM2.offset07A)
-#define FLEXPWM2_SM1VAL5		(IMXRT_FLEXPWM2.offset07C)
-#define FLEXPWM2_SM1FRCTRL		(IMXRT_FLEXPWM2.offset07E)
-#define FLEXPWM2_SM1OCTRL		(IMXRT_FLEXPWM2.offset080)
-#define FLEXPWM2_SM1STS			(IMXRT_FLEXPWM2.offset082)
-#define FLEXPWM2_SM1INTEN		(IMXRT_FLEXPWM2.offset084)
-#define FLEXPWM2_SM1DMAEN		(IMXRT_FLEXPWM2.offset086)
-#define FLEXPWM2_SM1TCTRL		(IMXRT_FLEXPWM2.offset088)
-#define FLEXPWM2_SM1DISMAP0		(IMXRT_FLEXPWM2.offset08A)
-#define FLEXPWM2_SM1DISMAP1		(IMXRT_FLEXPWM2.offset08C)
-#define FLEXPWM2_SM1DTCNT0		(IMXRT_FLEXPWM2.offset08E)
-#define FLEXPWM2_SM1DTCNT1		(IMXRT_FLEXPWM2.offset090)
-#define FLEXPWM2_SM1CAPTCTRLA		(IMXRT_FLEXPWM2.offset092)
-#define FLEXPWM2_SM1CAPTCOMPA		(IMXRT_FLEXPWM2.offset094)
-#define FLEXPWM2_SM1CAPTCTRLB		(IMXRT_FLEXPWM2.offset096)
-#define FLEXPWM2_SM1CAPTCOMPB		(IMXRT_FLEXPWM2.offset098)
-#define FLEXPWM2_SM1CAPTCTRLX		(IMXRT_FLEXPWM2.offset09A)
-#define FLEXPWM2_SM1CAPTCOMPX		(IMXRT_FLEXPWM2.offset09C)
-#define FLEXPWM2_SM1CVAL0		(IMXRT_FLEXPWM2.offset09E)
-#define FLEXPWM2_SM1CVAL0CYC		(IMXRT_FLEXPWM2.offset0A0)
-#define FLEXPWM2_SM1CVAL1		(IMXRT_FLEXPWM2.offset0A2)
-#define FLEXPWM2_SM1CVAL1CYC		(IMXRT_FLEXPWM2.offset0A4)
-#define FLEXPWM2_SM1CVAL2		(IMXRT_FLEXPWM2.offset0A6)
-#define FLEXPWM2_SM1CVAL2CYC		(IMXRT_FLEXPWM2.offset0A8)
-#define FLEXPWM2_SM1CVAL3		(IMXRT_FLEXPWM2.offset0AA)
-#define FLEXPWM2_SM1CVAL3CYC		(IMXRT_FLEXPWM2.offset0AC)
-#define FLEXPWM2_SM1CVAL4		(IMXRT_FLEXPWM2.offset0AE)
-#define FLEXPWM2_SM1CVAL4CYC		(IMXRT_FLEXPWM2.offset0B0)
-#define FLEXPWM2_SM1CVAL5		(IMXRT_FLEXPWM2.offset0B2)
-#define FLEXPWM2_SM1CVAL5CYC		(IMXRT_FLEXPWM2.offset0B4)
-#define FLEXPWM2_SM2CNT			(IMXRT_FLEXPWM2.offset0C0)
-#define FLEXPWM2_SM2INIT		(IMXRT_FLEXPWM2.offset0C2)
-#define FLEXPWM2_SM2CTRL2		(IMXRT_FLEXPWM2.offset0C4)
-#define FLEXPWM2_SM2CTRL		(IMXRT_FLEXPWM2.offset0C6)
-#define FLEXPWM2_SM2VAL0		(IMXRT_FLEXPWM2.offset0C8)
-#define FLEXPWM2_SM2FRACVAL1		(IMXRT_FLEXPWM2.offset0CA)
-#define FLEXPWM2_SM2VAL1		(IMXRT_FLEXPWM2.offset0CC)
-#define FLEXPWM2_SM2FRACVAL2		(IMXRT_FLEXPWM2.offset0CE)
-#define FLEXPWM2_SM2VAL2		(IMXRT_FLEXPWM2.offset0D0)
-#define FLEXPWM2_SM2FRACVAL3		(IMXRT_FLEXPWM2.offset0D2)
-#define FLEXPWM2_SM2VAL3		(IMXRT_FLEXPWM2.offset0D4)
-#define FLEXPWM2_SM2FRACVAL4		(IMXRT_FLEXPWM2.offset0D6)
-#define FLEXPWM2_SM2VAL4		(IMXRT_FLEXPWM2.offset0D8)
-#define FLEXPWM2_SM2FRACVAL5		(IMXRT_FLEXPWM2.offset0DA)
-#define FLEXPWM2_SM2VAL5		(IMXRT_FLEXPWM2.offset0DC)
-#define FLEXPWM2_SM2FRCTRL		(IMXRT_FLEXPWM2.offset0DE)
-#define FLEXPWM2_SM2OCTRL		(IMXRT_FLEXPWM2.offset0E0)
-#define FLEXPWM2_SM2STS			(IMXRT_FLEXPWM2.offset0E2)
-#define FLEXPWM2_SM2INTEN		(IMXRT_FLEXPWM2.offset0E4)
-#define FLEXPWM2_SM2DMAEN		(IMXRT_FLEXPWM2.offset0E6)
-#define FLEXPWM2_SM2TCTRL		(IMXRT_FLEXPWM2.offset0E8)
-#define FLEXPWM2_SM2DISMAP0		(IMXRT_FLEXPWM2.offset0EA)
-#define FLEXPWM2_SM2DISMAP1		(IMXRT_FLEXPWM2.offset0EC)
-#define FLEXPWM2_SM2DTCNT0		(IMXRT_FLEXPWM2.offset0EE)
-#define FLEXPWM2_SM2DTCNT1		(IMXRT_FLEXPWM2.offset0F0)
-#define FLEXPWM2_SM2CAPTCTRLA		(IMXRT_FLEXPWM2.offset0F2)
-#define FLEXPWM2_SM2CAPTCOMPA		(IMXRT_FLEXPWM2.offset0F4)
-#define FLEXPWM2_SM2CAPTCTRLB		(IMXRT_FLEXPWM2.offset0F6)
-#define FLEXPWM2_SM2CAPTCOMPB		(IMXRT_FLEXPWM2.offset0F8)
-#define FLEXPWM2_SM2CAPTCTRLX		(IMXRT_FLEXPWM2.offset0FA)
-#define FLEXPWM2_SM2CAPTCOMPX		(IMXRT_FLEXPWM2.offset0FC)
-#define FLEXPWM2_SM2CVAL0		(IMXRT_FLEXPWM2.offset0FE)
-#define FLEXPWM2_SM2CVAL0CYC		(IMXRT_FLEXPWM2.offset100)
-#define FLEXPWM2_SM2CVAL1		(IMXRT_FLEXPWM2.offset102)
-#define FLEXPWM2_SM2CVAL1CYC		(IMXRT_FLEXPWM2.offset104)
-#define FLEXPWM2_SM2CVAL2		(IMXRT_FLEXPWM2.offset106)
-#define FLEXPWM2_SM2CVAL2CYC		(IMXRT_FLEXPWM2.offset108)
-#define FLEXPWM2_SM2CVAL3		(IMXRT_FLEXPWM2.offset10A)
-#define FLEXPWM2_SM2CVAL3CYC		(IMXRT_FLEXPWM2.offset10C)
-#define FLEXPWM2_SM2CVAL4		(IMXRT_FLEXPWM2.offset10E)
-#define FLEXPWM2_SM2CVAL4CYC		(IMXRT_FLEXPWM2.offset110)
-#define FLEXPWM2_SM2CVAL5		(IMXRT_FLEXPWM2.offset112)
-#define FLEXPWM2_SM2CVAL5CYC		(IMXRT_FLEXPWM2.offset114)
-#define FLEXPWM2_SM3CNT			(IMXRT_FLEXPWM2.offset120)
-#define FLEXPWM2_SM3INIT		(IMXRT_FLEXPWM2.offset122)
-#define FLEXPWM2_SM3CTRL2		(IMXRT_FLEXPWM2.offset124)
-#define FLEXPWM2_SM3CTRL		(IMXRT_FLEXPWM2.offset126)
-#define FLEXPWM2_SM3VAL0		(IMXRT_FLEXPWM2.offset128)
-#define FLEXPWM2_SM3FRACVAL1		(IMXRT_FLEXPWM2.offset12A)
-#define FLEXPWM2_SM3VAL1		(IMXRT_FLEXPWM2.offset12C)
-#define FLEXPWM2_SM3FRACVAL2		(IMXRT_FLEXPWM2.offset12E)
-#define FLEXPWM2_SM3VAL2		(IMXRT_FLEXPWM2.offset130)
-#define FLEXPWM2_SM3FRACVAL3		(IMXRT_FLEXPWM2.offset132)
-#define FLEXPWM2_SM3VAL3		(IMXRT_FLEXPWM2.offset134)
-#define FLEXPWM2_SM3FRACVAL4		(IMXRT_FLEXPWM2.offset136)
-#define FLEXPWM2_SM3VAL4		(IMXRT_FLEXPWM2.offset138)
-#define FLEXPWM2_SM3FRACVAL5		(IMXRT_FLEXPWM2.offset13A)
-#define FLEXPWM2_SM3VAL5		(IMXRT_FLEXPWM2.offset13C)
-#define FLEXPWM2_SM3FRCTRL		(IMXRT_FLEXPWM2.offset13E)
-#define FLEXPWM2_SM3OCTRL		(IMXRT_FLEXPWM2.offset140)
-#define FLEXPWM2_SM3STS			(IMXRT_FLEXPWM2.offset142)
-#define FLEXPWM2_SM3INTEN		(IMXRT_FLEXPWM2.offset144)
-#define FLEXPWM2_SM3DMAEN		(IMXRT_FLEXPWM2.offset146)
-#define FLEXPWM2_SM3TCTRL		(IMXRT_FLEXPWM2.offset148)
-#define FLEXPWM2_SM3DISMAP0		(IMXRT_FLEXPWM2.offset14A)
-#define FLEXPWM2_SM3DISMAP1		(IMXRT_FLEXPWM2.offset14C)
-#define FLEXPWM2_SM3DTCNT0		(IMXRT_FLEXPWM2.offset15E)
-#define FLEXPWM2_SM3DTCNT1		(IMXRT_FLEXPWM2.offset150)
-#define FLEXPWM2_SM3CAPTCTRLA		(IMXRT_FLEXPWM2.offset152)
-#define FLEXPWM2_SM3CAPTCOMPA		(IMXRT_FLEXPWM2.offset154)
-#define FLEXPWM2_SM3CAPTCTRLB		(IMXRT_FLEXPWM2.offset156)
-#define FLEXPWM2_SM3CAPTCOMPB		(IMXRT_FLEXPWM2.offset158)
-#define FLEXPWM2_SM3CAPTCTRLX		(IMXRT_FLEXPWM2.offset15A)
-#define FLEXPWM2_SM3CAPTCOMPX		(IMXRT_FLEXPWM2.offset15C)
-#define FLEXPWM2_SM3CVAL0		(IMXRT_FLEXPWM2.offset15E)
-#define FLEXPWM2_SM3CVAL0CYC		(IMXRT_FLEXPWM2.offset160)
-#define FLEXPWM2_SM3CVAL1		(IMXRT_FLEXPWM2.offset162)
-#define FLEXPWM2_SM3CVAL1CYC		(IMXRT_FLEXPWM2.offset164)
-#define FLEXPWM2_SM3CVAL2		(IMXRT_FLEXPWM2.offset166)
-#define FLEXPWM2_SM3CVAL2CYC		(IMXRT_FLEXPWM2.offset168)
-#define FLEXPWM2_SM3CVAL3		(IMXRT_FLEXPWM2.offset16A)
-#define FLEXPWM2_SM3CVAL3CYC		(IMXRT_FLEXPWM2.offset16C)
-#define FLEXPWM2_SM3CVAL4		(IMXRT_FLEXPWM2.offset16E)
-#define FLEXPWM2_SM3CVAL4CYC		(IMXRT_FLEXPWM2.offset170)
-#define FLEXPWM2_SM3CVAL5		(IMXRT_FLEXPWM2.offset172)
-#define FLEXPWM2_SM3CVAL5CYC		(IMXRT_FLEXPWM2.offset174)
-#define FLEXPWM2_OUTEN			(IMXRT_FLEXPWM2.offset180)
-#define FLEXPWM2_MASK			(IMXRT_FLEXPWM2.offset182)
-#define FLEXPWM2_SWCOUT			(IMXRT_FLEXPWM2.offset184)
-#define FLEXPWM2_DTSRCSEL		(IMXRT_FLEXPWM2.offset186)
-#define FLEXPWM2_MCTRL			(IMXRT_FLEXPWM2.offset188)
-#define FLEXPWM2_MCTRL2			(IMXRT_FLEXPWM2.offset18A)
-#define FLEXPWM2_FCTRL0			(IMXRT_FLEXPWM2.offset18C)
-#define FLEXPWM2_FSTS0			(IMXRT_FLEXPWM2.offset18E)
-#define FLEXPWM2_FFILT0			(IMXRT_FLEXPWM2.offset190)
-#define FLEXPWM2_FTST0			(IMXRT_FLEXPWM2.offset192)
-#define FLEXPWM2_FCTRL20		(IMXRT_FLEXPWM2.offset194)
-#define IMXRT_FLEXPWM3		(*(IMXRT_REGISTER16_t *)0x403E4000)
-#define FLEXPWM3_SM0CNT			(IMXRT_FLEXPWM3.offset000)
-#define FLEXPWM3_SM0INIT		(IMXRT_FLEXPWM3.offset002)
-#define FLEXPWM3_SM0CTRL2		(IMXRT_FLEXPWM3.offset004)
-#define FLEXPWM3_SM0CTRL		(IMXRT_FLEXPWM3.offset006)
-#define FLEXPWM3_SM0VAL0		(IMXRT_FLEXPWM3.offset008)
-#define FLEXPWM3_SM0FRACVAL1		(IMXRT_FLEXPWM3.offset00A)
-#define FLEXPWM3_SM0VAL1		(IMXRT_FLEXPWM3.offset00C)
-#define FLEXPWM3_SM0FRACVAL2		(IMXRT_FLEXPWM3.offset00E)
-#define FLEXPWM3_SM0VAL2		(IMXRT_FLEXPWM3.offset010)
-#define FLEXPWM3_SM0FRACVAL3		(IMXRT_FLEXPWM3.offset012)
-#define FLEXPWM3_SM0VAL3		(IMXRT_FLEXPWM3.offset014)
-#define FLEXPWM3_SM0FRACVAL4		(IMXRT_FLEXPWM3.offset016)
-#define FLEXPWM3_SM0VAL4		(IMXRT_FLEXPWM3.offset018)
-#define FLEXPWM3_SM0FRACVAL5		(IMXRT_FLEXPWM3.offset01A)
-#define FLEXPWM3_SM0VAL5		(IMXRT_FLEXPWM3.offset01C)
-#define FLEXPWM3_SM0FRCTRL		(IMXRT_FLEXPWM3.offset01E)
-#define FLEXPWM3_SM0OCTRL		(IMXRT_FLEXPWM3.offset020)
-#define FLEXPWM3_SM0STS			(IMXRT_FLEXPWM3.offset022)
-#define FLEXPWM3_SM0INTEN		(IMXRT_FLEXPWM3.offset024)
-#define FLEXPWM3_SM0DMAEN		(IMXRT_FLEXPWM3.offset026)
-#define FLEXPWM3_SM0TCTRL		(IMXRT_FLEXPWM3.offset028)
-#define FLEXPWM3_SM0DISMAP0		(IMXRT_FLEXPWM3.offset02A)
-#define FLEXPWM3_SM0DISMAP1		(IMXRT_FLEXPWM3.offset02C)
-#define FLEXPWM3_SM0DTCNT0		(IMXRT_FLEXPWM3.offset02E)
-#define FLEXPWM3_SM0DTCNT1		(IMXRT_FLEXPWM3.offset030)
-#define FLEXPWM3_SM0CAPTCTRLA		(IMXRT_FLEXPWM3.offset032)
-#define FLEXPWM3_SM0CAPTCOMPA		(IMXRT_FLEXPWM3.offset034)
-#define FLEXPWM3_SM0CAPTCTRLB		(IMXRT_FLEXPWM3.offset036)
-#define FLEXPWM3_SM0CAPTCOMPB		(IMXRT_FLEXPWM3.offset038)
-#define FLEXPWM3_SM0CAPTCTRLX		(IMXRT_FLEXPWM3.offset03A)
-#define FLEXPWM3_SM0CAPTCOMPX		(IMXRT_FLEXPWM3.offset03C)
-#define FLEXPWM3_SM0CVAL0		(IMXRT_FLEXPWM3.offset03E)
-#define FLEXPWM3_SM0CVAL0CYC		(IMXRT_FLEXPWM3.offset040)
-#define FLEXPWM3_SM0CVAL1		(IMXRT_FLEXPWM3.offset042)
-#define FLEXPWM3_SM0CVAL1CYC		(IMXRT_FLEXPWM3.offset044)
-#define FLEXPWM3_SM0CVAL2		(IMXRT_FLEXPWM3.offset046)
-#define FLEXPWM3_SM0CVAL2CYC		(IMXRT_FLEXPWM3.offset048)
-#define FLEXPWM3_SM0CVAL3		(IMXRT_FLEXPWM3.offset04A)
-#define FLEXPWM3_SM0CVAL3CYC		(IMXRT_FLEXPWM3.offset04C)
-#define FLEXPWM3_SM0CVAL4		(IMXRT_FLEXPWM3.offset04E)
-#define FLEXPWM3_SM0CVAL4CYC		(IMXRT_FLEXPWM3.offset050)
-#define FLEXPWM3_SM0CVAL5		(IMXRT_FLEXPWM3.offset052)
-#define FLEXPWM3_SM0CVAL5CYC		(IMXRT_FLEXPWM3.offset054)
-#define FLEXPWM3_SM1CNT			(IMXRT_FLEXPWM3.offset060)
-#define FLEXPWM3_SM1INIT		(IMXRT_FLEXPWM3.offset062)
-#define FLEXPWM3_SM1CTRL2		(IMXRT_FLEXPWM3.offset064)
-#define FLEXPWM3_SM1CTRL		(IMXRT_FLEXPWM3.offset066)
-#define FLEXPWM3_SM1VAL0		(IMXRT_FLEXPWM3.offset068)
-#define FLEXPWM3_SM1FRACVAL1		(IMXRT_FLEXPWM3.offset06A)
-#define FLEXPWM3_SM1VAL1		(IMXRT_FLEXPWM3.offset06C)
-#define FLEXPWM3_SM1FRACVAL2		(IMXRT_FLEXPWM3.offset06E)
-#define FLEXPWM3_SM1VAL2		(IMXRT_FLEXPWM3.offset070)
-#define FLEXPWM3_SM1FRACVAL3		(IMXRT_FLEXPWM3.offset072)
-#define FLEXPWM3_SM1VAL3		(IMXRT_FLEXPWM3.offset074)
-#define FLEXPWM3_SM1FRACVAL4		(IMXRT_FLEXPWM3.offset076)
-#define FLEXPWM3_SM1VAL4		(IMXRT_FLEXPWM3.offset078)
-#define FLEXPWM3_SM1FRACVAL5		(IMXRT_FLEXPWM3.offset07A)
-#define FLEXPWM3_SM1VAL5		(IMXRT_FLEXPWM3.offset07C)
-#define FLEXPWM3_SM1FRCTRL		(IMXRT_FLEXPWM3.offset07E)
-#define FLEXPWM3_SM1OCTRL		(IMXRT_FLEXPWM3.offset080)
-#define FLEXPWM3_SM1STS			(IMXRT_FLEXPWM3.offset082)
-#define FLEXPWM3_SM1INTEN		(IMXRT_FLEXPWM3.offset084)
-#define FLEXPWM3_SM1DMAEN		(IMXRT_FLEXPWM3.offset086)
-#define FLEXPWM3_SM1TCTRL		(IMXRT_FLEXPWM3.offset088)
-#define FLEXPWM3_SM1DISMAP0		(IMXRT_FLEXPWM3.offset08A)
-#define FLEXPWM3_SM1DISMAP1		(IMXRT_FLEXPWM3.offset08C)
-#define FLEXPWM3_SM1DTCNT0		(IMXRT_FLEXPWM3.offset08E)
-#define FLEXPWM3_SM1DTCNT1		(IMXRT_FLEXPWM3.offset090)
-#define FLEXPWM3_SM1CAPTCTRLA		(IMXRT_FLEXPWM3.offset092)
-#define FLEXPWM3_SM1CAPTCOMPA		(IMXRT_FLEXPWM3.offset094)
-#define FLEXPWM3_SM1CAPTCTRLB		(IMXRT_FLEXPWM3.offset096)
-#define FLEXPWM3_SM1CAPTCOMPB		(IMXRT_FLEXPWM3.offset098)
-#define FLEXPWM3_SM1CAPTCTRLX		(IMXRT_FLEXPWM3.offset09A)
-#define FLEXPWM3_SM1CAPTCOMPX		(IMXRT_FLEXPWM3.offset09C)
-#define FLEXPWM3_SM1CVAL0		(IMXRT_FLEXPWM3.offset09E)
-#define FLEXPWM3_SM1CVAL0CYC		(IMXRT_FLEXPWM3.offset0A0)
-#define FLEXPWM3_SM1CVAL1		(IMXRT_FLEXPWM3.offset0A2)
-#define FLEXPWM3_SM1CVAL1CYC		(IMXRT_FLEXPWM3.offset0A4)
-#define FLEXPWM3_SM1CVAL2		(IMXRT_FLEXPWM3.offset0A6)
-#define FLEXPWM3_SM1CVAL2CYC		(IMXRT_FLEXPWM3.offset0A8)
-#define FLEXPWM3_SM1CVAL3		(IMXRT_FLEXPWM3.offset0AA)
-#define FLEXPWM3_SM1CVAL3CYC		(IMXRT_FLEXPWM3.offset0AC)
-#define FLEXPWM3_SM1CVAL4		(IMXRT_FLEXPWM3.offset0AE)
-#define FLEXPWM3_SM1CVAL4CYC		(IMXRT_FLEXPWM3.offset0B0)
-#define FLEXPWM3_SM1CVAL5		(IMXRT_FLEXPWM3.offset0B2)
-#define FLEXPWM3_SM1CVAL5CYC		(IMXRT_FLEXPWM3.offset0B4)
-#define FLEXPWM3_SM2CNT			(IMXRT_FLEXPWM3.offset0C0)
-#define FLEXPWM3_SM2INIT		(IMXRT_FLEXPWM3.offset0C2)
-#define FLEXPWM3_SM2CTRL2		(IMXRT_FLEXPWM3.offset0C4)
-#define FLEXPWM3_SM2CTRL		(IMXRT_FLEXPWM3.offset0C6)
-#define FLEXPWM3_SM2VAL0		(IMXRT_FLEXPWM3.offset0C8)
-#define FLEXPWM3_SM2FRACVAL1		(IMXRT_FLEXPWM3.offset0CA)
-#define FLEXPWM3_SM2VAL1		(IMXRT_FLEXPWM3.offset0CC)
-#define FLEXPWM3_SM2FRACVAL2		(IMXRT_FLEXPWM3.offset0CE)
-#define FLEXPWM3_SM2VAL2		(IMXRT_FLEXPWM3.offset0D0)
-#define FLEXPWM3_SM2FRACVAL3		(IMXRT_FLEXPWM3.offset0D2)
-#define FLEXPWM3_SM2VAL3		(IMXRT_FLEXPWM3.offset0D4)
-#define FLEXPWM3_SM2FRACVAL4		(IMXRT_FLEXPWM3.offset0D6)
-#define FLEXPWM3_SM2VAL4		(IMXRT_FLEXPWM3.offset0D8)
-#define FLEXPWM3_SM2FRACVAL5		(IMXRT_FLEXPWM3.offset0DA)
-#define FLEXPWM3_SM2VAL5		(IMXRT_FLEXPWM3.offset0DC)
-#define FLEXPWM3_SM2FRCTRL		(IMXRT_FLEXPWM3.offset0DE)
-#define FLEXPWM3_SM2OCTRL		(IMXRT_FLEXPWM3.offset0E0)
-#define FLEXPWM3_SM2STS			(IMXRT_FLEXPWM3.offset0E2)
-#define FLEXPWM3_SM2INTEN		(IMXRT_FLEXPWM3.offset0E4)
-#define FLEXPWM3_SM2DMAEN		(IMXRT_FLEXPWM3.offset0E6)
-#define FLEXPWM3_SM2TCTRL		(IMXRT_FLEXPWM3.offset0E8)
-#define FLEXPWM3_SM2DISMAP0		(IMXRT_FLEXPWM3.offset0EA)
-#define FLEXPWM3_SM2DISMAP1		(IMXRT_FLEXPWM3.offset0EC)
-#define FLEXPWM3_SM2DTCNT0		(IMXRT_FLEXPWM3.offset0EE)
-#define FLEXPWM3_SM2DTCNT1		(IMXRT_FLEXPWM3.offset0F0)
-#define FLEXPWM3_SM2CAPTCTRLA		(IMXRT_FLEXPWM3.offset0F2)
-#define FLEXPWM3_SM2CAPTCOMPA		(IMXRT_FLEXPWM3.offset0F4)
-#define FLEXPWM3_SM2CAPTCTRLB		(IMXRT_FLEXPWM3.offset0F6)
-#define FLEXPWM3_SM2CAPTCOMPB		(IMXRT_FLEXPWM3.offset0F8)
-#define FLEXPWM3_SM2CAPTCTRLX		(IMXRT_FLEXPWM3.offset0FA)
-#define FLEXPWM3_SM2CAPTCOMPX		(IMXRT_FLEXPWM3.offset0FC)
-#define FLEXPWM3_SM2CVAL0		(IMXRT_FLEXPWM3.offset0FE)
-#define FLEXPWM3_SM2CVAL0CYC		(IMXRT_FLEXPWM3.offset100)
-#define FLEXPWM3_SM2CVAL1		(IMXRT_FLEXPWM3.offset102)
-#define FLEXPWM3_SM2CVAL1CYC		(IMXRT_FLEXPWM3.offset104)
-#define FLEXPWM3_SM2CVAL2		(IMXRT_FLEXPWM3.offset106)
-#define FLEXPWM3_SM2CVAL2CYC		(IMXRT_FLEXPWM3.offset108)
-#define FLEXPWM3_SM2CVAL3		(IMXRT_FLEXPWM3.offset10A)
-#define FLEXPWM3_SM2CVAL3CYC		(IMXRT_FLEXPWM3.offset10C)
-#define FLEXPWM3_SM2CVAL4		(IMXRT_FLEXPWM3.offset10E)
-#define FLEXPWM3_SM2CVAL4CYC		(IMXRT_FLEXPWM3.offset110)
-#define FLEXPWM3_SM2CVAL5		(IMXRT_FLEXPWM3.offset112)
-#define FLEXPWM3_SM2CVAL5CYC		(IMXRT_FLEXPWM3.offset114)
-#define FLEXPWM3_SM3CNT			(IMXRT_FLEXPWM3.offset120)
-#define FLEXPWM3_SM3INIT		(IMXRT_FLEXPWM3.offset122)
-#define FLEXPWM3_SM3CTRL2		(IMXRT_FLEXPWM3.offset124)
-#define FLEXPWM3_SM3CTRL		(IMXRT_FLEXPWM3.offset126)
-#define FLEXPWM3_SM3VAL0		(IMXRT_FLEXPWM3.offset128)
-#define FLEXPWM3_SM3FRACVAL1		(IMXRT_FLEXPWM3.offset12A)
-#define FLEXPWM3_SM3VAL1		(IMXRT_FLEXPWM3.offset12C)
-#define FLEXPWM3_SM3FRACVAL2		(IMXRT_FLEXPWM3.offset12E)
-#define FLEXPWM3_SM3VAL2		(IMXRT_FLEXPWM3.offset130)
-#define FLEXPWM3_SM3FRACVAL3		(IMXRT_FLEXPWM3.offset132)
-#define FLEXPWM3_SM3VAL3		(IMXRT_FLEXPWM3.offset134)
-#define FLEXPWM3_SM3FRACVAL4		(IMXRT_FLEXPWM3.offset136)
-#define FLEXPWM3_SM3VAL4		(IMXRT_FLEXPWM3.offset138)
-#define FLEXPWM3_SM3FRACVAL5		(IMXRT_FLEXPWM3.offset13A)
-#define FLEXPWM3_SM3VAL5		(IMXRT_FLEXPWM3.offset13C)
-#define FLEXPWM3_SM3FRCTRL		(IMXRT_FLEXPWM3.offset13E)
-#define FLEXPWM3_SM3OCTRL		(IMXRT_FLEXPWM3.offset140)
-#define FLEXPWM3_SM3STS			(IMXRT_FLEXPWM3.offset142)
-#define FLEXPWM3_SM3INTEN		(IMXRT_FLEXPWM3.offset144)
-#define FLEXPWM3_SM3DMAEN		(IMXRT_FLEXPWM3.offset146)
-#define FLEXPWM3_SM3TCTRL		(IMXRT_FLEXPWM3.offset148)
-#define FLEXPWM3_SM3DISMAP0		(IMXRT_FLEXPWM3.offset14A)
-#define FLEXPWM3_SM3DISMAP1		(IMXRT_FLEXPWM3.offset14C)
-#define FLEXPWM3_SM3DTCNT0		(IMXRT_FLEXPWM3.offset15E)
-#define FLEXPWM3_SM3DTCNT1		(IMXRT_FLEXPWM3.offset150)
-#define FLEXPWM3_SM3CAPTCTRLA		(IMXRT_FLEXPWM3.offset152)
-#define FLEXPWM3_SM3CAPTCOMPA		(IMXRT_FLEXPWM3.offset154)
-#define FLEXPWM3_SM3CAPTCTRLB		(IMXRT_FLEXPWM3.offset156)
-#define FLEXPWM3_SM3CAPTCOMPB		(IMXRT_FLEXPWM3.offset158)
-#define FLEXPWM3_SM3CAPTCTRLX		(IMXRT_FLEXPWM3.offset15A)
-#define FLEXPWM3_SM3CAPTCOMPX		(IMXRT_FLEXPWM3.offset15C)
-#define FLEXPWM3_SM3CVAL0		(IMXRT_FLEXPWM3.offset15E)
-#define FLEXPWM3_SM3CVAL0CYC		(IMXRT_FLEXPWM3.offset160)
-#define FLEXPWM3_SM3CVAL1		(IMXRT_FLEXPWM3.offset162)
-#define FLEXPWM3_SM3CVAL1CYC		(IMXRT_FLEXPWM3.offset164)
-#define FLEXPWM3_SM3CVAL2		(IMXRT_FLEXPWM3.offset166)
-#define FLEXPWM3_SM3CVAL2CYC		(IMXRT_FLEXPWM3.offset168)
-#define FLEXPWM3_SM3CVAL3		(IMXRT_FLEXPWM3.offset16A)
-#define FLEXPWM3_SM3CVAL3CYC		(IMXRT_FLEXPWM3.offset16C)
-#define FLEXPWM3_SM3CVAL4		(IMXRT_FLEXPWM3.offset16E)
-#define FLEXPWM3_SM3CVAL4CYC		(IMXRT_FLEXPWM3.offset170)
-#define FLEXPWM3_SM3CVAL5		(IMXRT_FLEXPWM3.offset172)
-#define FLEXPWM3_SM3CVAL5CYC		(IMXRT_FLEXPWM3.offset174)
-#define FLEXPWM3_OUTEN			(IMXRT_FLEXPWM3.offset180)
-#define FLEXPWM3_MASK			(IMXRT_FLEXPWM3.offset182)
-#define FLEXPWM3_SWCOUT			(IMXRT_FLEXPWM3.offset184)
-#define FLEXPWM3_DTSRCSEL		(IMXRT_FLEXPWM3.offset186)
-#define FLEXPWM3_MCTRL			(IMXRT_FLEXPWM3.offset188)
-#define FLEXPWM3_MCTRL2			(IMXRT_FLEXPWM3.offset18A)
-#define FLEXPWM3_FCTRL0			(IMXRT_FLEXPWM3.offset18C)
-#define FLEXPWM3_FSTS0			(IMXRT_FLEXPWM3.offset18E)
-#define FLEXPWM3_FFILT0			(IMXRT_FLEXPWM3.offset190)
-#define FLEXPWM3_FTST0			(IMXRT_FLEXPWM3.offset192)
-#define FLEXPWM3_FCTRL20		(IMXRT_FLEXPWM3.offset194)
-#define IMXRT_FLEXPWM4		(*(IMXRT_REGISTER16_t *)0x403E8000)
-#define FLEXPWM4_SM0CNT			(IMXRT_FLEXPWM4.offset000)
-#define FLEXPWM4_SM0INIT		(IMXRT_FLEXPWM4.offset002)
-#define FLEXPWM4_SM0CTRL2		(IMXRT_FLEXPWM4.offset004)
-#define FLEXPWM4_SM0CTRL		(IMXRT_FLEXPWM4.offset006)
-#define FLEXPWM4_SM0VAL0		(IMXRT_FLEXPWM4.offset008)
-#define FLEXPWM4_SM0FRACVAL1		(IMXRT_FLEXPWM4.offset00A)
-#define FLEXPWM4_SM0VAL1		(IMXRT_FLEXPWM4.offset00C)
-#define FLEXPWM4_SM0FRACVAL2		(IMXRT_FLEXPWM4.offset00E)
-#define FLEXPWM4_SM0VAL2		(IMXRT_FLEXPWM4.offset010)
-#define FLEXPWM4_SM0FRACVAL3		(IMXRT_FLEXPWM4.offset012)
-#define FLEXPWM4_SM0VAL3		(IMXRT_FLEXPWM4.offset014)
-#define FLEXPWM4_SM0FRACVAL4		(IMXRT_FLEXPWM4.offset016)
-#define FLEXPWM4_SM0VAL4		(IMXRT_FLEXPWM4.offset018)
-#define FLEXPWM4_SM0FRACVAL5		(IMXRT_FLEXPWM4.offset01A)
-#define FLEXPWM4_SM0VAL5		(IMXRT_FLEXPWM4.offset01C)
-#define FLEXPWM4_SM0FRCTRL		(IMXRT_FLEXPWM4.offset01E)
-#define FLEXPWM4_SM0OCTRL		(IMXRT_FLEXPWM4.offset020)
-#define FLEXPWM4_SM0STS			(IMXRT_FLEXPWM4.offset022)
-#define FLEXPWM4_SM0INTEN		(IMXRT_FLEXPWM4.offset024)
-#define FLEXPWM4_SM0DMAEN		(IMXRT_FLEXPWM4.offset026)
-#define FLEXPWM4_SM0TCTRL		(IMXRT_FLEXPWM4.offset028)
-#define FLEXPWM4_SM0DISMAP0		(IMXRT_FLEXPWM4.offset02A)
-#define FLEXPWM4_SM0DISMAP1		(IMXRT_FLEXPWM4.offset02C)
-#define FLEXPWM4_SM0DTCNT0		(IMXRT_FLEXPWM4.offset02E)
-#define FLEXPWM4_SM0DTCNT1		(IMXRT_FLEXPWM4.offset030)
-#define FLEXPWM4_SM0CAPTCTRLA		(IMXRT_FLEXPWM4.offset032)
-#define FLEXPWM4_SM0CAPTCOMPA		(IMXRT_FLEXPWM4.offset034)
-#define FLEXPWM4_SM0CAPTCTRLB		(IMXRT_FLEXPWM4.offset036)
-#define FLEXPWM4_SM0CAPTCOMPB		(IMXRT_FLEXPWM4.offset038)
-#define FLEXPWM4_SM0CAPTCTRLX		(IMXRT_FLEXPWM4.offset03A)
-#define FLEXPWM4_SM0CAPTCOMPX		(IMXRT_FLEXPWM4.offset03C)
-#define FLEXPWM4_SM0CVAL0		(IMXRT_FLEXPWM4.offset03E)
-#define FLEXPWM4_SM0CVAL0CYC		(IMXRT_FLEXPWM4.offset040)
-#define FLEXPWM4_SM0CVAL1		(IMXRT_FLEXPWM4.offset042)
-#define FLEXPWM4_SM0CVAL1CYC		(IMXRT_FLEXPWM4.offset044)
-#define FLEXPWM4_SM0CVAL2		(IMXRT_FLEXPWM4.offset046)
-#define FLEXPWM4_SM0CVAL2CYC		(IMXRT_FLEXPWM4.offset048)
-#define FLEXPWM4_SM0CVAL3		(IMXRT_FLEXPWM4.offset04A)
-#define FLEXPWM4_SM0CVAL3CYC		(IMXRT_FLEXPWM4.offset04C)
-#define FLEXPWM4_SM0CVAL4		(IMXRT_FLEXPWM4.offset04E)
-#define FLEXPWM4_SM0CVAL4CYC		(IMXRT_FLEXPWM4.offset050)
-#define FLEXPWM4_SM0CVAL5		(IMXRT_FLEXPWM4.offset052)
-#define FLEXPWM4_SM0CVAL5CYC		(IMXRT_FLEXPWM4.offset054)
-#define FLEXPWM4_SM1CNT			(IMXRT_FLEXPWM4.offset060)
-#define FLEXPWM4_SM1INIT		(IMXRT_FLEXPWM4.offset062)
-#define FLEXPWM4_SM1CTRL2		(IMXRT_FLEXPWM4.offset064)
-#define FLEXPWM4_SM1CTRL		(IMXRT_FLEXPWM4.offset066)
-#define FLEXPWM4_SM1VAL0		(IMXRT_FLEXPWM4.offset068)
-#define FLEXPWM4_SM1FRACVAL1		(IMXRT_FLEXPWM4.offset06A)
-#define FLEXPWM4_SM1VAL1		(IMXRT_FLEXPWM4.offset06C)
-#define FLEXPWM4_SM1FRACVAL2		(IMXRT_FLEXPWM4.offset06E)
-#define FLEXPWM4_SM1VAL2		(IMXRT_FLEXPWM4.offset070)
-#define FLEXPWM4_SM1FRACVAL3		(IMXRT_FLEXPWM4.offset072)
-#define FLEXPWM4_SM1VAL3		(IMXRT_FLEXPWM4.offset074)
-#define FLEXPWM4_SM1FRACVAL4		(IMXRT_FLEXPWM4.offset076)
-#define FLEXPWM4_SM1VAL4		(IMXRT_FLEXPWM4.offset078)
-#define FLEXPWM4_SM1FRACVAL5		(IMXRT_FLEXPWM4.offset07A)
-#define FLEXPWM4_SM1VAL5		(IMXRT_FLEXPWM4.offset07C)
-#define FLEXPWM4_SM1FRCTRL		(IMXRT_FLEXPWM4.offset07E)
-#define FLEXPWM4_SM1OCTRL		(IMXRT_FLEXPWM4.offset080)
-#define FLEXPWM4_SM1STS			(IMXRT_FLEXPWM4.offset082)
-#define FLEXPWM4_SM1INTEN		(IMXRT_FLEXPWM4.offset084)
-#define FLEXPWM4_SM1DMAEN		(IMXRT_FLEXPWM4.offset086)
-#define FLEXPWM4_SM1TCTRL		(IMXRT_FLEXPWM4.offset088)
-#define FLEXPWM4_SM1DISMAP0		(IMXRT_FLEXPWM4.offset08A)
-#define FLEXPWM4_SM1DISMAP1		(IMXRT_FLEXPWM4.offset08C)
-#define FLEXPWM4_SM1DTCNT0		(IMXRT_FLEXPWM4.offset08E)
-#define FLEXPWM4_SM1DTCNT1		(IMXRT_FLEXPWM4.offset090)
-#define FLEXPWM4_SM1CAPTCTRLA		(IMXRT_FLEXPWM4.offset092)
-#define FLEXPWM4_SM1CAPTCOMPA		(IMXRT_FLEXPWM4.offset094)
-#define FLEXPWM4_SM1CAPTCTRLB		(IMXRT_FLEXPWM4.offset096)
-#define FLEXPWM4_SM1CAPTCOMPB		(IMXRT_FLEXPWM4.offset098)
-#define FLEXPWM4_SM1CAPTCTRLX		(IMXRT_FLEXPWM4.offset09A)
-#define FLEXPWM4_SM1CAPTCOMPX		(IMXRT_FLEXPWM4.offset09C)
-#define FLEXPWM4_SM1CVAL0		(IMXRT_FLEXPWM4.offset09E)
-#define FLEXPWM4_SM1CVAL0CYC		(IMXRT_FLEXPWM4.offset0A0)
-#define FLEXPWM4_SM1CVAL1		(IMXRT_FLEXPWM4.offset0A2)
-#define FLEXPWM4_SM1CVAL1CYC		(IMXRT_FLEXPWM4.offset0A4)
-#define FLEXPWM4_SM1CVAL2		(IMXRT_FLEXPWM4.offset0A6)
-#define FLEXPWM4_SM1CVAL2CYC		(IMXRT_FLEXPWM4.offset0A8)
-#define FLEXPWM4_SM1CVAL3		(IMXRT_FLEXPWM4.offset0AA)
-#define FLEXPWM4_SM1CVAL3CYC		(IMXRT_FLEXPWM4.offset0AC)
-#define FLEXPWM4_SM1CVAL4		(IMXRT_FLEXPWM4.offset0AE)
-#define FLEXPWM4_SM1CVAL4CYC		(IMXRT_FLEXPWM4.offset0B0)
-#define FLEXPWM4_SM1CVAL5		(IMXRT_FLEXPWM4.offset0B2)
-#define FLEXPWM4_SM1CVAL5CYC		(IMXRT_FLEXPWM4.offset0B4)
-#define FLEXPWM4_SM2CNT			(IMXRT_FLEXPWM4.offset0C0)
-#define FLEXPWM4_SM2INIT		(IMXRT_FLEXPWM4.offset0C2)
-#define FLEXPWM4_SM2CTRL2		(IMXRT_FLEXPWM4.offset0C4)
-#define FLEXPWM4_SM2CTRL		(IMXRT_FLEXPWM4.offset0C6)
-#define FLEXPWM4_SM2VAL0		(IMXRT_FLEXPWM4.offset0C8)
-#define FLEXPWM4_SM2FRACVAL1		(IMXRT_FLEXPWM4.offset0CA)
-#define FLEXPWM4_SM2VAL1		(IMXRT_FLEXPWM4.offset0CC)
-#define FLEXPWM4_SM2FRACVAL2		(IMXRT_FLEXPWM4.offset0CE)
-#define FLEXPWM4_SM2VAL2		(IMXRT_FLEXPWM4.offset0D0)
-#define FLEXPWM4_SM2FRACVAL3		(IMXRT_FLEXPWM4.offset0D2)
-#define FLEXPWM4_SM2VAL3		(IMXRT_FLEXPWM4.offset0D4)
-#define FLEXPWM4_SM2FRACVAL4		(IMXRT_FLEXPWM4.offset0D6)
-#define FLEXPWM4_SM2VAL4		(IMXRT_FLEXPWM4.offset0D8)
-#define FLEXPWM4_SM2FRACVAL5		(IMXRT_FLEXPWM4.offset0DA)
-#define FLEXPWM4_SM2VAL5		(IMXRT_FLEXPWM4.offset0DC)
-#define FLEXPWM4_SM2FRCTRL		(IMXRT_FLEXPWM4.offset0DE)
-#define FLEXPWM4_SM2OCTRL		(IMXRT_FLEXPWM4.offset0E0)
-#define FLEXPWM4_SM2STS			(IMXRT_FLEXPWM4.offset0E2)
-#define FLEXPWM4_SM2INTEN		(IMXRT_FLEXPWM4.offset0E4)
-#define FLEXPWM4_SM2DMAEN		(IMXRT_FLEXPWM4.offset0E6)
-#define FLEXPWM4_SM2TCTRL		(IMXRT_FLEXPWM4.offset0E8)
-#define FLEXPWM4_SM2DISMAP0		(IMXRT_FLEXPWM4.offset0EA)
-#define FLEXPWM4_SM2DISMAP1		(IMXRT_FLEXPWM4.offset0EC)
-#define FLEXPWM4_SM2DTCNT0		(IMXRT_FLEXPWM4.offset0EE)
-#define FLEXPWM4_SM2DTCNT1		(IMXRT_FLEXPWM4.offset0F0)
-#define FLEXPWM4_SM2CAPTCTRLA		(IMXRT_FLEXPWM4.offset0F2)
-#define FLEXPWM4_SM2CAPTCOMPA		(IMXRT_FLEXPWM4.offset0F4)
-#define FLEXPWM4_SM2CAPTCTRLB		(IMXRT_FLEXPWM4.offset0F6)
-#define FLEXPWM4_SM2CAPTCOMPB		(IMXRT_FLEXPWM4.offset0F8)
-#define FLEXPWM4_SM2CAPTCTRLX		(IMXRT_FLEXPWM4.offset0FA)
-#define FLEXPWM4_SM2CAPTCOMPX		(IMXRT_FLEXPWM4.offset0FC)
-#define FLEXPWM4_SM2CVAL0		(IMXRT_FLEXPWM4.offset0FE)
-#define FLEXPWM4_SM2CVAL0CYC		(IMXRT_FLEXPWM4.offset100)
-#define FLEXPWM4_SM2CVAL1		(IMXRT_FLEXPWM4.offset102)
-#define FLEXPWM4_SM2CVAL1CYC		(IMXRT_FLEXPWM4.offset104)
-#define FLEXPWM4_SM2CVAL2		(IMXRT_FLEXPWM4.offset106)
-#define FLEXPWM4_SM2CVAL2CYC		(IMXRT_FLEXPWM4.offset108)
-#define FLEXPWM4_SM2CVAL3		(IMXRT_FLEXPWM4.offset10A)
-#define FLEXPWM4_SM2CVAL3CYC		(IMXRT_FLEXPWM4.offset10C)
-#define FLEXPWM4_SM2CVAL4		(IMXRT_FLEXPWM4.offset10E)
-#define FLEXPWM4_SM2CVAL4CYC		(IMXRT_FLEXPWM4.offset110)
-#define FLEXPWM4_SM2CVAL5		(IMXRT_FLEXPWM4.offset112)
-#define FLEXPWM4_SM2CVAL5CYC		(IMXRT_FLEXPWM4.offset114)
-#define FLEXPWM4_SM3CNT			(IMXRT_FLEXPWM4.offset120)
-#define FLEXPWM4_SM3INIT		(IMXRT_FLEXPWM4.offset122)
-#define FLEXPWM4_SM3CTRL2		(IMXRT_FLEXPWM4.offset124)
-#define FLEXPWM4_SM3CTRL		(IMXRT_FLEXPWM4.offset126)
-#define FLEXPWM4_SM3VAL0		(IMXRT_FLEXPWM4.offset128)
-#define FLEXPWM4_SM3FRACVAL1		(IMXRT_FLEXPWM4.offset12A)
-#define FLEXPWM4_SM3VAL1		(IMXRT_FLEXPWM4.offset12C)
-#define FLEXPWM4_SM3FRACVAL2		(IMXRT_FLEXPWM4.offset12E)
-#define FLEXPWM4_SM3VAL2		(IMXRT_FLEXPWM4.offset130)
-#define FLEXPWM4_SM3FRACVAL3		(IMXRT_FLEXPWM4.offset132)
-#define FLEXPWM4_SM3VAL3		(IMXRT_FLEXPWM4.offset134)
-#define FLEXPWM4_SM3FRACVAL4		(IMXRT_FLEXPWM4.offset136)
-#define FLEXPWM4_SM3VAL4		(IMXRT_FLEXPWM4.offset138)
-#define FLEXPWM4_SM3FRACVAL5		(IMXRT_FLEXPWM4.offset13A)
-#define FLEXPWM4_SM3VAL5		(IMXRT_FLEXPWM4.offset13C)
-#define FLEXPWM4_SM3FRCTRL		(IMXRT_FLEXPWM4.offset13E)
-#define FLEXPWM4_SM3OCTRL		(IMXRT_FLEXPWM4.offset140)
-#define FLEXPWM4_SM3STS			(IMXRT_FLEXPWM4.offset142)
-#define FLEXPWM4_SM3INTEN		(IMXRT_FLEXPWM4.offset144)
-#define FLEXPWM4_SM3DMAEN		(IMXRT_FLEXPWM4.offset146)
-#define FLEXPWM4_SM3TCTRL		(IMXRT_FLEXPWM4.offset148)
-#define FLEXPWM4_SM3DISMAP0		(IMXRT_FLEXPWM4.offset14A)
-#define FLEXPWM4_SM3DISMAP1		(IMXRT_FLEXPWM4.offset14C)
-#define FLEXPWM4_SM3DTCNT0		(IMXRT_FLEXPWM4.offset15E)
-#define FLEXPWM4_SM3DTCNT1		(IMXRT_FLEXPWM4.offset150)
-#define FLEXPWM4_SM3CAPTCTRLA		(IMXRT_FLEXPWM4.offset152)
-#define FLEXPWM4_SM3CAPTCOMPA		(IMXRT_FLEXPWM4.offset154)
-#define FLEXPWM4_SM3CAPTCTRLB		(IMXRT_FLEXPWM4.offset156)
-#define FLEXPWM4_SM3CAPTCOMPB		(IMXRT_FLEXPWM4.offset158)
-#define FLEXPWM4_SM3CAPTCTRLX		(IMXRT_FLEXPWM4.offset15A)
-#define FLEXPWM4_SM3CAPTCOMPX		(IMXRT_FLEXPWM4.offset15C)
-#define FLEXPWM4_SM3CVAL0		(IMXRT_FLEXPWM4.offset15E)
-#define FLEXPWM4_SM3CVAL0CYC		(IMXRT_FLEXPWM4.offset160)
-#define FLEXPWM4_SM3CVAL1		(IMXRT_FLEXPWM4.offset162)
-#define FLEXPWM4_SM3CVAL1CYC		(IMXRT_FLEXPWM4.offset164)
-#define FLEXPWM4_SM3CVAL2		(IMXRT_FLEXPWM4.offset166)
-#define FLEXPWM4_SM3CVAL2CYC		(IMXRT_FLEXPWM4.offset168)
-#define FLEXPWM4_SM3CVAL3		(IMXRT_FLEXPWM4.offset16A)
-#define FLEXPWM4_SM3CVAL3CYC		(IMXRT_FLEXPWM4.offset16C)
-#define FLEXPWM4_SM3CVAL4		(IMXRT_FLEXPWM4.offset16E)
-#define FLEXPWM4_SM3CVAL4CYC		(IMXRT_FLEXPWM4.offset170)
-#define FLEXPWM4_SM3CVAL5		(IMXRT_FLEXPWM4.offset172)
-#define FLEXPWM4_SM3CVAL5CYC		(IMXRT_FLEXPWM4.offset174)
-#define FLEXPWM4_OUTEN			(IMXRT_FLEXPWM4.offset180)
-#define FLEXPWM4_MASK			(IMXRT_FLEXPWM4.offset182)
-#define FLEXPWM4_SWCOUT			(IMXRT_FLEXPWM4.offset184)
-#define FLEXPWM4_DTSRCSEL		(IMXRT_FLEXPWM4.offset186)
-#define FLEXPWM4_MCTRL			(IMXRT_FLEXPWM4.offset188)
-#define FLEXPWM4_MCTRL2			(IMXRT_FLEXPWM4.offset18A)
-#define FLEXPWM4_FCTRL0			(IMXRT_FLEXPWM4.offset18C)
-#define FLEXPWM4_FSTS0			(IMXRT_FLEXPWM4.offset18E)
-#define FLEXPWM4_FFILT0			(IMXRT_FLEXPWM4.offset190)
-#define FLEXPWM4_FTST0			(IMXRT_FLEXPWM4.offset192)
-#define FLEXPWM4_FCTRL20		(IMXRT_FLEXPWM4.offset194)
+// 28.4.1: page 1354
+typedef struct {
+	struct {
+		volatile uint16_t CNT;
+		volatile uint16_t INIT;
+		volatile uint16_t CTRL2;
+		volatile uint16_t CTRL;
+		volatile uint16_t unused1;
+		volatile uint16_t VAL0;
+		volatile uint16_t FRACVAL1;
+		volatile uint16_t VAL1;
+		volatile uint16_t FRACVAL2;
+		volatile uint16_t VAL2;
+		volatile uint16_t FRACVAL3;
+		volatile uint16_t VAL3;
+		volatile uint16_t FRACVAL4;
+		volatile uint16_t VAL4;
+		volatile uint16_t FRACVAL5;
+		volatile uint16_t VAL5;
+		volatile uint16_t FRCTRL;
+		volatile uint16_t OCTRL;
+		volatile uint16_t STS;
+		volatile uint16_t INTEN;
+		volatile uint16_t DMAEN;
+		volatile uint16_t TCTRL;
+		volatile uint16_t DISMAP0;
+		volatile uint16_t DISMAP1;
+		volatile uint16_t DTCNT0;
+		volatile uint16_t DTCNT1;
+		volatile uint16_t CAPTCTRLA;
+		volatile uint16_t CAPTCOMPA;
+		volatile uint16_t CAPTCTRLB;
+		volatile uint16_t CAPTCOMPB;
+		volatile uint16_t CAPTCTRLX;
+		volatile uint16_t CAPTCOMPX;
+		volatile uint16_t CVAL0;
+		volatile uint16_t CVAL0CYC;
+		volatile uint16_t CVAL1;
+		volatile uint16_t CVAL1CYC;
+		volatile uint16_t CVAL2;
+		volatile uint16_t CVAL2CYC;
+		volatile uint16_t CVAL3;
+		volatile uint16_t CVAL3CYC;
+		volatile uint16_t CVAL4;
+		volatile uint16_t CVAL4CYC;
+		volatile uint16_t CVAL5;
+		volatile uint16_t CVAL5CYC;
+		volatile uint16_t unused2;
+		volatile uint16_t unused3;
+		volatile uint16_t unused4;
+		volatile uint16_t unused5;
+	} SM[4];
+	volatile uint16_t OUTEN;
+	volatile uint16_t MASK;
+	volatile uint16_t SWCOUT;
+	volatile uint16_t DTSRCSEL;
+	volatile uint16_t MCTRL;
+	volatile uint16_t MCTRL2;
+	volatile uint16_t FCTRL0;
+	volatile uint16_t FSTS0;
+	volatile uint16_t FFILT0;
+	volatile uint16_t FTST0;
+	volatile uint16_t FCTRL20;
+} IMXRT_FLEXPWM_t;
+#define IMXRT_FLEXPWM1		(*(IMXRT_FLEXPWM_t *)0x403DC000)
+#define IMXRT_FLEXPWM2		(*(IMXRT_FLEXPWM_t *)0x403E0000)
+#define IMXRT_FLEXPWM3		(*(IMXRT_FLEXPWM_t *)0x403E4000)
+#define IMXRT_FLEXPWM4		(*(IMXRT_FLEXPWM_t *)0x403E8000)
+#define FLEXPWM1_SM0CNT			(IMXRT_FLEXPWM1.SM[0].CNT)
+#define FLEXPWM1_SM0INIT		(IMXRT_FLEXPWM1.SM[0].INIT)
+#define FLEXPWM1_SM0CTRL2		(IMXRT_FLEXPWM1.SM[0].CTRL2)
+#define FLEXPWM1_SM0CTRL		(IMXRT_FLEXPWM1.SM[0].CTRL)
+#define FLEXPWM1_SM0VAL0		(IMXRT_FLEXPWM1.SM[0].VAL0)
+#define FLEXPWM1_SM0FRACVAL1		(IMXRT_FLEXPWM1.SM[0].FRACVAL1)
+#define FLEXPWM1_SM0VAL1		(IMXRT_FLEXPWM1.SM[0].VAL1)
+#define FLEXPWM1_SM0FRACVAL2		(IMXRT_FLEXPWM1.SM[0].FRACVAL2)
+#define FLEXPWM1_SM0VAL2		(IMXRT_FLEXPWM1.SM[0].VAL2)
+#define FLEXPWM1_SM0FRACVAL3		(IMXRT_FLEXPWM1.SM[0].FRACVAL3)
+#define FLEXPWM1_SM0VAL3		(IMXRT_FLEXPWM1.SM[0].VAL3)
+#define FLEXPWM1_SM0FRACVAL4		(IMXRT_FLEXPWM1.SM[0].FRACVAL4)
+#define FLEXPWM1_SM0VAL4		(IMXRT_FLEXPWM1.SM[0].VAL4)
+#define FLEXPWM1_SM0FRACVAL5		(IMXRT_FLEXPWM1.SM[0].FRACVAL5)
+#define FLEXPWM1_SM0VAL5		(IMXRT_FLEXPWM1.SM[0].VAL5)
+#define FLEXPWM1_SM0FRCTRL		(IMXRT_FLEXPWM1.SM[0].FRCTRL)
+#define FLEXPWM1_SM0OCTRL		(IMXRT_FLEXPWM1.SM[0].OCTRL)
+#define FLEXPWM1_SM0STS			(IMXRT_FLEXPWM1.SM[0].STS)
+#define FLEXPWM1_SM0INTEN		(IMXRT_FLEXPWM1.SM[0].INTEN)
+#define FLEXPWM1_SM0DMAEN		(IMXRT_FLEXPWM1.SM[0].DMAEN)
+#define FLEXPWM1_SM0TCTRL		(IMXRT_FLEXPWM1.SM[0].TCTRL)
+#define FLEXPWM1_SM0DISMAP0		(IMXRT_FLEXPWM1.SM[0].DISMAP0)
+#define FLEXPWM1_SM0DISMAP1		(IMXRT_FLEXPWM1.SM[0].DISMAP1)
+#define FLEXPWM1_SM0DTCNT0		(IMXRT_FLEXPWM1.SM[0].DTCNT0)
+#define FLEXPWM1_SM0DTCNT1		(IMXRT_FLEXPWM1.SM[0].DTCNT1)
+#define FLEXPWM1_SM0CAPTCTRLA		(IMXRT_FLEXPWM1.SM[0].CAPTCTRLA)
+#define FLEXPWM1_SM0CAPTCOMPA		(IMXRT_FLEXPWM1.SM[0].CAPTCOMPA)
+#define FLEXPWM1_SM0CAPTCTRLB		(IMXRT_FLEXPWM1.SM[0].CAPTCTRLB)
+#define FLEXPWM1_SM0CAPTCOMPB		(IMXRT_FLEXPWM1.SM[0].CAPTCOMPB)
+#define FLEXPWM1_SM0CAPTCTRLX		(IMXRT_FLEXPWM1.SM[0].CAPTCTRLX)
+#define FLEXPWM1_SM0CAPTCOMPX		(IMXRT_FLEXPWM1.SM[0].CAPTCOMPX)
+#define FLEXPWM1_SM0CVAL0		(IMXRT_FLEXPWM1.SM[0].CVAL0)
+#define FLEXPWM1_SM0CVAL0CYC		(IMXRT_FLEXPWM1.SM[0].CVAL0CYC)
+#define FLEXPWM1_SM0CVAL1		(IMXRT_FLEXPWM1.SM[0].CVAL1)
+#define FLEXPWM1_SM0CVAL1CYC		(IMXRT_FLEXPWM1.SM[0].CVAL1CYC)
+#define FLEXPWM1_SM0CVAL2		(IMXRT_FLEXPWM1.SM[0].CVAL2)
+#define FLEXPWM1_SM0CVAL2CYC		(IMXRT_FLEXPWM1.SM[0].CVAL2CYC)
+#define FLEXPWM1_SM0CVAL3		(IMXRT_FLEXPWM1.SM[0].CVAL3)
+#define FLEXPWM1_SM0CVAL3CYC		(IMXRT_FLEXPWM1.SM[0].CVAL3CYC)
+#define FLEXPWM1_SM0CVAL4		(IMXRT_FLEXPWM1.SM[0].CVAL4)
+#define FLEXPWM1_SM0CVAL4CYC		(IMXRT_FLEXPWM1.SM[0].CVAL4CYC)
+#define FLEXPWM1_SM0CVAL5		(IMXRT_FLEXPWM1.SM[0].CVAL5)
+#define FLEXPWM1_SM0CVAL5CYC		(IMXRT_FLEXPWM1.SM[0].CVAL5CYC)
+#define FLEXPWM1_SM1CNT			(IMXRT_FLEXPWM1.SM[1].CNT)
+#define FLEXPWM1_SM1INIT		(IMXRT_FLEXPWM1.SM[1].INIT)
+#define FLEXPWM1_SM1CTRL2		(IMXRT_FLEXPWM1.SM[1].CTRL2)
+#define FLEXPWM1_SM1CTRL		(IMXRT_FLEXPWM1.SM[1].CTRL)
+#define FLEXPWM1_SM1VAL0		(IMXRT_FLEXPWM1.SM[1].VAL0)
+#define FLEXPWM1_SM1FRACVAL1		(IMXRT_FLEXPWM1.SM[1].FRACVAL1)
+#define FLEXPWM1_SM1VAL1		(IMXRT_FLEXPWM1.SM[1].VAL1)
+#define FLEXPWM1_SM1FRACVAL2		(IMXRT_FLEXPWM1.SM[1].FRACVAL2)
+#define FLEXPWM1_SM1VAL2		(IMXRT_FLEXPWM1.SM[1].VAL2)
+#define FLEXPWM1_SM1FRACVAL3		(IMXRT_FLEXPWM1.SM[1].FRACVAL3)
+#define FLEXPWM1_SM1VAL3		(IMXRT_FLEXPWM1.SM[1].VAL3)
+#define FLEXPWM1_SM1FRACVAL4		(IMXRT_FLEXPWM1.SM[1].FRACVAL4)
+#define FLEXPWM1_SM1VAL4		(IMXRT_FLEXPWM1.SM[1].VAL4)
+#define FLEXPWM1_SM1FRACVAL5		(IMXRT_FLEXPWM1.SM[1].FRACVAL5)
+#define FLEXPWM1_SM1VAL5		(IMXRT_FLEXPWM1.SM[1].VAL5)
+#define FLEXPWM1_SM1FRCTRL		(IMXRT_FLEXPWM1.SM[1].FRCTRL)
+#define FLEXPWM1_SM1OCTRL		(IMXRT_FLEXPWM1.SM[1].OCTRL)
+#define FLEXPWM1_SM1STS			(IMXRT_FLEXPWM1.SM[1].STS)
+#define FLEXPWM1_SM1INTEN		(IMXRT_FLEXPWM1.SM[1].INTEN)
+#define FLEXPWM1_SM1DMAEN		(IMXRT_FLEXPWM1.SM[1].DMAEN)
+#define FLEXPWM1_SM1TCTRL		(IMXRT_FLEXPWM1.SM[1].TCTRL)
+#define FLEXPWM1_SM1DISMAP0		(IMXRT_FLEXPWM1.SM[1].DISMAP0)
+#define FLEXPWM1_SM1DISMAP1		(IMXRT_FLEXPWM1.SM[1].DISMAP1)
+#define FLEXPWM1_SM1DTCNT0		(IMXRT_FLEXPWM1.SM[1].DTCNT0)
+#define FLEXPWM1_SM1DTCNT1		(IMXRT_FLEXPWM1.SM[1].DTCNT1)
+#define FLEXPWM1_SM1CAPTCTRLA		(IMXRT_FLEXPWM1.SM[1].CAPTCTRLA)
+#define FLEXPWM1_SM1CAPTCOMPA		(IMXRT_FLEXPWM1.SM[1].CAPTCOMPA)
+#define FLEXPWM1_SM1CAPTCTRLB		(IMXRT_FLEXPWM1.SM[1].CAPTCTRLB)
+#define FLEXPWM1_SM1CAPTCOMPB		(IMXRT_FLEXPWM1.SM[1].CAPTCOMPB)
+#define FLEXPWM1_SM1CAPTCTRLX		(IMXRT_FLEXPWM1.SM[1].CAPTCTRLX)
+#define FLEXPWM1_SM1CAPTCOMPX		(IMXRT_FLEXPWM1.SM[1].CAPTCOMPX)
+#define FLEXPWM1_SM1CVAL0		(IMXRT_FLEXPWM1.SM[1].CVAL0)
+#define FLEXPWM1_SM1CVAL0CYC		(IMXRT_FLEXPWM1.SM[1].CVAL0CYC)
+#define FLEXPWM1_SM1CVAL1		(IMXRT_FLEXPWM1.SM[1].CVAL1)
+#define FLEXPWM1_SM1CVAL1CYC		(IMXRT_FLEXPWM1.SM[1].CVAL1CYC)
+#define FLEXPWM1_SM1CVAL2		(IMXRT_FLEXPWM1.SM[1].CVAL2)
+#define FLEXPWM1_SM1CVAL2CYC		(IMXRT_FLEXPWM1.SM[1].CVAL2CYC)
+#define FLEXPWM1_SM1CVAL3		(IMXRT_FLEXPWM1.SM[1].CVAL3)
+#define FLEXPWM1_SM1CVAL3CYC		(IMXRT_FLEXPWM1.SM[1].CVAL3CYC)
+#define FLEXPWM1_SM1CVAL4		(IMXRT_FLEXPWM1.SM[1].CVAL4)
+#define FLEXPWM1_SM1CVAL4CYC		(IMXRT_FLEXPWM1.SM[1].CVAL4CYC)
+#define FLEXPWM1_SM1CVAL5		(IMXRT_FLEXPWM1.SM[1].CVAL5)
+#define FLEXPWM1_SM1CVAL5CYC		(IMXRT_FLEXPWM1.SM[1].CVAL5CYC)
+#define FLEXPWM1_SM2CNT			(IMXRT_FLEXPWM1.SM[2].CNT)
+#define FLEXPWM1_SM2INIT		(IMXRT_FLEXPWM1.SM[2].INIT)
+#define FLEXPWM1_SM2CTRL2		(IMXRT_FLEXPWM1.SM[2].CTRL2)
+#define FLEXPWM1_SM2CTRL		(IMXRT_FLEXPWM1.SM[2].CTRL)
+#define FLEXPWM1_SM2VAL0		(IMXRT_FLEXPWM1.SM[2].VAL0)
+#define FLEXPWM1_SM2FRACVAL1		(IMXRT_FLEXPWM1.SM[2].FRACVAL1)
+#define FLEXPWM1_SM2VAL1		(IMXRT_FLEXPWM1.SM[2].VAL1)
+#define FLEXPWM1_SM2FRACVAL2		(IMXRT_FLEXPWM1.SM[2].FRACVAL2)
+#define FLEXPWM1_SM2VAL2		(IMXRT_FLEXPWM1.SM[2].VAL2)
+#define FLEXPWM1_SM2FRACVAL3		(IMXRT_FLEXPWM1.SM[2].FRACVAL3)
+#define FLEXPWM1_SM2VAL3		(IMXRT_FLEXPWM1.SM[2].VAL3)
+#define FLEXPWM1_SM2FRACVAL4		(IMXRT_FLEXPWM1.SM[2].FRACVAL4)
+#define FLEXPWM1_SM2VAL4		(IMXRT_FLEXPWM1.SM[2].VAL4)
+#define FLEXPWM1_SM2FRACVAL5		(IMXRT_FLEXPWM1.SM[2].FRACVAL5)
+#define FLEXPWM1_SM2VAL5		(IMXRT_FLEXPWM1.SM[2].VAL5)
+#define FLEXPWM1_SM2FRCTRL		(IMXRT_FLEXPWM1.SM[2].FRCTRL)
+#define FLEXPWM1_SM2OCTRL		(IMXRT_FLEXPWM1.SM[2].OCTRL)
+#define FLEXPWM1_SM2STS			(IMXRT_FLEXPWM1.SM[2].STS)
+#define FLEXPWM1_SM2INTEN		(IMXRT_FLEXPWM1.SM[2].INTEN)
+#define FLEXPWM1_SM2DMAEN		(IMXRT_FLEXPWM1.SM[2].DMAEN)
+#define FLEXPWM1_SM2TCTRL		(IMXRT_FLEXPWM1.SM[2].TCTRL)
+#define FLEXPWM1_SM2DISMAP0		(IMXRT_FLEXPWM1.SM[2].DISMAP0)
+#define FLEXPWM1_SM2DISMAP1		(IMXRT_FLEXPWM1.SM[2].DISMAP1)
+#define FLEXPWM1_SM2DTCNT0		(IMXRT_FLEXPWM1.SM[2].DTCNT0)
+#define FLEXPWM1_SM2DTCNT1		(IMXRT_FLEXPWM1.SM[2].DTCNT1)
+#define FLEXPWM1_SM2CAPTCTRLA		(IMXRT_FLEXPWM1.SM[2].CAPTCTRLA)
+#define FLEXPWM1_SM2CAPTCOMPA		(IMXRT_FLEXPWM1.SM[2].CAPTCOMPA)
+#define FLEXPWM1_SM2CAPTCTRLB		(IMXRT_FLEXPWM1.SM[2].CAPTCTRLB)
+#define FLEXPWM1_SM2CAPTCOMPB		(IMXRT_FLEXPWM1.SM[2].CAPTCOMPB)
+#define FLEXPWM1_SM2CAPTCTRLX		(IMXRT_FLEXPWM1.SM[2].CAPTCTRLX)
+#define FLEXPWM1_SM2CAPTCOMPX		(IMXRT_FLEXPWM1.SM[2].CAPTCOMPX)
+#define FLEXPWM1_SM2CVAL0		(IMXRT_FLEXPWM1.SM[2].CVAL0)
+#define FLEXPWM1_SM2CVAL0CYC		(IMXRT_FLEXPWM1.SM[2].CVAL0CYC)
+#define FLEXPWM1_SM2CVAL1		(IMXRT_FLEXPWM1.SM[2].CVAL1)
+#define FLEXPWM1_SM2CVAL1CYC		(IMXRT_FLEXPWM1.SM[2].CVAL1CYC)
+#define FLEXPWM1_SM2CVAL2		(IMXRT_FLEXPWM1.SM[2].CVAL2)
+#define FLEXPWM1_SM2CVAL2CYC		(IMXRT_FLEXPWM1.SM[2].CVAL2CYC)
+#define FLEXPWM1_SM2CVAL3		(IMXRT_FLEXPWM1.SM[2].CVAL3)
+#define FLEXPWM1_SM2CVAL3CYC		(IMXRT_FLEXPWM1.SM[2].CVAL3CYC)
+#define FLEXPWM1_SM2CVAL4		(IMXRT_FLEXPWM1.SM[2].CVAL4)
+#define FLEXPWM1_SM2CVAL4CYC		(IMXRT_FLEXPWM1.SM[2].CVAL4CYC)
+#define FLEXPWM1_SM2CVAL5		(IMXRT_FLEXPWM1.SM[2].CVAL5)
+#define FLEXPWM1_SM2CVAL5CYC		(IMXRT_FLEXPWM1.SM[2].CVAL5CYC)
+#define FLEXPWM1_SM3CNT			(IMXRT_FLEXPWM1.SM[3].CNT)
+#define FLEXPWM1_SM3INIT		(IMXRT_FLEXPWM1.SM[3].INIT)
+#define FLEXPWM1_SM3CTRL2		(IMXRT_FLEXPWM1.SM[3].CTRL2)
+#define FLEXPWM1_SM3CTRL		(IMXRT_FLEXPWM1.SM[3].CTRL)
+#define FLEXPWM1_SM3VAL0		(IMXRT_FLEXPWM1.SM[3].VAL0)
+#define FLEXPWM1_SM3FRACVAL1		(IMXRT_FLEXPWM1.SM[3].FRACVAL1)
+#define FLEXPWM1_SM3VAL1		(IMXRT_FLEXPWM1.SM[3].VAL1)
+#define FLEXPWM1_SM3FRACVAL2		(IMXRT_FLEXPWM1.SM[3].FRACVAL2)
+#define FLEXPWM1_SM3VAL2		(IMXRT_FLEXPWM1.SM[3].VAL2)
+#define FLEXPWM1_SM3FRACVAL3		(IMXRT_FLEXPWM1.SM[3].FRACVAL3)
+#define FLEXPWM1_SM3VAL3		(IMXRT_FLEXPWM1.SM[3].VAL3)
+#define FLEXPWM1_SM3FRACVAL4		(IMXRT_FLEXPWM1.SM[3].FRACVAL4)
+#define FLEXPWM1_SM3VAL4		(IMXRT_FLEXPWM1.SM[3].VAL4)
+#define FLEXPWM1_SM3FRACVAL5		(IMXRT_FLEXPWM1.SM[3].FRACVAL5)
+#define FLEXPWM1_SM3VAL5		(IMXRT_FLEXPWM1.SM[3].VAL5)
+#define FLEXPWM1_SM3FRCTRL		(IMXRT_FLEXPWM1.SM[3].FRCTRL)
+#define FLEXPWM1_SM3OCTRL		(IMXRT_FLEXPWM1.SM[3].OCTRL)
+#define FLEXPWM1_SM3STS			(IMXRT_FLEXPWM1.SM[3].STS)
+#define FLEXPWM1_SM3INTEN		(IMXRT_FLEXPWM1.SM[3].INTEN)
+#define FLEXPWM1_SM3DMAEN		(IMXRT_FLEXPWM1.SM[3].DMAEN)
+#define FLEXPWM1_SM3TCTRL		(IMXRT_FLEXPWM1.SM[3].TCTRL)
+#define FLEXPWM1_SM3DISMAP0		(IMXRT_FLEXPWM1.SM[3].DISMAP0)
+#define FLEXPWM1_SM3DISMAP1		(IMXRT_FLEXPWM1.SM[3].DISMAP1)
+#define FLEXPWM1_SM3DTCNT0		(IMXRT_FLEXPWM1.SM[3].DTCNT0)
+#define FLEXPWM1_SM3DTCNT1		(IMXRT_FLEXPWM1.SM[3].DTCNT1)
+#define FLEXPWM1_SM3CAPTCTRLA		(IMXRT_FLEXPWM1.SM[3].CAPTCTRLA)
+#define FLEXPWM1_SM3CAPTCOMPA		(IMXRT_FLEXPWM1.SM[3].CAPTCOMPA)
+#define FLEXPWM1_SM3CAPTCTRLB		(IMXRT_FLEXPWM1.SM[3].CAPTCTRLB)
+#define FLEXPWM1_SM3CAPTCOMPB		(IMXRT_FLEXPWM1.SM[3].CAPTCOMPB)
+#define FLEXPWM1_SM3CAPTCTRLX		(IMXRT_FLEXPWM1.SM[3].CAPTCTRLX)
+#define FLEXPWM1_SM3CAPTCOMPX		(IMXRT_FLEXPWM1.SM[3].CAPTCOMPX)
+#define FLEXPWM1_SM3CVAL0		(IMXRT_FLEXPWM1.SM[3].CVAL0)
+#define FLEXPWM1_SM3CVAL0CYC		(IMXRT_FLEXPWM1.SM[3].CVAL0CYC)
+#define FLEXPWM1_SM3CVAL1		(IMXRT_FLEXPWM1.SM[3].CVAL1)
+#define FLEXPWM1_SM3CVAL1CYC		(IMXRT_FLEXPWM1.SM[3].CVAL1CYC)
+#define FLEXPWM1_SM3CVAL2		(IMXRT_FLEXPWM1.SM[3].CVAL2)
+#define FLEXPWM1_SM3CVAL2CYC		(IMXRT_FLEXPWM1.SM[3].CVAL2CYC)
+#define FLEXPWM1_SM3CVAL3		(IMXRT_FLEXPWM1.SM[3].CVAL3)
+#define FLEXPWM1_SM3CVAL3CYC		(IMXRT_FLEXPWM1.SM[3].CVAL3CYC)
+#define FLEXPWM1_SM3CVAL4		(IMXRT_FLEXPWM1.SM[3].CVAL4)
+#define FLEXPWM1_SM3CVAL4CYC		(IMXRT_FLEXPWM1.SM[3].CVAL4CYC)
+#define FLEXPWM1_SM3CVAL5		(IMXRT_FLEXPWM1.SM[3].CVAL5)
+#define FLEXPWM1_SM3CVAL5CYC		(IMXRT_FLEXPWM1.SM[3].CVAL5CYC)
+#define FLEXPWM1_OUTEN			(IMXRT_FLEXPWM1.OUTEN)
+#define FLEXPWM1_MASK			(IMXRT_FLEXPWM1.MASK)
+#define FLEXPWM1_SWCOUT			(IMXRT_FLEXPWM1.SWCOUT)
+#define FLEXPWM1_DTSRCSEL		(IMXRT_FLEXPWM1.DTSRCSEL)
+#define FLEXPWM1_MCTRL			(IMXRT_FLEXPWM1.MCTRL)
+#define FLEXPWM1_MCTRL2			(IMXRT_FLEXPWM1.MCTRL2)
+#define FLEXPWM1_FCTRL0			(IMXRT_FLEXPWM1.FCTRL0)
+#define FLEXPWM1_FSTS0			(IMXRT_FLEXPWM1.FSTS0)
+#define FLEXPWM1_FFILT0			(IMXRT_FLEXPWM1.FFILT0)
+#define FLEXPWM1_FTST0			(IMXRT_FLEXPWM1.FTST0)
+#define FLEXPWM1_FCTRL20		(IMXRT_FLEXPWM1.FCTRL20)
+#define FLEXPWM2_SM0CNT			(IMXRT_FLEXPWM2.SM[0].CNT)
+#define FLEXPWM2_SM0INIT		(IMXRT_FLEXPWM2.SM[0].INIT)
+#define FLEXPWM2_SM0CTRL2		(IMXRT_FLEXPWM2.SM[0].CTRL2)
+#define FLEXPWM2_SM0CTRL		(IMXRT_FLEXPWM2.SM[0].CTRL)
+#define FLEXPWM2_SM0VAL0		(IMXRT_FLEXPWM2.SM[0].VAL0)
+#define FLEXPWM2_SM0FRACVAL1		(IMXRT_FLEXPWM2.SM[0].FRACVAL1)
+#define FLEXPWM2_SM0VAL1		(IMXRT_FLEXPWM2.SM[0].VAL1)
+#define FLEXPWM2_SM0FRACVAL2		(IMXRT_FLEXPWM2.SM[0].FRACVAL2)
+#define FLEXPWM2_SM0VAL2		(IMXRT_FLEXPWM2.SM[0].VAL2)
+#define FLEXPWM2_SM0FRACVAL3		(IMXRT_FLEXPWM2.SM[0].FRACVAL3)
+#define FLEXPWM2_SM0VAL3		(IMXRT_FLEXPWM2.SM[0].VAL3)
+#define FLEXPWM2_SM0FRACVAL4		(IMXRT_FLEXPWM2.SM[0].FRACVAL4)
+#define FLEXPWM2_SM0VAL4		(IMXRT_FLEXPWM2.SM[0].VAL4)
+#define FLEXPWM2_SM0FRACVAL5		(IMXRT_FLEXPWM2.SM[0].FRACVAL5)
+#define FLEXPWM2_SM0VAL5		(IMXRT_FLEXPWM2.SM[0].VAL5)
+#define FLEXPWM2_SM0FRCTRL		(IMXRT_FLEXPWM2.SM[0].FRCTRL)
+#define FLEXPWM2_SM0OCTRL		(IMXRT_FLEXPWM2.SM[0].OCTRL)
+#define FLEXPWM2_SM0STS			(IMXRT_FLEXPWM2.SM[0].STS)
+#define FLEXPWM2_SM0INTEN		(IMXRT_FLEXPWM2.SM[0].INTEN)
+#define FLEXPWM2_SM0DMAEN		(IMXRT_FLEXPWM2.SM[0].DMAEN)
+#define FLEXPWM2_SM0TCTRL		(IMXRT_FLEXPWM2.SM[0].TCTRL)
+#define FLEXPWM2_SM0DISMAP0		(IMXRT_FLEXPWM2.SM[0].DISMAP0)
+#define FLEXPWM2_SM0DISMAP1		(IMXRT_FLEXPWM2.SM[0].DISMAP1)
+#define FLEXPWM2_SM0DTCNT0		(IMXRT_FLEXPWM2.SM[0].DTCNT0)
+#define FLEXPWM2_SM0DTCNT1		(IMXRT_FLEXPWM2.SM[0].DTCNT1)
+#define FLEXPWM2_SM0CAPTCTRLA		(IMXRT_FLEXPWM2.SM[0].CAPTCTRLA)
+#define FLEXPWM2_SM0CAPTCOMPA		(IMXRT_FLEXPWM2.SM[0].CAPTCOMPA)
+#define FLEXPWM2_SM0CAPTCTRLB		(IMXRT_FLEXPWM2.SM[0].CAPTCTRLB)
+#define FLEXPWM2_SM0CAPTCOMPB		(IMXRT_FLEXPWM2.SM[0].CAPTCOMPB)
+#define FLEXPWM2_SM0CAPTCTRLX		(IMXRT_FLEXPWM2.SM[0].CAPTCTRLX)
+#define FLEXPWM2_SM0CAPTCOMPX		(IMXRT_FLEXPWM2.SM[0].CAPTCOMPX)
+#define FLEXPWM2_SM0CVAL0		(IMXRT_FLEXPWM2.SM[0].CVAL0)
+#define FLEXPWM2_SM0CVAL0CYC		(IMXRT_FLEXPWM2.SM[0].CVAL0CYC)
+#define FLEXPWM2_SM0CVAL1		(IMXRT_FLEXPWM2.SM[0].CVAL1)
+#define FLEXPWM2_SM0CVAL1CYC		(IMXRT_FLEXPWM2.SM[0].CVAL1CYC)
+#define FLEXPWM2_SM0CVAL2		(IMXRT_FLEXPWM2.SM[0].CVAL2)
+#define FLEXPWM2_SM0CVAL2CYC		(IMXRT_FLEXPWM2.SM[0].CVAL2CYC)
+#define FLEXPWM2_SM0CVAL3		(IMXRT_FLEXPWM2.SM[0].CVAL3)
+#define FLEXPWM2_SM0CVAL3CYC		(IMXRT_FLEXPWM2.SM[0].CVAL3CYC)
+#define FLEXPWM2_SM0CVAL4		(IMXRT_FLEXPWM2.SM[0].CVAL4)
+#define FLEXPWM2_SM0CVAL4CYC		(IMXRT_FLEXPWM2.SM[0].CVAL4CYC)
+#define FLEXPWM2_SM0CVAL5		(IMXRT_FLEXPWM2.SM[0].CVAL5)
+#define FLEXPWM2_SM0CVAL5CYC		(IMXRT_FLEXPWM2.SM[0].CVAL5CYC)
+#define FLEXPWM2_SM1CNT			(IMXRT_FLEXPWM2.SM[1].CNT)
+#define FLEXPWM2_SM1INIT		(IMXRT_FLEXPWM2.SM[1].INIT)
+#define FLEXPWM2_SM1CTRL2		(IMXRT_FLEXPWM2.SM[1].CTRL2)
+#define FLEXPWM2_SM1CTRL		(IMXRT_FLEXPWM2.SM[1].CTRL)
+#define FLEXPWM2_SM1VAL0		(IMXRT_FLEXPWM2.SM[1].VAL0)
+#define FLEXPWM2_SM1FRACVAL1		(IMXRT_FLEXPWM2.SM[1].FRACVAL1)
+#define FLEXPWM2_SM1VAL1		(IMXRT_FLEXPWM2.SM[1].VAL1)
+#define FLEXPWM2_SM1FRACVAL2		(IMXRT_FLEXPWM2.SM[1].FRACVAL2)
+#define FLEXPWM2_SM1VAL2		(IMXRT_FLEXPWM2.SM[1].VAL2)
+#define FLEXPWM2_SM1FRACVAL3		(IMXRT_FLEXPWM2.SM[1].FRACVAL3)
+#define FLEXPWM2_SM1VAL3		(IMXRT_FLEXPWM2.SM[1].VAL3)
+#define FLEXPWM2_SM1FRACVAL4		(IMXRT_FLEXPWM2.SM[1].FRACVAL4)
+#define FLEXPWM2_SM1VAL4		(IMXRT_FLEXPWM2.SM[1].VAL4)
+#define FLEXPWM2_SM1FRACVAL5		(IMXRT_FLEXPWM2.SM[1].FRACVAL5)
+#define FLEXPWM2_SM1VAL5		(IMXRT_FLEXPWM2.SM[1].VAL5)
+#define FLEXPWM2_SM1FRCTRL		(IMXRT_FLEXPWM2.SM[1].FRCTRL)
+#define FLEXPWM2_SM1OCTRL		(IMXRT_FLEXPWM2.SM[1].OCTRL)
+#define FLEXPWM2_SM1STS			(IMXRT_FLEXPWM2.SM[1].STS)
+#define FLEXPWM2_SM1INTEN		(IMXRT_FLEXPWM2.SM[1].INTEN)
+#define FLEXPWM2_SM1DMAEN		(IMXRT_FLEXPWM2.SM[1].DMAEN)
+#define FLEXPWM2_SM1TCTRL		(IMXRT_FLEXPWM2.SM[1].TCTRL)
+#define FLEXPWM2_SM1DISMAP0		(IMXRT_FLEXPWM2.SM[1].DISMAP0)
+#define FLEXPWM2_SM1DISMAP1		(IMXRT_FLEXPWM2.SM[1].DISMAP1)
+#define FLEXPWM2_SM1DTCNT0		(IMXRT_FLEXPWM2.SM[1].DTCNT0)
+#define FLEXPWM2_SM1DTCNT1		(IMXRT_FLEXPWM2.SM[1].DTCNT1)
+#define FLEXPWM2_SM1CAPTCTRLA		(IMXRT_FLEXPWM2.SM[1].CAPTCTRLA)
+#define FLEXPWM2_SM1CAPTCOMPA		(IMXRT_FLEXPWM2.SM[1].CAPTCOMPA)
+#define FLEXPWM2_SM1CAPTCTRLB		(IMXRT_FLEXPWM2.SM[1].CAPTCTRLB)
+#define FLEXPWM2_SM1CAPTCOMPB		(IMXRT_FLEXPWM2.SM[1].CAPTCOMPB)
+#define FLEXPWM2_SM1CAPTCTRLX		(IMXRT_FLEXPWM2.SM[1].CAPTCTRLX)
+#define FLEXPWM2_SM1CAPTCOMPX		(IMXRT_FLEXPWM2.SM[1].CAPTCOMPX)
+#define FLEXPWM2_SM1CVAL0		(IMXRT_FLEXPWM2.SM[1].CVAL0)
+#define FLEXPWM2_SM1CVAL0CYC		(IMXRT_FLEXPWM2.SM[1].CVAL0CYC)
+#define FLEXPWM2_SM1CVAL1		(IMXRT_FLEXPWM2.SM[1].CVAL1)
+#define FLEXPWM2_SM1CVAL1CYC		(IMXRT_FLEXPWM2.SM[1].CVAL1CYC)
+#define FLEXPWM2_SM1CVAL2		(IMXRT_FLEXPWM2.SM[1].CVAL2)
+#define FLEXPWM2_SM1CVAL2CYC		(IMXRT_FLEXPWM2.SM[1].CVAL2CYC)
+#define FLEXPWM2_SM1CVAL3		(IMXRT_FLEXPWM2.SM[1].CVAL3)
+#define FLEXPWM2_SM1CVAL3CYC		(IMXRT_FLEXPWM2.SM[1].CVAL3CYC)
+#define FLEXPWM2_SM1CVAL4		(IMXRT_FLEXPWM2.SM[1].CVAL4)
+#define FLEXPWM2_SM1CVAL4CYC		(IMXRT_FLEXPWM2.SM[1].CVAL4CYC)
+#define FLEXPWM2_SM1CVAL5		(IMXRT_FLEXPWM2.SM[1].CVAL5)
+#define FLEXPWM2_SM1CVAL5CYC		(IMXRT_FLEXPWM2.SM[1].CVAL5CYC)
+#define FLEXPWM2_SM2CNT			(IMXRT_FLEXPWM2.SM[2].CNT)
+#define FLEXPWM2_SM2INIT		(IMXRT_FLEXPWM2.SM[2].INIT)
+#define FLEXPWM2_SM2CTRL2		(IMXRT_FLEXPWM2.SM[2].CTRL2)
+#define FLEXPWM2_SM2CTRL		(IMXRT_FLEXPWM2.SM[2].CTRL)
+#define FLEXPWM2_SM2VAL0		(IMXRT_FLEXPWM2.SM[2].VAL0)
+#define FLEXPWM2_SM2FRACVAL1		(IMXRT_FLEXPWM2.SM[2].FRACVAL1)
+#define FLEXPWM2_SM2VAL1		(IMXRT_FLEXPWM2.SM[2].VAL1)
+#define FLEXPWM2_SM2FRACVAL2		(IMXRT_FLEXPWM2.SM[2].FRACVAL2)
+#define FLEXPWM2_SM2VAL2		(IMXRT_FLEXPWM2.SM[2].VAL2)
+#define FLEXPWM2_SM2FRACVAL3		(IMXRT_FLEXPWM2.SM[2].FRACVAL3)
+#define FLEXPWM2_SM2VAL3		(IMXRT_FLEXPWM2.SM[2].VAL3)
+#define FLEXPWM2_SM2FRACVAL4		(IMXRT_FLEXPWM2.SM[2].FRACVAL4)
+#define FLEXPWM2_SM2VAL4		(IMXRT_FLEXPWM2.SM[2].VAL4)
+#define FLEXPWM2_SM2FRACVAL5		(IMXRT_FLEXPWM2.SM[2].FRACVAL5)
+#define FLEXPWM2_SM2VAL5		(IMXRT_FLEXPWM2.SM[2].VAL5)
+#define FLEXPWM2_SM2FRCTRL		(IMXRT_FLEXPWM2.SM[2].FRCTRL)
+#define FLEXPWM2_SM2OCTRL		(IMXRT_FLEXPWM2.SM[2].OCTRL)
+#define FLEXPWM2_SM2STS			(IMXRT_FLEXPWM2.SM[2].STS)
+#define FLEXPWM2_SM2INTEN		(IMXRT_FLEXPWM2.SM[2].INTEN)
+#define FLEXPWM2_SM2DMAEN		(IMXRT_FLEXPWM2.SM[2].DMAEN)
+#define FLEXPWM2_SM2TCTRL		(IMXRT_FLEXPWM2.SM[2].TCTRL)
+#define FLEXPWM2_SM2DISMAP0		(IMXRT_FLEXPWM2.SM[2].DISMAP0)
+#define FLEXPWM2_SM2DISMAP1		(IMXRT_FLEXPWM2.SM[2].DISMAP1)
+#define FLEXPWM2_SM2DTCNT0		(IMXRT_FLEXPWM2.SM[2].DTCNT0)
+#define FLEXPWM2_SM2DTCNT1		(IMXRT_FLEXPWM2.SM[2].DTCNT1)
+#define FLEXPWM2_SM2CAPTCTRLA		(IMXRT_FLEXPWM2.SM[2].CAPTCTRLA)
+#define FLEXPWM2_SM2CAPTCOMPA		(IMXRT_FLEXPWM2.SM[2].CAPTCOMPA)
+#define FLEXPWM2_SM2CAPTCTRLB		(IMXRT_FLEXPWM2.SM[2].CAPTCTRLB)
+#define FLEXPWM2_SM2CAPTCOMPB		(IMXRT_FLEXPWM2.SM[2].CAPTCOMPB)
+#define FLEXPWM2_SM2CAPTCTRLX		(IMXRT_FLEXPWM2.SM[2].CAPTCTRLX)
+#define FLEXPWM2_SM2CAPTCOMPX		(IMXRT_FLEXPWM2.SM[2].CAPTCOMPX)
+#define FLEXPWM2_SM2CVAL0		(IMXRT_FLEXPWM2.SM[2].CVAL0)
+#define FLEXPWM2_SM2CVAL0CYC		(IMXRT_FLEXPWM2.SM[2].CVAL0CYC)
+#define FLEXPWM2_SM2CVAL1		(IMXRT_FLEXPWM2.SM[2].CVAL1)
+#define FLEXPWM2_SM2CVAL1CYC		(IMXRT_FLEXPWM2.SM[2].CVAL1CYC)
+#define FLEXPWM2_SM2CVAL2		(IMXRT_FLEXPWM2.SM[2].CVAL2)
+#define FLEXPWM2_SM2CVAL2CYC		(IMXRT_FLEXPWM2.SM[2].CVAL2CYC)
+#define FLEXPWM2_SM2CVAL3		(IMXRT_FLEXPWM2.SM[2].CVAL3)
+#define FLEXPWM2_SM2CVAL3CYC		(IMXRT_FLEXPWM2.SM[2].CVAL3CYC)
+#define FLEXPWM2_SM2CVAL4		(IMXRT_FLEXPWM2.SM[2].CVAL4)
+#define FLEXPWM2_SM2CVAL4CYC		(IMXRT_FLEXPWM2.SM[2].CVAL4CYC)
+#define FLEXPWM2_SM2CVAL5		(IMXRT_FLEXPWM2.SM[2].CVAL5)
+#define FLEXPWM2_SM2CVAL5CYC		(IMXRT_FLEXPWM2.SM[2].CVAL5CYC)
+#define FLEXPWM2_SM3CNT			(IMXRT_FLEXPWM2.SM[3].CNT)
+#define FLEXPWM2_SM3INIT		(IMXRT_FLEXPWM2.SM[3].INIT)
+#define FLEXPWM2_SM3CTRL2		(IMXRT_FLEXPWM2.SM[3].CTRL2)
+#define FLEXPWM2_SM3CTRL		(IMXRT_FLEXPWM2.SM[3].CTRL)
+#define FLEXPWM2_SM3VAL0		(IMXRT_FLEXPWM2.SM[3].VAL0)
+#define FLEXPWM2_SM3FRACVAL1		(IMXRT_FLEXPWM2.SM[3].FRACVAL1)
+#define FLEXPWM2_SM3VAL1		(IMXRT_FLEXPWM2.SM[3].VAL1)
+#define FLEXPWM2_SM3FRACVAL2		(IMXRT_FLEXPWM2.SM[3].FRACVAL2)
+#define FLEXPWM2_SM3VAL2		(IMXRT_FLEXPWM2.SM[3].VAL2)
+#define FLEXPWM2_SM3FRACVAL3		(IMXRT_FLEXPWM2.SM[3].FRACVAL3)
+#define FLEXPWM2_SM3VAL3		(IMXRT_FLEXPWM2.SM[3].VAL3)
+#define FLEXPWM2_SM3FRACVAL4		(IMXRT_FLEXPWM2.SM[3].FRACVAL4)
+#define FLEXPWM2_SM3VAL4		(IMXRT_FLEXPWM2.SM[3].VAL4)
+#define FLEXPWM2_SM3FRACVAL5		(IMXRT_FLEXPWM2.SM[3].FRACVAL5)
+#define FLEXPWM2_SM3VAL5		(IMXRT_FLEXPWM2.SM[3].VAL5)
+#define FLEXPWM2_SM3FRCTRL		(IMXRT_FLEXPWM2.SM[3].FRCTRL)
+#define FLEXPWM2_SM3OCTRL		(IMXRT_FLEXPWM2.SM[3].OCTRL)
+#define FLEXPWM2_SM3STS			(IMXRT_FLEXPWM2.SM[3].STS)
+#define FLEXPWM2_SM3INTEN		(IMXRT_FLEXPWM2.SM[3].INTEN)
+#define FLEXPWM2_SM3DMAEN		(IMXRT_FLEXPWM2.SM[3].DMAEN)
+#define FLEXPWM2_SM3TCTRL		(IMXRT_FLEXPWM2.SM[3].TCTRL)
+#define FLEXPWM2_SM3DISMAP0		(IMXRT_FLEXPWM2.SM[3].DISMAP0)
+#define FLEXPWM2_SM3DISMAP1		(IMXRT_FLEXPWM2.SM[3].DISMAP1)
+#define FLEXPWM2_SM3DTCNT0		(IMXRT_FLEXPWM2.SM[3].DTCNT0)
+#define FLEXPWM2_SM3DTCNT1		(IMXRT_FLEXPWM2.SM[3].DTCNT1)
+#define FLEXPWM2_SM3CAPTCTRLA		(IMXRT_FLEXPWM2.SM[3].CAPTCTRLA)
+#define FLEXPWM2_SM3CAPTCOMPA		(IMXRT_FLEXPWM2.SM[3].CAPTCOMPA)
+#define FLEXPWM2_SM3CAPTCTRLB		(IMXRT_FLEXPWM2.SM[3].CAPTCTRLB)
+#define FLEXPWM2_SM3CAPTCOMPB		(IMXRT_FLEXPWM2.SM[3].CAPTCOMPB)
+#define FLEXPWM2_SM3CAPTCTRLX		(IMXRT_FLEXPWM2.SM[3].CAPTCTRLX)
+#define FLEXPWM2_SM3CAPTCOMPX		(IMXRT_FLEXPWM2.SM[3].CAPTCOMPX)
+#define FLEXPWM2_SM3CVAL0		(IMXRT_FLEXPWM2.SM[3].CVAL0)
+#define FLEXPWM2_SM3CVAL0CYC		(IMXRT_FLEXPWM2.SM[3].CVAL0CYC)
+#define FLEXPWM2_SM3CVAL1		(IMXRT_FLEXPWM2.SM[3].CVAL1)
+#define FLEXPWM2_SM3CVAL1CYC		(IMXRT_FLEXPWM2.SM[3].CVAL1CYC)
+#define FLEXPWM2_SM3CVAL2		(IMXRT_FLEXPWM2.SM[3].CVAL2)
+#define FLEXPWM2_SM3CVAL2CYC		(IMXRT_FLEXPWM2.SM[3].CVAL2CYC)
+#define FLEXPWM2_SM3CVAL3		(IMXRT_FLEXPWM2.SM[3].CVAL3)
+#define FLEXPWM2_SM3CVAL3CYC		(IMXRT_FLEXPWM2.SM[3].CVAL3CYC)
+#define FLEXPWM2_SM3CVAL4		(IMXRT_FLEXPWM2.SM[3].CVAL4)
+#define FLEXPWM2_SM3CVAL4CYC		(IMXRT_FLEXPWM2.SM[3].CVAL4CYC)
+#define FLEXPWM2_SM3CVAL5		(IMXRT_FLEXPWM2.SM[3].CVAL5)
+#define FLEXPWM2_SM3CVAL5CYC		(IMXRT_FLEXPWM2.SM[3].CVAL5CYC)
+#define FLEXPWM2_OUTEN			(IMXRT_FLEXPWM2.OUTEN)
+#define FLEXPWM2_MASK			(IMXRT_FLEXPWM2.MASK)
+#define FLEXPWM2_SWCOUT			(IMXRT_FLEXPWM2.SWCOUT)
+#define FLEXPWM2_DTSRCSEL		(IMXRT_FLEXPWM2.DTSRCSEL)
+#define FLEXPWM2_MCTRL			(IMXRT_FLEXPWM2.MCTRL)
+#define FLEXPWM2_MCTRL2			(IMXRT_FLEXPWM2.MCTRL2)
+#define FLEXPWM2_FCTRL0			(IMXRT_FLEXPWM2.FCTRL0)
+#define FLEXPWM2_FSTS0			(IMXRT_FLEXPWM2.FSTS0)
+#define FLEXPWM2_FFILT0			(IMXRT_FLEXPWM2.FFILT0)
+#define FLEXPWM2_FTST0			(IMXRT_FLEXPWM2.FTST0)
+#define FLEXPWM2_FCTRL20		(IMXRT_FLEXPWM2.FCTRL20)
+#define FLEXPWM3_SM0CNT			(IMXRT_FLEXPWM3.SM[0].CNT)
+#define FLEXPWM3_SM0INIT		(IMXRT_FLEXPWM3.SM[0].INIT)
+#define FLEXPWM3_SM0CTRL2		(IMXRT_FLEXPWM3.SM[0].CTRL2)
+#define FLEXPWM3_SM0CTRL		(IMXRT_FLEXPWM3.SM[0].CTRL)
+#define FLEXPWM3_SM0VAL0		(IMXRT_FLEXPWM3.SM[0].VAL0)
+#define FLEXPWM3_SM0FRACVAL1		(IMXRT_FLEXPWM3.SM[0].FRACVAL1)
+#define FLEXPWM3_SM0VAL1		(IMXRT_FLEXPWM3.SM[0].VAL1)
+#define FLEXPWM3_SM0FRACVAL2		(IMXRT_FLEXPWM3.SM[0].FRACVAL2)
+#define FLEXPWM3_SM0VAL2		(IMXRT_FLEXPWM3.SM[0].VAL2)
+#define FLEXPWM3_SM0FRACVAL3		(IMXRT_FLEXPWM3.SM[0].FRACVAL3)
+#define FLEXPWM3_SM0VAL3		(IMXRT_FLEXPWM3.SM[0].VAL3)
+#define FLEXPWM3_SM0FRACVAL4		(IMXRT_FLEXPWM3.SM[0].FRACVAL4)
+#define FLEXPWM3_SM0VAL4		(IMXRT_FLEXPWM3.SM[0].VAL4)
+#define FLEXPWM3_SM0FRACVAL5		(IMXRT_FLEXPWM3.SM[0].FRACVAL5)
+#define FLEXPWM3_SM0VAL5		(IMXRT_FLEXPWM3.SM[0].VAL5)
+#define FLEXPWM3_SM0FRCTRL		(IMXRT_FLEXPWM3.SM[0].FRCTRL)
+#define FLEXPWM3_SM0OCTRL		(IMXRT_FLEXPWM3.SM[0].OCTRL)
+#define FLEXPWM3_SM0STS			(IMXRT_FLEXPWM3.SM[0].STS)
+#define FLEXPWM3_SM0INTEN		(IMXRT_FLEXPWM3.SM[0].INTEN)
+#define FLEXPWM3_SM0DMAEN		(IMXRT_FLEXPWM3.SM[0].DMAEN)
+#define FLEXPWM3_SM0TCTRL		(IMXRT_FLEXPWM3.SM[0].TCTRL)
+#define FLEXPWM3_SM0DISMAP0		(IMXRT_FLEXPWM3.SM[0].DISMAP0)
+#define FLEXPWM3_SM0DISMAP1		(IMXRT_FLEXPWM3.SM[0].DISMAP1)
+#define FLEXPWM3_SM0DTCNT0		(IMXRT_FLEXPWM3.SM[0].DTCNT0)
+#define FLEXPWM3_SM0DTCNT1		(IMXRT_FLEXPWM3.SM[0].DTCNT1)
+#define FLEXPWM3_SM0CAPTCTRLA		(IMXRT_FLEXPWM3.SM[0].CAPTCTRLA)
+#define FLEXPWM3_SM0CAPTCOMPA		(IMXRT_FLEXPWM3.SM[0].CAPTCOMPA)
+#define FLEXPWM3_SM0CAPTCTRLB		(IMXRT_FLEXPWM3.SM[0].CAPTCTRLB)
+#define FLEXPWM3_SM0CAPTCOMPB		(IMXRT_FLEXPWM3.SM[0].CAPTCOMPB)
+#define FLEXPWM3_SM0CAPTCTRLX		(IMXRT_FLEXPWM3.SM[0].CAPTCTRLX)
+#define FLEXPWM3_SM0CAPTCOMPX		(IMXRT_FLEXPWM3.SM[0].CAPTCOMPX)
+#define FLEXPWM3_SM0CVAL0		(IMXRT_FLEXPWM3.SM[0].CVAL0)
+#define FLEXPWM3_SM0CVAL0CYC		(IMXRT_FLEXPWM3.SM[0].CVAL0CYC)
+#define FLEXPWM3_SM0CVAL1		(IMXRT_FLEXPWM3.SM[0].CVAL1)
+#define FLEXPWM3_SM0CVAL1CYC		(IMXRT_FLEXPWM3.SM[0].CVAL1CYC)
+#define FLEXPWM3_SM0CVAL2		(IMXRT_FLEXPWM3.SM[0].CVAL2)
+#define FLEXPWM3_SM0CVAL2CYC		(IMXRT_FLEXPWM3.SM[0].CVAL2CYC)
+#define FLEXPWM3_SM0CVAL3		(IMXRT_FLEXPWM3.SM[0].CVAL3)
+#define FLEXPWM3_SM0CVAL3CYC		(IMXRT_FLEXPWM3.SM[0].CVAL3CYC)
+#define FLEXPWM3_SM0CVAL4		(IMXRT_FLEXPWM3.SM[0].CVAL4)
+#define FLEXPWM3_SM0CVAL4CYC		(IMXRT_FLEXPWM3.SM[0].CVAL4CYC)
+#define FLEXPWM3_SM0CVAL5		(IMXRT_FLEXPWM3.SM[0].CVAL5)
+#define FLEXPWM3_SM0CVAL5CYC		(IMXRT_FLEXPWM3.SM[0].CVAL5CYC)
+#define FLEXPWM3_SM1CNT			(IMXRT_FLEXPWM3.SM[1].CNT)
+#define FLEXPWM3_SM1INIT		(IMXRT_FLEXPWM3.SM[1].INIT)
+#define FLEXPWM3_SM1CTRL2		(IMXRT_FLEXPWM3.SM[1].CTRL2)
+#define FLEXPWM3_SM1CTRL		(IMXRT_FLEXPWM3.SM[1].CTRL)
+#define FLEXPWM3_SM1VAL0		(IMXRT_FLEXPWM3.SM[1].VAL0)
+#define FLEXPWM3_SM1FRACVAL1		(IMXRT_FLEXPWM3.SM[1].FRACVAL1)
+#define FLEXPWM3_SM1VAL1		(IMXRT_FLEXPWM3.SM[1].VAL1)
+#define FLEXPWM3_SM1FRACVAL2		(IMXRT_FLEXPWM3.SM[1].FRACVAL2)
+#define FLEXPWM3_SM1VAL2		(IMXRT_FLEXPWM3.SM[1].VAL2)
+#define FLEXPWM3_SM1FRACVAL3		(IMXRT_FLEXPWM3.SM[1].FRACVAL3)
+#define FLEXPWM3_SM1VAL3		(IMXRT_FLEXPWM3.SM[1].VAL3)
+#define FLEXPWM3_SM1FRACVAL4		(IMXRT_FLEXPWM3.SM[1].FRACVAL4)
+#define FLEXPWM3_SM1VAL4		(IMXRT_FLEXPWM3.SM[1].VAL4)
+#define FLEXPWM3_SM1FRACVAL5		(IMXRT_FLEXPWM3.SM[1].FRACVAL5)
+#define FLEXPWM3_SM1VAL5		(IMXRT_FLEXPWM3.SM[1].VAL5)
+#define FLEXPWM3_SM1FRCTRL		(IMXRT_FLEXPWM3.SM[1].FRCTRL)
+#define FLEXPWM3_SM1OCTRL		(IMXRT_FLEXPWM3.SM[1].OCTRL)
+#define FLEXPWM3_SM1STS			(IMXRT_FLEXPWM3.SM[1].STS)
+#define FLEXPWM3_SM1INTEN		(IMXRT_FLEXPWM3.SM[1].INTEN)
+#define FLEXPWM3_SM1DMAEN		(IMXRT_FLEXPWM3.SM[1].DMAEN)
+#define FLEXPWM3_SM1TCTRL		(IMXRT_FLEXPWM3.SM[1].TCTRL)
+#define FLEXPWM3_SM1DISMAP0		(IMXRT_FLEXPWM3.SM[1].DISMAP0)
+#define FLEXPWM3_SM1DISMAP1		(IMXRT_FLEXPWM3.SM[1].DISMAP1)
+#define FLEXPWM3_SM1DTCNT0		(IMXRT_FLEXPWM3.SM[1].DTCNT0)
+#define FLEXPWM3_SM1DTCNT1		(IMXRT_FLEXPWM3.SM[1].DTCNT1)
+#define FLEXPWM3_SM1CAPTCTRLA		(IMXRT_FLEXPWM3.SM[1].CAPTCTRLA)
+#define FLEXPWM3_SM1CAPTCOMPA		(IMXRT_FLEXPWM3.SM[1].CAPTCOMPA)
+#define FLEXPWM3_SM1CAPTCTRLB		(IMXRT_FLEXPWM3.SM[1].CAPTCTRLB)
+#define FLEXPWM3_SM1CAPTCOMPB		(IMXRT_FLEXPWM3.SM[1].CAPTCOMPB)
+#define FLEXPWM3_SM1CAPTCTRLX		(IMXRT_FLEXPWM3.SM[1].CAPTCTRLX)
+#define FLEXPWM3_SM1CAPTCOMPX		(IMXRT_FLEXPWM3.SM[1].CAPTCOMPX)
+#define FLEXPWM3_SM1CVAL0		(IMXRT_FLEXPWM3.SM[1].CVAL0)
+#define FLEXPWM3_SM1CVAL0CYC		(IMXRT_FLEXPWM3.SM[1].CVAL0CYC)
+#define FLEXPWM3_SM1CVAL1		(IMXRT_FLEXPWM3.SM[1].CVAL1)
+#define FLEXPWM3_SM1CVAL1CYC		(IMXRT_FLEXPWM3.SM[1].CVAL1CYC)
+#define FLEXPWM3_SM1CVAL2		(IMXRT_FLEXPWM3.SM[1].CVAL2)
+#define FLEXPWM3_SM1CVAL2CYC		(IMXRT_FLEXPWM3.SM[1].CVAL2CYC)
+#define FLEXPWM3_SM1CVAL3		(IMXRT_FLEXPWM3.SM[1].CVAL3)
+#define FLEXPWM3_SM1CVAL3CYC		(IMXRT_FLEXPWM3.SM[1].CVAL3CYC)
+#define FLEXPWM3_SM1CVAL4		(IMXRT_FLEXPWM3.SM[1].CVAL4)
+#define FLEXPWM3_SM1CVAL4CYC		(IMXRT_FLEXPWM3.SM[1].CVAL4CYC)
+#define FLEXPWM3_SM1CVAL5		(IMXRT_FLEXPWM3.SM[1].CVAL5)
+#define FLEXPWM3_SM1CVAL5CYC		(IMXRT_FLEXPWM3.SM[1].CVAL5CYC)
+#define FLEXPWM3_SM2CNT			(IMXRT_FLEXPWM3.SM[2].CNT)
+#define FLEXPWM3_SM2INIT		(IMXRT_FLEXPWM3.SM[2].INIT)
+#define FLEXPWM3_SM2CTRL2		(IMXRT_FLEXPWM3.SM[2].CTRL2)
+#define FLEXPWM3_SM2CTRL		(IMXRT_FLEXPWM3.SM[2].CTRL)
+#define FLEXPWM3_SM2VAL0		(IMXRT_FLEXPWM3.SM[2].VAL0)
+#define FLEXPWM3_SM2FRACVAL1		(IMXRT_FLEXPWM3.SM[2].FRACVAL1)
+#define FLEXPWM3_SM2VAL1		(IMXRT_FLEXPWM3.SM[2].VAL1)
+#define FLEXPWM3_SM2FRACVAL2		(IMXRT_FLEXPWM3.SM[2].FRACVAL2)
+#define FLEXPWM3_SM2VAL2		(IMXRT_FLEXPWM3.SM[2].VAL2)
+#define FLEXPWM3_SM2FRACVAL3		(IMXRT_FLEXPWM3.SM[2].FRACVAL3)
+#define FLEXPWM3_SM2VAL3		(IMXRT_FLEXPWM3.SM[2].VAL3)
+#define FLEXPWM3_SM2FRACVAL4		(IMXRT_FLEXPWM3.SM[2].FRACVAL4)
+#define FLEXPWM3_SM2VAL4		(IMXRT_FLEXPWM3.SM[2].VAL4)
+#define FLEXPWM3_SM2FRACVAL5		(IMXRT_FLEXPWM3.SM[2].FRACVAL5)
+#define FLEXPWM3_SM2VAL5		(IMXRT_FLEXPWM3.SM[2].VAL5)
+#define FLEXPWM3_SM2FRCTRL		(IMXRT_FLEXPWM3.SM[2].FRCTRL)
+#define FLEXPWM3_SM2OCTRL		(IMXRT_FLEXPWM3.SM[2].OCTRL)
+#define FLEXPWM3_SM2STS			(IMXRT_FLEXPWM3.SM[2].STS)
+#define FLEXPWM3_SM2INTEN		(IMXRT_FLEXPWM3.SM[2].INTEN)
+#define FLEXPWM3_SM2DMAEN		(IMXRT_FLEXPWM3.SM[2].DMAEN)
+#define FLEXPWM3_SM2TCTRL		(IMXRT_FLEXPWM3.SM[2].TCTRL)
+#define FLEXPWM3_SM2DISMAP0		(IMXRT_FLEXPWM3.SM[2].DISMAP0)
+#define FLEXPWM3_SM2DISMAP1		(IMXRT_FLEXPWM3.SM[2].DISMAP1)
+#define FLEXPWM3_SM2DTCNT0		(IMXRT_FLEXPWM3.SM[2].DTCNT0)
+#define FLEXPWM3_SM2DTCNT1		(IMXRT_FLEXPWM3.SM[2].DTCNT1)
+#define FLEXPWM3_SM2CAPTCTRLA		(IMXRT_FLEXPWM3.SM[2].CAPTCTRLA)
+#define FLEXPWM3_SM2CAPTCOMPA		(IMXRT_FLEXPWM3.SM[2].CAPTCOMPA)
+#define FLEXPWM3_SM2CAPTCTRLB		(IMXRT_FLEXPWM3.SM[2].CAPTCTRLB)
+#define FLEXPWM3_SM2CAPTCOMPB		(IMXRT_FLEXPWM3.SM[2].CAPTCOMPB)
+#define FLEXPWM3_SM2CAPTCTRLX		(IMXRT_FLEXPWM3.SM[2].CAPTCTRLX)
+#define FLEXPWM3_SM2CAPTCOMPX		(IMXRT_FLEXPWM3.SM[2].CAPTCOMPX)
+#define FLEXPWM3_SM2CVAL0		(IMXRT_FLEXPWM3.SM[2].CVAL0)
+#define FLEXPWM3_SM2CVAL0CYC		(IMXRT_FLEXPWM3.SM[2].CVAL0CYC)
+#define FLEXPWM3_SM2CVAL1		(IMXRT_FLEXPWM3.SM[2].CVAL1)
+#define FLEXPWM3_SM2CVAL1CYC		(IMXRT_FLEXPWM3.SM[2].CVAL1CYC)
+#define FLEXPWM3_SM2CVAL2		(IMXRT_FLEXPWM3.SM[2].CVAL2)
+#define FLEXPWM3_SM2CVAL2CYC		(IMXRT_FLEXPWM3.SM[2].CVAL2CYC)
+#define FLEXPWM3_SM2CVAL3		(IMXRT_FLEXPWM3.SM[2].CVAL3)
+#define FLEXPWM3_SM2CVAL3CYC		(IMXRT_FLEXPWM3.SM[2].CVAL3CYC)
+#define FLEXPWM3_SM2CVAL4		(IMXRT_FLEXPWM3.SM[2].CVAL4)
+#define FLEXPWM3_SM2CVAL4CYC		(IMXRT_FLEXPWM3.SM[2].CVAL4CYC)
+#define FLEXPWM3_SM2CVAL5		(IMXRT_FLEXPWM3.SM[2].CVAL5)
+#define FLEXPWM3_SM2CVAL5CYC		(IMXRT_FLEXPWM3.SM[2].CVAL5CYC)
+#define FLEXPWM3_SM3CNT			(IMXRT_FLEXPWM3.SM[3].CNT)
+#define FLEXPWM3_SM3INIT		(IMXRT_FLEXPWM3.SM[3].INIT)
+#define FLEXPWM3_SM3CTRL2		(IMXRT_FLEXPWM3.SM[3].CTRL2)
+#define FLEXPWM3_SM3CTRL		(IMXRT_FLEXPWM3.SM[3].CTRL)
+#define FLEXPWM3_SM3VAL0		(IMXRT_FLEXPWM3.SM[3].VAL0)
+#define FLEXPWM3_SM3FRACVAL1		(IMXRT_FLEXPWM3.SM[3].FRACVAL1)
+#define FLEXPWM3_SM3VAL1		(IMXRT_FLEXPWM3.SM[3].VAL1)
+#define FLEXPWM3_SM3FRACVAL2		(IMXRT_FLEXPWM3.SM[3].FRACVAL2)
+#define FLEXPWM3_SM3VAL2		(IMXRT_FLEXPWM3.SM[3].VAL2)
+#define FLEXPWM3_SM3FRACVAL3		(IMXRT_FLEXPWM3.SM[3].FRACVAL3)
+#define FLEXPWM3_SM3VAL3		(IMXRT_FLEXPWM3.SM[3].VAL3)
+#define FLEXPWM3_SM3FRACVAL4		(IMXRT_FLEXPWM3.SM[3].FRACVAL4)
+#define FLEXPWM3_SM3VAL4		(IMXRT_FLEXPWM3.SM[3].VAL4)
+#define FLEXPWM3_SM3FRACVAL5		(IMXRT_FLEXPWM3.SM[3].FRACVAL5)
+#define FLEXPWM3_SM3VAL5		(IMXRT_FLEXPWM3.SM[3].VAL5)
+#define FLEXPWM3_SM3FRCTRL		(IMXRT_FLEXPWM3.SM[3].FRCTRL)
+#define FLEXPWM3_SM3OCTRL		(IMXRT_FLEXPWM3.SM[3].OCTRL)
+#define FLEXPWM3_SM3STS			(IMXRT_FLEXPWM3.SM[3].STS)
+#define FLEXPWM3_SM3INTEN		(IMXRT_FLEXPWM3.SM[3].INTEN)
+#define FLEXPWM3_SM3DMAEN		(IMXRT_FLEXPWM3.SM[3].DMAEN)
+#define FLEXPWM3_SM3TCTRL		(IMXRT_FLEXPWM3.SM[3].TCTRL)
+#define FLEXPWM3_SM3DISMAP0		(IMXRT_FLEXPWM3.SM[3].DISMAP0)
+#define FLEXPWM3_SM3DISMAP1		(IMXRT_FLEXPWM3.SM[3].DISMAP1)
+#define FLEXPWM3_SM3DTCNT0		(IMXRT_FLEXPWM3.SM[3].DTCNT0)
+#define FLEXPWM3_SM3DTCNT1		(IMXRT_FLEXPWM3.SM[3].DTCNT1)
+#define FLEXPWM3_SM3CAPTCTRLA		(IMXRT_FLEXPWM3.SM[3].CAPTCTRLA)
+#define FLEXPWM3_SM3CAPTCOMPA		(IMXRT_FLEXPWM3.SM[3].CAPTCOMPA)
+#define FLEXPWM3_SM3CAPTCTRLB		(IMXRT_FLEXPWM3.SM[3].CAPTCTRLB)
+#define FLEXPWM3_SM3CAPTCOMPB		(IMXRT_FLEXPWM3.SM[3].CAPTCOMPB)
+#define FLEXPWM3_SM3CAPTCTRLX		(IMXRT_FLEXPWM3.SM[3].CAPTCTRLX)
+#define FLEXPWM3_SM3CAPTCOMPX		(IMXRT_FLEXPWM3.SM[3].CAPTCOMPX)
+#define FLEXPWM3_SM3CVAL0		(IMXRT_FLEXPWM3.SM[3].CVAL0)
+#define FLEXPWM3_SM3CVAL0CYC		(IMXRT_FLEXPWM3.SM[3].CVAL0CYC)
+#define FLEXPWM3_SM3CVAL1		(IMXRT_FLEXPWM3.SM[3].CVAL1)
+#define FLEXPWM3_SM3CVAL1CYC		(IMXRT_FLEXPWM3.SM[3].CVAL1CYC)
+#define FLEXPWM3_SM3CVAL2		(IMXRT_FLEXPWM3.SM[3].CVAL2)
+#define FLEXPWM3_SM3CVAL2CYC		(IMXRT_FLEXPWM3.SM[3].CVAL2CYC)
+#define FLEXPWM3_SM3CVAL3		(IMXRT_FLEXPWM3.SM[3].CVAL3)
+#define FLEXPWM3_SM3CVAL3CYC		(IMXRT_FLEXPWM3.SM[3].CVAL3CYC)
+#define FLEXPWM3_SM3CVAL4		(IMXRT_FLEXPWM3.SM[3].CVAL4)
+#define FLEXPWM3_SM3CVAL4CYC		(IMXRT_FLEXPWM3.SM[3].CVAL4CYC)
+#define FLEXPWM3_SM3CVAL5		(IMXRT_FLEXPWM3.SM[3].CVAL5)
+#define FLEXPWM3_SM3CVAL5CYC		(IMXRT_FLEXPWM3.SM[3].CVAL5CYC)
+#define FLEXPWM3_OUTEN			(IMXRT_FLEXPWM3.OUTEN)
+#define FLEXPWM3_MASK			(IMXRT_FLEXPWM3.MASK)
+#define FLEXPWM3_SWCOUT			(IMXRT_FLEXPWM3.SWCOUT)
+#define FLEXPWM3_DTSRCSEL		(IMXRT_FLEXPWM3.DTSRCSEL)
+#define FLEXPWM3_MCTRL			(IMXRT_FLEXPWM3.MCTRL)
+#define FLEXPWM3_MCTRL2			(IMXRT_FLEXPWM3.MCTRL2)
+#define FLEXPWM3_FCTRL0			(IMXRT_FLEXPWM3.FCTRL0)
+#define FLEXPWM3_FSTS0			(IMXRT_FLEXPWM3.FSTS0)
+#define FLEXPWM3_FFILT0			(IMXRT_FLEXPWM3.FFILT0)
+#define FLEXPWM3_FTST0			(IMXRT_FLEXPWM3.FTST0)
+#define FLEXPWM3_FCTRL20		(IMXRT_FLEXPWM3.FCTRL20)
+#define FLEXPWM4_SM0CNT			(IMXRT_FLEXPWM4.SM[0].CNT)
+#define FLEXPWM4_SM0INIT		(IMXRT_FLEXPWM4.SM[0].INIT)
+#define FLEXPWM4_SM0CTRL2		(IMXRT_FLEXPWM4.SM[0].CTRL2)
+#define FLEXPWM4_SM0CTRL		(IMXRT_FLEXPWM4.SM[0].CTRL)
+#define FLEXPWM4_SM0VAL0		(IMXRT_FLEXPWM4.SM[0].VAL0)
+#define FLEXPWM4_SM0FRACVAL1		(IMXRT_FLEXPWM4.SM[0].FRACVAL1)
+#define FLEXPWM4_SM0VAL1		(IMXRT_FLEXPWM4.SM[0].VAL1)
+#define FLEXPWM4_SM0FRACVAL2		(IMXRT_FLEXPWM4.SM[0].FRACVAL2)
+#define FLEXPWM4_SM0VAL2		(IMXRT_FLEXPWM4.SM[0].VAL2)
+#define FLEXPWM4_SM0FRACVAL3		(IMXRT_FLEXPWM4.SM[0].FRACVAL3)
+#define FLEXPWM4_SM0VAL3		(IMXRT_FLEXPWM4.SM[0].VAL3)
+#define FLEXPWM4_SM0FRACVAL4		(IMXRT_FLEXPWM4.SM[0].FRACVAL4)
+#define FLEXPWM4_SM0VAL4		(IMXRT_FLEXPWM4.SM[0].VAL4)
+#define FLEXPWM4_SM0FRACVAL5		(IMXRT_FLEXPWM4.SM[0].FRACVAL5)
+#define FLEXPWM4_SM0VAL5		(IMXRT_FLEXPWM4.SM[0].VAL5)
+#define FLEXPWM4_SM0FRCTRL		(IMXRT_FLEXPWM4.SM[0].FRCTRL)
+#define FLEXPWM4_SM0OCTRL		(IMXRT_FLEXPWM4.SM[0].OCTRL)
+#define FLEXPWM4_SM0STS			(IMXRT_FLEXPWM4.SM[0].STS)
+#define FLEXPWM4_SM0INTEN		(IMXRT_FLEXPWM4.SM[0].INTEN)
+#define FLEXPWM4_SM0DMAEN		(IMXRT_FLEXPWM4.SM[0].DMAEN)
+#define FLEXPWM4_SM0TCTRL		(IMXRT_FLEXPWM4.SM[0].TCTRL)
+#define FLEXPWM4_SM0DISMAP0		(IMXRT_FLEXPWM4.SM[0].DISMAP0)
+#define FLEXPWM4_SM0DISMAP1		(IMXRT_FLEXPWM4.SM[0].DISMAP1)
+#define FLEXPWM4_SM0DTCNT0		(IMXRT_FLEXPWM4.SM[0].DTCNT0)
+#define FLEXPWM4_SM0DTCNT1		(IMXRT_FLEXPWM4.SM[0].DTCNT1)
+#define FLEXPWM4_SM0CAPTCTRLA		(IMXRT_FLEXPWM4.SM[0].CAPTCTRLA)
+#define FLEXPWM4_SM0CAPTCOMPA		(IMXRT_FLEXPWM4.SM[0].CAPTCOMPA)
+#define FLEXPWM4_SM0CAPTCTRLB		(IMXRT_FLEXPWM4.SM[0].CAPTCTRLB)
+#define FLEXPWM4_SM0CAPTCOMPB		(IMXRT_FLEXPWM4.SM[0].CAPTCOMPB)
+#define FLEXPWM4_SM0CAPTCTRLX		(IMXRT_FLEXPWM4.SM[0].CAPTCTRLX)
+#define FLEXPWM4_SM0CAPTCOMPX		(IMXRT_FLEXPWM4.SM[0].CAPTCOMPX)
+#define FLEXPWM4_SM0CVAL0		(IMXRT_FLEXPWM4.SM[0].CVAL0)
+#define FLEXPWM4_SM0CVAL0CYC		(IMXRT_FLEXPWM4.SM[0].CVAL0CYC)
+#define FLEXPWM4_SM0CVAL1		(IMXRT_FLEXPWM4.SM[0].CVAL1)
+#define FLEXPWM4_SM0CVAL1CYC		(IMXRT_FLEXPWM4.SM[0].CVAL1CYC)
+#define FLEXPWM4_SM0CVAL2		(IMXRT_FLEXPWM4.SM[0].CVAL2)
+#define FLEXPWM4_SM0CVAL2CYC		(IMXRT_FLEXPWM4.SM[0].CVAL2CYC)
+#define FLEXPWM4_SM0CVAL3		(IMXRT_FLEXPWM4.SM[0].CVAL3)
+#define FLEXPWM4_SM0CVAL3CYC		(IMXRT_FLEXPWM4.SM[0].CVAL3CYC)
+#define FLEXPWM4_SM0CVAL4		(IMXRT_FLEXPWM4.SM[0].CVAL4)
+#define FLEXPWM4_SM0CVAL4CYC		(IMXRT_FLEXPWM4.SM[0].CVAL4CYC)
+#define FLEXPWM4_SM0CVAL5		(IMXRT_FLEXPWM4.SM[0].CVAL5)
+#define FLEXPWM4_SM0CVAL5CYC		(IMXRT_FLEXPWM4.SM[0].CVAL5CYC)
+#define FLEXPWM4_SM1CNT			(IMXRT_FLEXPWM4.SM[1].CNT)
+#define FLEXPWM4_SM1INIT		(IMXRT_FLEXPWM4.SM[1].INIT)
+#define FLEXPWM4_SM1CTRL2		(IMXRT_FLEXPWM4.SM[1].CTRL2)
+#define FLEXPWM4_SM1CTRL		(IMXRT_FLEXPWM4.SM[1].CTRL)
+#define FLEXPWM4_SM1VAL0		(IMXRT_FLEXPWM4.SM[1].VAL0)
+#define FLEXPWM4_SM1FRACVAL1		(IMXRT_FLEXPWM4.SM[1].FRACVAL1)
+#define FLEXPWM4_SM1VAL1		(IMXRT_FLEXPWM4.SM[1].VAL1)
+#define FLEXPWM4_SM1FRACVAL2		(IMXRT_FLEXPWM4.SM[1].FRACVAL2)
+#define FLEXPWM4_SM1VAL2		(IMXRT_FLEXPWM4.SM[1].VAL2)
+#define FLEXPWM4_SM1FRACVAL3		(IMXRT_FLEXPWM4.SM[1].FRACVAL3)
+#define FLEXPWM4_SM1VAL3		(IMXRT_FLEXPWM4.SM[1].VAL3)
+#define FLEXPWM4_SM1FRACVAL4		(IMXRT_FLEXPWM4.SM[1].FRACVAL4)
+#define FLEXPWM4_SM1VAL4		(IMXRT_FLEXPWM4.SM[1].VAL4)
+#define FLEXPWM4_SM1FRACVAL5		(IMXRT_FLEXPWM4.SM[1].FRACVAL5)
+#define FLEXPWM4_SM1VAL5		(IMXRT_FLEXPWM4.SM[1].VAL5)
+#define FLEXPWM4_SM1FRCTRL		(IMXRT_FLEXPWM4.SM[1].FRCTRL)
+#define FLEXPWM4_SM1OCTRL		(IMXRT_FLEXPWM4.SM[1].OCTRL)
+#define FLEXPWM4_SM1STS			(IMXRT_FLEXPWM4.SM[1].STS)
+#define FLEXPWM4_SM1INTEN		(IMXRT_FLEXPWM4.SM[1].INTEN)
+#define FLEXPWM4_SM1DMAEN		(IMXRT_FLEXPWM4.SM[1].DMAEN)
+#define FLEXPWM4_SM1TCTRL		(IMXRT_FLEXPWM4.SM[1].TCTRL)
+#define FLEXPWM4_SM1DISMAP0		(IMXRT_FLEXPWM4.SM[1].DISMAP0)
+#define FLEXPWM4_SM1DISMAP1		(IMXRT_FLEXPWM4.SM[1].DISMAP1)
+#define FLEXPWM4_SM1DTCNT0		(IMXRT_FLEXPWM4.SM[1].DTCNT0)
+#define FLEXPWM4_SM1DTCNT1		(IMXRT_FLEXPWM4.SM[1].DTCNT1)
+#define FLEXPWM4_SM1CAPTCTRLA		(IMXRT_FLEXPWM4.SM[1].CAPTCTRLA)
+#define FLEXPWM4_SM1CAPTCOMPA		(IMXRT_FLEXPWM4.SM[1].CAPTCOMPA)
+#define FLEXPWM4_SM1CAPTCTRLB		(IMXRT_FLEXPWM4.SM[1].CAPTCTRLB)
+#define FLEXPWM4_SM1CAPTCOMPB		(IMXRT_FLEXPWM4.SM[1].CAPTCOMPB)
+#define FLEXPWM4_SM1CAPTCTRLX		(IMXRT_FLEXPWM4.SM[1].CAPTCTRLX)
+#define FLEXPWM4_SM1CAPTCOMPX		(IMXRT_FLEXPWM4.SM[1].CAPTCOMPX)
+#define FLEXPWM4_SM1CVAL0		(IMXRT_FLEXPWM4.SM[1].CVAL0)
+#define FLEXPWM4_SM1CVAL0CYC		(IMXRT_FLEXPWM4.SM[1].CVAL0CYC)
+#define FLEXPWM4_SM1CVAL1		(IMXRT_FLEXPWM4.SM[1].CVAL1)
+#define FLEXPWM4_SM1CVAL1CYC		(IMXRT_FLEXPWM4.SM[1].CVAL1CYC)
+#define FLEXPWM4_SM1CVAL2		(IMXRT_FLEXPWM4.SM[1].CVAL2)
+#define FLEXPWM4_SM1CVAL2CYC		(IMXRT_FLEXPWM4.SM[1].CVAL2CYC)
+#define FLEXPWM4_SM1CVAL3		(IMXRT_FLEXPWM4.SM[1].CVAL3)
+#define FLEXPWM4_SM1CVAL3CYC		(IMXRT_FLEXPWM4.SM[1].CVAL3CYC)
+#define FLEXPWM4_SM1CVAL4		(IMXRT_FLEXPWM4.SM[1].CVAL4)
+#define FLEXPWM4_SM1CVAL4CYC		(IMXRT_FLEXPWM4.SM[1].CVAL4CYC)
+#define FLEXPWM4_SM1CVAL5		(IMXRT_FLEXPWM4.SM[1].CVAL5)
+#define FLEXPWM4_SM1CVAL5CYC		(IMXRT_FLEXPWM4.SM[1].CVAL5CYC)
+#define FLEXPWM4_SM2CNT			(IMXRT_FLEXPWM4.SM[2].CNT)
+#define FLEXPWM4_SM2INIT		(IMXRT_FLEXPWM4.SM[2].INIT)
+#define FLEXPWM4_SM2CTRL2		(IMXRT_FLEXPWM4.SM[2].CTRL2)
+#define FLEXPWM4_SM2CTRL		(IMXRT_FLEXPWM4.SM[2].CTRL)
+#define FLEXPWM4_SM2VAL0		(IMXRT_FLEXPWM4.SM[2].VAL0)
+#define FLEXPWM4_SM2FRACVAL1		(IMXRT_FLEXPWM4.SM[2].FRACVAL1)
+#define FLEXPWM4_SM2VAL1		(IMXRT_FLEXPWM4.SM[2].VAL1)
+#define FLEXPWM4_SM2FRACVAL2		(IMXRT_FLEXPWM4.SM[2].FRACVAL2)
+#define FLEXPWM4_SM2VAL2		(IMXRT_FLEXPWM4.SM[2].VAL2)
+#define FLEXPWM4_SM2FRACVAL3		(IMXRT_FLEXPWM4.SM[2].FRACVAL3)
+#define FLEXPWM4_SM2VAL3		(IMXRT_FLEXPWM4.SM[2].VAL3)
+#define FLEXPWM4_SM2FRACVAL4		(IMXRT_FLEXPWM4.SM[2].FRACVAL4)
+#define FLEXPWM4_SM2VAL4		(IMXRT_FLEXPWM4.SM[2].VAL4)
+#define FLEXPWM4_SM2FRACVAL5		(IMXRT_FLEXPWM4.SM[2].FRACVAL5)
+#define FLEXPWM4_SM2VAL5		(IMXRT_FLEXPWM4.SM[2].VAL5)
+#define FLEXPWM4_SM2FRCTRL		(IMXRT_FLEXPWM4.SM[2].FRCTRL)
+#define FLEXPWM4_SM2OCTRL		(IMXRT_FLEXPWM4.SM[2].OCTRL)
+#define FLEXPWM4_SM2STS			(IMXRT_FLEXPWM4.SM[2].STS)
+#define FLEXPWM4_SM2INTEN		(IMXRT_FLEXPWM4.SM[2].INTEN)
+#define FLEXPWM4_SM2DMAEN		(IMXRT_FLEXPWM4.SM[2].DMAEN)
+#define FLEXPWM4_SM2TCTRL		(IMXRT_FLEXPWM4.SM[2].TCTRL)
+#define FLEXPWM4_SM2DISMAP0		(IMXRT_FLEXPWM4.SM[2].DISMAP0)
+#define FLEXPWM4_SM2DISMAP1		(IMXRT_FLEXPWM4.SM[2].DISMAP1)
+#define FLEXPWM4_SM2DTCNT0		(IMXRT_FLEXPWM4.SM[2].DTCNT0)
+#define FLEXPWM4_SM2DTCNT1		(IMXRT_FLEXPWM4.SM[2].DTCNT1)
+#define FLEXPWM4_SM2CAPTCTRLA		(IMXRT_FLEXPWM4.SM[2].CAPTCTRLA)
+#define FLEXPWM4_SM2CAPTCOMPA		(IMXRT_FLEXPWM4.SM[2].CAPTCOMPA)
+#define FLEXPWM4_SM2CAPTCTRLB		(IMXRT_FLEXPWM4.SM[2].CAPTCTRLB)
+#define FLEXPWM4_SM2CAPTCOMPB		(IMXRT_FLEXPWM4.SM[2].CAPTCOMPB)
+#define FLEXPWM4_SM2CAPTCTRLX		(IMXRT_FLEXPWM4.SM[2].CAPTCTRLX)
+#define FLEXPWM4_SM2CAPTCOMPX		(IMXRT_FLEXPWM4.SM[2].CAPTCOMPX)
+#define FLEXPWM4_SM2CVAL0		(IMXRT_FLEXPWM4.SM[2].CVAL0)
+#define FLEXPWM4_SM2CVAL0CYC		(IMXRT_FLEXPWM4.SM[2].CVAL0CYC)
+#define FLEXPWM4_SM2CVAL1		(IMXRT_FLEXPWM4.SM[2].CVAL1)
+#define FLEXPWM4_SM2CVAL1CYC		(IMXRT_FLEXPWM4.SM[2].CVAL1CYC)
+#define FLEXPWM4_SM2CVAL2		(IMXRT_FLEXPWM4.SM[2].CVAL2)
+#define FLEXPWM4_SM2CVAL2CYC		(IMXRT_FLEXPWM4.SM[2].CVAL2CYC)
+#define FLEXPWM4_SM2CVAL3		(IMXRT_FLEXPWM4.SM[2].CVAL3)
+#define FLEXPWM4_SM2CVAL3CYC		(IMXRT_FLEXPWM4.SM[2].CVAL3CYC)
+#define FLEXPWM4_SM2CVAL4		(IMXRT_FLEXPWM4.SM[2].CVAL4)
+#define FLEXPWM4_SM2CVAL4CYC		(IMXRT_FLEXPWM4.SM[2].CVAL4CYC)
+#define FLEXPWM4_SM2CVAL5		(IMXRT_FLEXPWM4.SM[2].CVAL5)
+#define FLEXPWM4_SM2CVAL5CYC		(IMXRT_FLEXPWM4.SM[2].CVAL5CYC)
+#define FLEXPWM4_SM3CNT			(IMXRT_FLEXPWM4.SM[3].CNT)
+#define FLEXPWM4_SM3INIT		(IMXRT_FLEXPWM4.SM[3].INIT)
+#define FLEXPWM4_SM3CTRL2		(IMXRT_FLEXPWM4.SM[3].CTRL2)
+#define FLEXPWM4_SM3CTRL		(IMXRT_FLEXPWM4.SM[3].CTRL)
+#define FLEXPWM4_SM3VAL0		(IMXRT_FLEXPWM4.SM[3].VAL0)
+#define FLEXPWM4_SM3FRACVAL1		(IMXRT_FLEXPWM4.SM[3].FRACVAL1)
+#define FLEXPWM4_SM3VAL1		(IMXRT_FLEXPWM4.SM[3].VAL1)
+#define FLEXPWM4_SM3FRACVAL2		(IMXRT_FLEXPWM4.SM[3].FRACVAL2)
+#define FLEXPWM4_SM3VAL2		(IMXRT_FLEXPWM4.SM[3].VAL2)
+#define FLEXPWM4_SM3FRACVAL3		(IMXRT_FLEXPWM4.SM[3].FRACVAL3)
+#define FLEXPWM4_SM3VAL3		(IMXRT_FLEXPWM4.SM[3].VAL3)
+#define FLEXPWM4_SM3FRACVAL4		(IMXRT_FLEXPWM4.SM[3].FRACVAL4)
+#define FLEXPWM4_SM3VAL4		(IMXRT_FLEXPWM4.SM[3].VAL4)
+#define FLEXPWM4_SM3FRACVAL5		(IMXRT_FLEXPWM4.SM[3].FRACVAL5)
+#define FLEXPWM4_SM3VAL5		(IMXRT_FLEXPWM4.SM[3].VAL5)
+#define FLEXPWM4_SM3FRCTRL		(IMXRT_FLEXPWM4.SM[3].FRCTRL)
+#define FLEXPWM4_SM3OCTRL		(IMXRT_FLEXPWM4.SM[3].OCTRL)
+#define FLEXPWM4_SM3STS			(IMXRT_FLEXPWM4.SM[3].STS)
+#define FLEXPWM4_SM3INTEN		(IMXRT_FLEXPWM4.SM[3].INTEN)
+#define FLEXPWM4_SM3DMAEN		(IMXRT_FLEXPWM4.SM[3].DMAEN)
+#define FLEXPWM4_SM3TCTRL		(IMXRT_FLEXPWM4.SM[3].TCTRL)
+#define FLEXPWM4_SM3DISMAP0		(IMXRT_FLEXPWM4.SM[3].DISMAP0)
+#define FLEXPWM4_SM3DISMAP1		(IMXRT_FLEXPWM4.SM[3].DISMAP1)
+#define FLEXPWM4_SM3DTCNT0		(IMXRT_FLEXPWM4.SM[3].DTCNT0)
+#define FLEXPWM4_SM3DTCNT1		(IMXRT_FLEXPWM4.SM[3].DTCNT1)
+#define FLEXPWM4_SM3CAPTCTRLA		(IMXRT_FLEXPWM4.SM[3].CAPTCTRLA)
+#define FLEXPWM4_SM3CAPTCOMPA		(IMXRT_FLEXPWM4.SM[3].CAPTCOMPA)
+#define FLEXPWM4_SM3CAPTCTRLB		(IMXRT_FLEXPWM4.SM[3].CAPTCTRLB)
+#define FLEXPWM4_SM3CAPTCOMPB		(IMXRT_FLEXPWM4.SM[3].CAPTCOMPB)
+#define FLEXPWM4_SM3CAPTCTRLX		(IMXRT_FLEXPWM4.SM[3].CAPTCTRLX)
+#define FLEXPWM4_SM3CAPTCOMPX		(IMXRT_FLEXPWM4.SM[3].CAPTCOMPX)
+#define FLEXPWM4_SM3CVAL0		(IMXRT_FLEXPWM4.SM[3].CVAL0)
+#define FLEXPWM4_SM3CVAL0CYC		(IMXRT_FLEXPWM4.SM[3].CVAL0CYC)
+#define FLEXPWM4_SM3CVAL1		(IMXRT_FLEXPWM4.SM[3].CVAL1)
+#define FLEXPWM4_SM3CVAL1CYC		(IMXRT_FLEXPWM4.SM[3].CVAL1CYC)
+#define FLEXPWM4_SM3CVAL2		(IMXRT_FLEXPWM4.SM[3].CVAL2)
+#define FLEXPWM4_SM3CVAL2CYC		(IMXRT_FLEXPWM4.SM[3].CVAL2CYC)
+#define FLEXPWM4_SM3CVAL3		(IMXRT_FLEXPWM4.SM[3].CVAL3)
+#define FLEXPWM4_SM3CVAL3CYC		(IMXRT_FLEXPWM4.SM[3].CVAL3CYC)
+#define FLEXPWM4_SM3CVAL4		(IMXRT_FLEXPWM4.SM[3].CVAL4)
+#define FLEXPWM4_SM3CVAL4CYC		(IMXRT_FLEXPWM4.SM[3].CVAL4CYC)
+#define FLEXPWM4_SM3CVAL5		(IMXRT_FLEXPWM4.SM[3].CVAL5)
+#define FLEXPWM4_SM3CVAL5CYC		(IMXRT_FLEXPWM4.SM[3].CVAL5CYC)
+#define FLEXPWM4_OUTEN			(IMXRT_FLEXPWM4.OUTEN)
+#define FLEXPWM4_MASK			(IMXRT_FLEXPWM4.MASK)
+#define FLEXPWM4_SWCOUT			(IMXRT_FLEXPWM4.SWCOUT)
+#define FLEXPWM4_DTSRCSEL		(IMXRT_FLEXPWM4.DTSRCSEL)
+#define FLEXPWM4_MCTRL			(IMXRT_FLEXPWM4.MCTRL)
+#define FLEXPWM4_MCTRL2			(IMXRT_FLEXPWM4.MCTRL2)
+#define FLEXPWM4_FCTRL0			(IMXRT_FLEXPWM4.FCTRL0)
+#define FLEXPWM4_FSTS0			(IMXRT_FLEXPWM4.FSTS0)
+#define FLEXPWM4_FFILT0			(IMXRT_FLEXPWM4.FFILT0)
+#define FLEXPWM4_FTST0			(IMXRT_FLEXPWM4.FTST0)
+#define FLEXPWM4_FCTRL20		(IMXRT_FLEXPWM4.FCTRL20)
+// page 1361
+#define FLEXPWM_SMCTRL2_DBGEN			((uint16_t)(1<<15))
+#define FLEXPWM_SMCTRL2_WAITEN			((uint16_t)(1<<14))
+#define FLEXPWM_SMCTRL2_INDEP			((uint16_t)(1<<13))
+#define FLEXPWM_SMCTRL2_PWM23_INIT		((uint16_t)(1<<12))
+#define FLEXPWM_SMCTRL2_PWM45_INIT		((uint16_t)(1<<11))
+#define FLEXPWM_SMCTRL2_PWMX_INIT		((uint16_t)(1<<10))
+#define FLEXPWM_SMCTRL2_INIT_SEL(n)		((uint16_t)(((n) & 0x03) << 8))
+#define FLEXPWM_SMCTRL2_FRCEN			((uint16_t)(1<<7))
+#define FLEXPWM_SMCTRL2_FORCE			((uint16_t)(1<<6))
+#define FLEXPWM_SMCTRL2_FORCE_SEL(n)		((uint16_t)(((n) & 0x07) << 3))
+#define FLEXPWM_SMCTRL2_RELOAD_SEL		((uint16_t)(1<<2))
+#define FLEXPWM_SMCTRL2_CLK_SEL(n)		((uint16_t)(((n) & 0x03) << 0))
+#define FLEXPWM_SMCTRL_LDFQ(n)			((uint16_t)(((n) & 0x0F) << 12))
+#define FLEXPWM_SMCTRL_HALF			((uint16_t)(1<<11))
+#define FLEXPWM_SMCTRL_FULL			((uint16_t)(1<<10))
+#define FLEXPWM_SMCTRL_DT(n)			((uint16_t)(((n) & 0x03) << 8))
+#define FLEXPWM_SMCTRL_COMPMODE			((uint16_t)(1<<7))
+#define FLEXPWM_SMCTRL_PRSC(n)			((uint16_t)(((n) & 0x0F) << 4))
+#define FLEXPWM_SMCTRL_SPLIT			((uint16_t)(1<<3))
+#define FLEXPWM_SMCTRL_LDMOD			((uint16_t)(1<<2))
+#define FLEXPWM_SMCTRL_DBLX			((uint16_t)(1<<1))
+#define FLEXPWM_SMCTRL_DBLEN			((uint16_t)(1<<0))
+#define FLEXPWM_SMFRCTRL_TEST			((uint16_t)(1<<15))
+#define FLEXPWM_SMFRCTRL_FRAC_PU		((uint16_t)(1<<8))
+#define FLEXPWM_SMFRCTRL_FRAC45_EN		((uint16_t)(1<<4))
+#define FLEXPWM_SMFRCTRL_FRAC23_EN		((uint16_t)(1<<2))
+#define FLEXPWM_SMFRCTRL_FRAC1_EN		((uint16_t)(1<<1))
+#define FLEXPWM_SMOCTRL_PWMA_IN			((uint16_t)(1<<15))
+#define FLEXPWM_SMOCTRL_PWMB_IN			((uint16_t)(1<<14))
+#define FLEXPWM_SMOCTRL_PWMX_IN			((uint16_t)(1<<13))
+#define FLEXPWM_SMOCTRL_POLA			((uint16_t)(1<<10))
+#define FLEXPWM_SMOCTRL_POLB			((uint16_t)(1<<9))
+#define FLEXPWM_SMOCTRL_POLX			((uint16_t)(1<<8))
+#define FLEXPWM_SMOCTRL_PWMAFS(n)		((uint16_t)(((n) & 0x03) << 4))
+#define FLEXPWM_SMOCTRL_PWMBFS(n)		((uint16_t)(((n) & 0x03) << 2))
+#define FLEXPWM_SMOCTRL_PWMXFS(n)		((uint16_t)(((n) & 0x03) << 0))
+#define FLEXPWM_SMSTS_RUF			((uint16_t)(1<<14))
+#define FLEXPWM_SMSTS_REF			((uint16_t)(1<<13))
+#define FLEXPWM_SMSTS_RF			((uint16_t)(1<<12))
+#define FLEXPWM_SMSTS_CFA1			((uint16_t)(1<<11))
+#define FLEXPWM_SMSTS_CFA0			((uint16_t)(1<<10))
+#define FLEXPWM_SMSTS_CFB1			((uint16_t)(1<<9))
+#define FLEXPWM_SMSTS_CFB0			((uint16_t)(1<<8))
+#define FLEXPWM_SMSTS_CFX1			((uint16_t)(1<<7))
+#define FLEXPWM_SMSTS_CFX0			((uint16_t)(1<<6))
+#define FLEXPWM_SMSTS_CMPF(n)			((uint16_t)(((n) & 0x3F) << 0))
+#define FLEXPWM_SMINTEN_REIE			((uint16_t)(1<<13))
+#define FLEXPWM_SMINTEN_RIE			((uint16_t)(1<<12))
+#define FLEXPWM_SMINTEN_CA1IE			((uint16_t)(1<<11))
+#define FLEXPWM_SMINTEN_CA0IE			((uint16_t)(1<<10))
+#define FLEXPWM_SMINTEN_CB1IE			((uint16_t)(1<<9))
+#define FLEXPWM_SMINTEN_CB0IE			((uint16_t)(1<<8))
+#define FLEXPWM_SMINTEN_CX1IE			((uint16_t)(1<<7))
+#define FLEXPWM_SMINTEN_CX0IE			((uint16_t)(1<<6))
+#define FLEXPWM_SMINTEN_CMPIE(n)		((uint16_t)(((n) & 0x3F) << 0))
+#define FLEXPWM_SMDMAEN_VALDE			((uint16_t)(1<<9))
+#define FLEXPWM_SMDMAEN_FAND			((uint16_t)(1<<8))
+#define FLEXPWM_SMDMAEN_CAPTDE(n)		((uint16_t)(((n) & 0x03) << 6))
+#define FLEXPWM_SMDMAEN_CA1DE			((uint16_t)(1<<5))
+#define FLEXPWM_SMDMAEN_CA0DE			((uint16_t)(1<<4))
+#define FLEXPWM_SMDMAEN_CB1DE			((uint16_t)(1<<3))
+#define FLEXPWM_SMDMAEN_CB0DE			((uint16_t)(1<<2))
+#define FLEXPWM_SMDMAEN_CX1DE			((uint16_t)(1<<1))
+#define FLEXPWM_SMDMAEN_CX0DE			((uint16_t)(1<<0))
+#define FLEXPWM_SMTCTRL_PWAOT0			((uint16_t)(1<<15))
+#define FLEXPWM_SMTCTRL_PWBOT1			((uint16_t)(1<<14))
+#define FLEXPWM_SMTCTRL_TRGFRQ			((uint16_t)(1<<12))
+#define FLEXPWM_SMTCTRL_OUT_TRIG_EN(n)		((uint16_t)(((n) & 0x1F) << 0))
+#define FLEXPWM_SMDISMAP0_DIS0X(n)		((uint16_t)(((n) & 0x0F) << 8))
+#define FLEXPWM_SMDISMAP0_DIS0B(n)		((uint16_t)(((n) & 0x0F) << 4))
+#define FLEXPWM_SMDISMAP0_DIS0A(n)		((uint16_t)(((n) & 0x0F) << 0))
+#define FLEXPWM_SMDISMAP1_DIS1X(n)		((uint16_t)(((n) & 0x0F) << 8))
+#define FLEXPWM_SMDISMAP1_DIS1B(n)		((uint16_t)(((n) & 0x0F) << 4))
+#define FLEXPWM_SMDISMAP1_DIS1A(n)		((uint16_t)(((n) & 0x0F) << 0))
+#define FLEXPWM_SMCAPTCTRLA_CA1CNT(n)		((uint16_t)(((n) & 0x07) << 13))
+#define FLEXPWM_SMCAPTCTRLA_CA0CNT(n)		((uint16_t)(((n) & 0x07) << 10))
+#define FLEXPWM_SMCAPTCTRLA_CFAWM(n)		((uint16_t)(((n) & 0x03) << 8))
+#define FLEXPWM_SMCAPTCTRLA_EDGCNTA_EN		((uint16_t)(1<<7))
+#define FLEXPWM_SMCAPTCTRLA_INP_SELA		((uint16_t)(1<<6))
+#define FLEXPWM_SMCAPTCTRLA_EDGA1(n)		((uint16_t)(((n) & 0x03) << 4))
+#define FLEXPWM_SMCAPTCTRLA_EDGA0(n)		((uint16_t)(((n) & 0x03) << 2))
+#define FLEXPWM_SMCAPTCTRLA_ONESHOTA		((uint16_t)(1<<1))
+#define FLEXPWM_SMCAPTCTRLA_ARMA		((uint16_t)(1<<0))
+#define FLEXPWM_SMCAPTCOMPA_EDGCNTA(n)		((uint16_t)(((n) & 0xFF) << 8))
+#define FLEXPWM_SMCAPTCOMPA_EDGCMPA(n)		((uint16_t)(((n) & 0xFF) << 0))
+#define FLEXPWM_SMCAPTCTRLB_CB1CNT(n)		((uint16_t)(((n) & 0x07) << 13))
+#define FLEXPWM_SMCAPTCTRLB_CB0CNT(n)		((uint16_t)(((n) & 0x07) << 10))
+#define FLEXPWM_SMCAPTCTRLB_CFBWM(n)		((uint16_t)(((n) & 0x03) << 8))
+#define FLEXPWM_SMCAPTCTRLB_EDGCNTB_EN		((uint16_t)(1<<7))
+#define FLEXPWM_SMCAPTCTRLB_INP_SELB		((uint16_t)(1<<6))
+#define FLEXPWM_SMCAPTCTRLB_EDGB1(n)		((uint16_t)(((n) & 0x03) << 4))
+#define FLEXPWM_SMCAPTCTRLB_EDGB0(n)		((uint16_t)(((n) & 0x03) << 2))
+#define FLEXPWM_SMCAPTCTRLB_ONESHOTB		((uint16_t)(1<<1))
+#define FLEXPWM_SMCAPTCTRLB_ARMB		((uint16_t)(1<<0))
+#define FLEXPWM_SMCAPTCOMPB_EDGCNTB(n)		((uint16_t)(((n) & 0xFF) << 8))
+#define FLEXPWM_SMCAPTCOMPB_EDGCMPB(n)		((uint16_t)(((n) & 0xFF) << 0))
+#define FLEXPWM_SMCAPTCTRLX_CX1CNT(n)		((uint16_t)(((n) & 0x07) << 13))
+#define FLEXPWM_SMCAPTCTRLX_CX0CNT(n)		((uint16_t)(((n) & 0x07) << 10))
+#define FLEXPWM_SMCAPTCTRLX_CFXWM(n)		((uint16_t)(((n) & 0x03) << 8))
+#define FLEXPWM_SMCAPTCTRLX_EDGCNTX_EN 		((uint16_t)(1<<7))
+#define FLEXPWM_SMCAPTCTRLX_INP_SELX		((uint16_t)(1<<6))
+#define FLEXPWM_SMCAPTCTRLX_EDGX1(n)		((uint16_t)(((n) & 0x03) << 4))
+#define FLEXPWM_SMCAPTCTRLX_EDGX0(n)		((uint16_t)(((n) & 0x03) << 2))
+#define FLEXPWM_SMCAPTCTRLX_ONESHOTX		((uint16_t)(1<<1))
+#define FLEXPWM_SMCAPTCTRLX_ARMX		((uint16_t)(1<<0))
+#define FLEXPWM_SMCAPTCOMPX_EDGCNTX(n)		((uint16_t)(((n) & 0xFF) << 8))
+#define FLEXPWM_SMCAPTCOMPX_EDGCMPX(n)		((uint16_t)(((n) & 0xFF) << 0))
+#define FLEXPWM_OUTEN_PWMA_EN(n)		((uint16_t)(((n) & 0x0F) << 8))
+#define FLEXPWM_OUTEN_PWMB_EN(n)		((uint16_t)(((n) & 0x0F) << 4))
+#define FLEXPWM_OUTEN_PWMX_EN(n)		((uint16_t)(((n) & 0x0F) << 0))
+#define FLEXPWM_MASK_UPDATE_MASK(n)		((uint16_t)(((n) & 0x0F) << 12))
+#define FLEXPWM_MASK_MASKA(n)			((uint16_t)(((n) & 0x0F) << 8))
+#define FLEXPWM_MASK_MASKB(n)			((uint16_t)(((n) & 0x0F) << 4))
+#define FLEXPWM_MASK_MASKX(n)			((uint16_t)(((n) & 0x0F) << 0))
+#define FLEXPWM_SWCOUT_SM3OUT23			((uint16_t)(1<<7))
+#define FLEXPWM_SWCOUT_SM3OUT45			((uint16_t)(1<<6))
+#define FLEXPWM_SWCOUT_SM2OUT23			((uint16_t)(1<<5))
+#define FLEXPWM_SWCOUT_SM2OUT45			((uint16_t)(1<<4))
+#define FLEXPWM_SWCOUT_SM1OUT23			((uint16_t)(1<<3))
+#define FLEXPWM_SWCOUT_SM1OUT45			((uint16_t)(1<<2))
+#define FLEXPWM_SWCOUT_SM0OUT23			((uint16_t)(1<<1))
+#define FLEXPWM_SWCOUT_SM0OUT45			((uint16_t)(1<<0))
+#define FLEXPWM_DTSRCSEL_SM3SEL23(n)		((uint16_t)(((n) & 0x03) << 14))
+#define FLEXPWM_DTSRCSEL_SM3SEL45(n)		((uint16_t)(((n) & 0x03) << 12))
+#define FLEXPWM_DTSRCSEL_SM2SEL23(n)		((uint16_t)(((n) & 0x03) << 10))
+#define FLEXPWM_DTSRCSEL_SM2SEL45(n)		((uint16_t)(((n) & 0x03) << 8))
+#define FLEXPWM_DTSRCSEL_SM1SEL23(n)		((uint16_t)(((n) & 0x03) << 6))
+#define FLEXPWM_DTSRCSEL_SM1SEL45(n)		((uint16_t)(((n) & 0x03) << 4))
+#define FLEXPWM_DTSRCSEL_SM0SEL23(n)		((uint16_t)(((n) & 0x03) << 2))
+#define FLEXPWM_DTSRCSEL_SM0SEL45(n)		((uint16_t)(((n) & 0x03) << 0))
+#define FLEXPWM_MCTRL_IPOL(n)			((uint16_t)(((n) & 0x0F) << 12))
+#define FLEXPWM_MCTRL_RUN(n)			((uint16_t)(((n) & 0x0F) << 8))
+#define FLEXPWM_MCTRL_CLDOK(n)			((uint16_t)(((n) & 0x0F) << 4))
+#define FLEXPWM_MCTRL_LDOK(n)			((uint16_t)(((n) & 0x0F) << 0))
+#define FLEXPWM_MCTRL2_MONPLL(n)		((uint16_t)(((n) & 0x03) << 0))
+#define FLEXPWM_FCTRL0_FLVL(n)			((uint16_t)(((n) & 0x0F) << 12))
+#define FLEXPWM_FCTRL0_FAUTO(n)			((uint16_t)(((n) & 0x0F) << 8))
+#define FLEXPWM_FCTRL0_FSAFE(n)			((uint16_t)(((n) & 0x0F) << 4))
+#define FLEXPWM_FCTRL0_FIE(n)			((uint16_t)(((n) & 0x0F) << 0))
+#define FLEXPWM_FSTS0_FHALF(n)			((uint16_t)(((n) & 0x0F) << 12))
+#define FLEXPWM_FSTS0_FFPIN(n)			((uint16_t)(((n) & 0x0F) << 8))
+#define FLEXPWM_FSTS0_FFULL(n)			((uint16_t)(((n) & 0x0F) << 4))
+#define FLEXPWM_FSTS0_FFLAG(n)			((uint16_t)(((n) & 0x0F) << 0))
+#define FLEXPWM_FFILT0_GSTR			((uint16_t)(1<<15))
+#define FLEXPWM_FFILT0_FILT_CNT(n)		((uint16_t)(((n) & 0x07) << 8))
+#define FLEXPWM_FFILT0_FILT_PER(n)		((uint16_t)(((n) & 0xFF) << 0))
+#define FLEXPWM_FTST0_FTEST			((uint16_t)(1<<0))
+#define FLEXPWM_FCTRL20_NOCOMB(n)		((uint16_t)(((n) & 0x0F) << 0))
 
-// page 1470
+// 29.3.1.1: page 1468
 #define IMXRT_FLEXRAM		(*(IMXRT_REGISTER32_t *)0x400B0000)
 #define FLEXRAM_TCM_CTRL		(IMXRT_FLEXRAM.offset000)
-#define FLEXRAM_OCRAM_MAGIC_ADDR	(IMXRT_FLEXRAM.offset004)
-#define FLEXRAM_DTCM_MAGIC_ADDR		(IMXRT_FLEXRAM.offset008)
-#define FLEXRAM_ITCM_MAGIC_ADDR		(IMXRT_FLEXRAM.offset00C)
 #define FLEXRAM_INT_STATUS		(IMXRT_FLEXRAM.offset010)
 #define FLEXRAM_INT_STAT_EN		(IMXRT_FLEXRAM.offset014)
 #define FLEXRAM_INT_SIG_EN		(IMXRT_FLEXRAM.offset018)
-#define FLEXRAM_TCM_CTRL_FORCE_CLK_ON			((uint32_t)0x00000004)
-#define FLEXRAM_TCM_CTRL_TCM_RWAIT_EN			((uint32_t)0x00000002)
-#define FLEXRAM_TCM_CTRL_TCM_WWAIT_EN			((uint32_t)0x00000001)
-#define FLEXRAM_INT_STATUS_OCRAM_ERR_STATUS		((uint32_t)0x00000020)
-#define FLEXRAM_INT_STATUS_DTCM_ERR_STATUS		((uint32_t)0x00000010)
-#define FLEXRAM_INT_STATUS_ITCM_ERR_STATUS		((uint32_t)0x00000008)
-#define FLEXRAM_INT_STAT_EN_OCRAM_ERR_STAT_EN		((uint32_t)0x00000020)
-#define FLEXRAM_INT_STAT_EN_DTCM_ERR_STAT_EN		((uint32_t)0x00000010)
-#define FLEXRAM_INT_STAT_EN_ITCM_ERR_STAT_EN		((uint32_t)0x00000008)
-#define FLEXRAM_INT_SIG_EN_OCRAM_ERR_SIG_EN		((uint32_t)0x00000020)
-#define FLEXRAM_INT_SIG_EN_DTCM_ERR_SIG_EN		((uint32_t)0x00000010)
-#define FLEXRAM_INT_SIG_EN_ITCM_ERR_SIG_EN		((uint32_t)0x00000008)
+#define FLEXRAM_TCM_CTRL_FORCE_CLK_ON		((uint32_t)(1<<2))
+#define FLEXRAM_TCM_CTRL_TCM_RWAIT_EN		((uint32_t)(1<<1))
+#define FLEXRAM_TCM_CTRL_TCM_WWAIT_EN		((uint32_t)(1<<0))
+#define FLEXRAM_INT_STATUS_OCRAM_ERR_STATUS	((uint32_t)(1<<5))
+#define FLEXRAM_INT_STATUS_DTCM_ERR_STATUS	((uint32_t)(1<<4))
+#define FLEXRAM_INT_STATUS_ITCM_ERR_STATUS	((uint32_t)(1<<3))
+#define FLEXRAM_INT_STAT_EN_OCRAM_ERR_STAT_EN	((uint32_t)(1<<5))
+#define FLEXRAM_INT_STAT_EN_DTCM_ERR_STAT_EN	((uint32_t)(1<<4))
+#define FLEXRAM_INT_STAT_EN_ITCM_ERR_STAT_EN	((uint32_t)(1<<3))
+#define FLEXRAM_INT_SIG_EN_OCRAM_ERR_SIG_EN	((uint32_t)(1<<5))
+#define FLEXRAM_INT_SIG_EN_DTCM_ERR_SIG_EN	((uint32_t)(1<<4))
+#define FLEXRAM_INT_SIG_EN_ITCM_ERR_SIG_EN	((uint32_t)(1<<3))
 
-// page 1583
-#define IMXRT_FLEXSPI		(*(IMXRT_REGISTER32_t *)0x400B0000)
+// 30.5.2.1: page 1481
+#define IMXRT_FLEXSPI		(*(IMXRT_REGISTER32_t *)0x402A8000)
 #define FLEXSPI_MCR0			(IMXRT_FLEXSPI.offset000)
+#define FLEXSPI_MCR0_AHBGRANTWAIT(n)		((uint32_t)(((n) & 0xFF) << 24))
+#define FLEXSPI_MCR0_AHBGRANTWAIT_MASK		((uint32_t)(0xFF << 24))
+#define FLEXSPI_MCR0_IPGRANTWAIT(n)		((uint32_t)(((n) & 0xFF) << 16))
+#define FLEXSPI_MCR0_IPGRANTWAIT_MASK		((uint32_t)(0xFF << 16))
+#define FLEXSPI_MCR0_SCKFREERUNEN		((uint32_t)(1<<14))
+#define FLEXSPI_MCR0_COMBINATIONEN		((uint32_t)(1<<13))
+#define FLEXSPI_MCR0_DOZEEN			((uint32_t)(1<<12))
+#define FLEXSPI_MCR0_HSEN			((uint32_t)(1<<11))
+#define FLEXSPI_MCR0_ATDFEN			((uint32_t)(1<<7))
+#define FLEXSPI_MCR0_ARDFEN			((uint32_t)(1<<6))
+#define FLEXSPI_MCR0_RXCLKSRC(n)		((uint32_t)(((n) & 0x03) << 4))
+#define FLEXSPI_MCR0_RXCLKSRC_MASK		((uint32_t)(0x03 << 4))
+#define FLEXSPI_MCR0_MDIS			((uint32_t)(1<<1))
+#define FLEXSPI_MCR0_SWRESET			((uint32_t)(1<<0))
 #define FLEXSPI_MCR1			(IMXRT_FLEXSPI.offset004)
+#define FLEXSPI_MCR1_SEQWAIT(n)			((uint32_t)(((n) & 0xFFFF) << 16))
+#define FLEXSPI_MCR1_AHBBUSWAIT(n)		((uint32_t)(((n) & 0xFFFF) << 0))
 #define FLEXSPI_MCR2			(IMXRT_FLEXSPI.offset008)
+#define FLEXSPI_MCR2_RESUMEWAIT(n)		((uint32_t)(((n) & 0xFF) << 24))
+#define FLEXSPI_MCR2_RESUMEWAIT_MASK		((uint32_t)(0xFF << 24))
+#define FLEXSPI_MCR2_SCKBDIFFOPT		((uint32_t)(1<<19))
+#define FLEXSPI_MCR2_SAMEDEVICEEN		((uint32_t)(1<<15))
+#define FLEXSPI_MCR2_CLRLEARNPHASE		((uint32_t)(1<<14))
+#define FLEXSPI_MCR2_CLRAHBBUFOPT		((uint32_t)(1<<11))
 #define FLEXSPI_AHBCR			(IMXRT_FLEXSPI.offset00C)
+#define FLEXSPI_AHBCR_READADDROPT		((uint32_t)(1<<6))
+#define FLEXSPI_AHBCR_PREFETCHEN		((uint32_t)(1<<5))
+#define FLEXSPI_AHBCR_BUFFERABLEEN		((uint32_t)(1<<4))
+#define FLEXSPI_AHBCR_CACHABLEEN		((uint32_t)(1<<3))
+#define FLEXSPI_AHBCR_APAREN			((uint32_t)(1<<0))
 #define FLEXSPI_INTEN			(IMXRT_FLEXSPI.offset010)
+#define FLEXSPI_INTEN_SEQTIMEOUTEN		((uint32_t)(1<<11))
+#define FLEXSPI_INTEN_AHBBUSTIMEOUTEN		((uint32_t)(1<<10))
+#define FLEXSPI_INTEN_SCKSTOPBYWREN		((uint32_t)(1<<9))
+#define FLEXSPI_INTEN_SCKSTOPBYRDEN		((uint32_t)(1<<8))
+#define FLEXSPI_INTEN_IPTXWEEN			((uint32_t)(1<<6))
+#define FLEXSPI_INTEN_IPRXWAEN			((uint32_t)(1<<5))
+#define FLEXSPI_INTEN_AHBCMDERREN		((uint32_t)(1<<4))
+#define FLEXSPI_INTEN_IPCMDERREN		((uint32_t)(1<<3))
+#define FLEXSPI_INTEN_AHBCMDGEEN		((uint32_t)(1<<2))
+#define FLEXSPI_INTEN_IPCMDGEEN			((uint32_t)(1<<1))
+#define FLEXSPI_INTEN_IPCMDDONEEN		((uint32_t)(1<<0))
 #define FLEXSPI_INTR			(IMXRT_FLEXSPI.offset014)
+#define FLEXSPI_INTR_SEQTIMEOUT			((uint32_t)(1<<11))
+#define FLEXSPI_INTR_AHBBUSTIMEOUT		((uint32_t)(1<<10))
+#define FLEXSPI_INTR_SCKSTOPBYWR		((uint32_t)(1<<9))
+#define FLEXSPI_INTR_SCKSTOPBYRD		((uint32_t)(1<<8))
+#define FLEXSPI_INTR_IPTXWE			((uint32_t)(1<<6))
+#define FLEXSPI_INTR_IPRXWA			((uint32_t)(1<<5))
+#define FLEXSPI_INTR_AHBCMDERR			((uint32_t)(1<<4))
+#define FLEXSPI_INTR_IPCMDERR			((uint32_t)(1<<3))
+#define FLEXSPI_INTR_AHBCMDGE			((uint32_t)(1<<2))
+#define FLEXSPI_INTR_IPCMDGE			((uint32_t)(1<<1))
+#define FLEXSPI_INTR_IPCMDDONE			((uint32_t)(1<<0))
 #define FLEXSPI_LUTKEY			(IMXRT_FLEXSPI.offset018)
+#define FLEXSPI_LUTKEY_VALUE			((uint32_t)0x5AF05AF0)
 #define FLEXSPI_LUTCR			(IMXRT_FLEXSPI.offset01C)
+#define FLEXSPI_LUTCR_UNLOCK			((uint32_t)(1<<1))
+#define FLEXSPI_LUTCR_LOCK			((uint32_t)(1<<0))
 #define FLEXSPI_AHBRXBUF0CR0		(IMXRT_FLEXSPI.offset020)
 #define FLEXSPI_AHBRXBUF1CR0		(IMXRT_FLEXSPI.offset024)
 #define FLEXSPI_AHBRXBUF2CR0		(IMXRT_FLEXSPI.offset028)
 #define FLEXSPI_AHBRXBUF3CR0		(IMXRT_FLEXSPI.offset02C)
+#define FLEXSPI_AHBRXBUFCR0_PREFETCHEN		((uint32_t)(1<<31))
+#define FLEXSPI_AHBRXBUFCR0_PRIORITY(n)		((uint32_t)(((n) & 0x03) << 24))
+#define FLEXSPI_AHBRXBUFCR0_PRIORITY_MASK	((uint32_t)((0x03) << 24))
+#define FLEXSPI_AHBRXBUFCR0_MSTRID(n)		((uint32_t)(((n) & 0x0F) << 16))
+#define FLEXSPI_AHBRXBUFCR0_MSTRID_MASK		((uint32_t)((0x0F) << 16))
+#define FLEXSPI_AHBRXBUFCR0_BUFSZ(n)		((uint32_t)(((n) & 0xFF) << 0))
+#define FLEXSPI_AHBRXBUFCR0_BUFSZ_MASK		((uint32_t)((0xFF) << 0))
 #define FLEXSPI_FLSHA1CR0		(IMXRT_FLEXSPI.offset060)
 #define FLEXSPI_FLSHA2CR0		(IMXRT_FLEXSPI.offset064)
 #define FLEXSPI_FLSHB1CR0		(IMXRT_FLEXSPI.offset068)
 #define FLEXSPI_FLSHB2CR0		(IMXRT_FLEXSPI.offset06C)
+#define FLEXSPI_FLSHCR0_FLSHSZ(n)		((uint32_t)(((n) & 0x7FFFFF) << 0))
+#define FLEXSPI_FLSHCR0_FLSHSZ_MASK		((uint32_t)((0x7FFFFF) << 0))
 #define FLEXSPI_FLSHA1CR1		(IMXRT_FLEXSPI.offset070)
 #define FLEXSPI_FLSHA2CR1		(IMXRT_FLEXSPI.offset074)
 #define FLEXSPI_FLSHB1CR1		(IMXRT_FLEXSPI.offset078)
 #define FLEXSPI_FLSHB2CR1		(IMXRT_FLEXSPI.offset07C)
+#define FLEXSPI_FLSHCR1_CSINTERVAL(n)		((uint32_t)(((n) & 0xFFFF) << 16))
+#define FLEXSPI_FLSHCR1_CSINTERVAL_MASK		((uint32_t)((0xFFFF) << 16))
+#define FLEXSPI_FLSHCR1_CSINTERVALUNIT		((uint32_t)(1<<15))
+#define FLEXSPI_FLSHCR1_CAS(n)			((uint32_t)(((n) & 0x0F) << 11))
+#define FLEXSPI_FLSHCR1_WA			((uint32_t)(1<<10))
+#define FLEXSPI_FLSHCR1_TCSH(n)			((uint32_t)(((n) & 0x1F) << 5))
+#define FLEXSPI_FLSHCR1_TCSH_MASK		((uint32_t)((0x1F) << 5))
+#define FLEXSPI_FLSHCR1_TCSS(n)			((uint32_t)(((n) & 0x1F) << 0))
+#define FLEXSPI_FLSHCR1_TCSS_MASK		((uint32_t)((0x1F) << 0))
 #define FLEXSPI_FLSHA1CR2		(IMXRT_FLEXSPI.offset080)
 #define FLEXSPI_FLSHA2CR2		(IMXRT_FLEXSPI.offset084)
 #define FLEXSPI_FLSHB1CR2		(IMXRT_FLEXSPI.offset088)
 #define FLEXSPI_FLSHB2CR2		(IMXRT_FLEXSPI.offset08C)
+#define FLEXSPI_FLSHCR2_CLRINSTRPTR		((uint32_t)(1<<31))
+#define FLEXSPI_FLSHCR2_AWRWAITUNIT(n)		((uint32_t)(((n) & 0x07) << 28))
+#define FLEXSPI_FLSHCR2_AWRWAIT(n)		((uint32_t)(((n) & 0xFFF) << 16))
+#define FLEXSPI_FLSHCR2_AWRSEQNUM(n)		((uint32_t)(((n) & 0x07) << 13))
+#define FLEXSPI_FLSHCR2_AWRSEQID(n)		((uint32_t)(((n) & 0x0F) << 8))
+#define FLEXSPI_FLSHCR2_ARDSEQNUM(n)		((uint32_t)(((n) & 0x07) << 5))
+#define FLEXSPI_FLSHCR2_ARDSEQID(n)		((uint32_t)(((n) & 0x0F) << 0))
+#define FLEXSPI_FLSHCR4			(IMXRT_FLEXSPI.offset094)
+#define FLEXSPI_FLSHCR4_WMENB			((uint32_t)(1<<3))
+#define FLEXSPI_FLSHCR4_WMENA			((uint32_t)(1<<2))
+#define FLEXSPI_FLSHCR4_WMOPT1			((uint32_t)(1<<0))
 #define FLEXSPI_IPCR0			(IMXRT_FLEXSPI.offset0A0)
+#define FLEXSPI_IPCR0_SFAR(n)			((uint32_t)(n))
 #define FLEXSPI_IPCR1			(IMXRT_FLEXSPI.offset0A4)
+#define FLEXSPI_IPCR1_IPAREN			((uint32_t)(1<<31))
+#define FLEXSPI_IPCR1_ISEQNUM(n)		((uint32_t)(((n) & 0x07) << 24))
+#define FLEXSPI_IPCR1_ISEQID(n)			((uint32_t)(((n) & 0x0F) << 16))
+#define FLEXSPI_IPCR1_IDATSZ(n)			((uint32_t)(((n) & 0xFFFF) << 0))
 #define FLEXSPI_IPCMD			(IMXRT_FLEXSPI.offset0B0)
-#define FLEXSPI_DLPR			(IMXRT_FLEXSPI.offset0B4)
+#define FLEXSPI_IPCMD_TRG			((uint32_t)(1<<0))
 #define FLEXSPI_IPRXFCR			(IMXRT_FLEXSPI.offset0B8)
+#define FLEXSPI_IPRXFCR_RXWMRK(n)		((uint32_t)(((n) & 0x0F) << 2))
+#define FLEXSPI_IPRXFCR_RXDMAEN			((uint32_t)(1<<1))
+#define FLEXSPI_IPRXFCR_CLRIPRXF		((uint32_t)(1<<0))
 #define FLEXSPI_IPTXFCR			(IMXRT_FLEXSPI.offset0BC)
+#define FLEXSPI_IPTXFCR_TXWMRK(n)		((uint32_t)(((n) & 0x0F) << 2))
+#define FLEXSPI_IPTXFCR_TXDMAEN			((uint32_t)(1<<1))
+#define FLEXSPI_IPTXFCR_CLRIPTXF		((uint32_t)(1<<0))
 #define FLEXSPI_DLLACR			(IMXRT_FLEXSPI.offset0C0)
 #define FLEXSPI_DLLBCR			(IMXRT_FLEXSPI.offset0C4)
+#define FLEXSPI_DLLCR_OVRDVAL(n)		((uint32_t)(((n) & 0x3F) << 9))
+#define FLEXSPI_DLLCR_OVRDEN			((uint32_t)(1<<8))
+#define FLEXSPI_DLLCR_SLVDLYTARGET(n)		((uint32_t)(((n) & 0x0F) << 3))
+#define FLEXSPI_DLLCR_DLLRESET			((uint32_t)(1<<1))
+#define FLEXSPI_DLLCR_DLLEN			((uint32_t)(1<<0))
 #define FLEXSPI_STS0			(IMXRT_FLEXSPI.offset0E0)
+#define FLEXSPI_STS0_ARBCMDSRC(n)		((uint32_t)(((n) & 0x03) << 2))
+#define FLEXSPI_STS0_ARBIDLE			((uint32_t)(1<<1))
+#define FLEXSPI_STS0_SEQIDLE			((uint32_t)(1<<0))
 #define FLEXSPI_STS1			(IMXRT_FLEXSPI.offset0E4)
+#define FLEXSPI_STS1_IPCMDERRCODE(n)		((uint32_t)(((n) & 0x0F) << 24))
+#define FLEXSPI_STS1_IPCMDERRID(n)		((uint32_t)(((n) & 0x0F) << 16))
+#define FLEXSPI_STS1_AHBCMDERRCODE(n)		((uint32_t)(((n) & 0x0F) << 8))
+#define FLEXSPI_STS1_AHBCMDERRID(n)		((uint32_t)(((n) & 0x0F) << 0))
 #define FLEXSPI_STS2			(IMXRT_FLEXSPI.offset0E8)
+#define FLEXSPI_STS2_BREFSEL(n)			((uint32_t)(((n) & 0x3F) << 24))
+#define FLEXSPI_STS2_BSLVSEL(n)			((uint32_t)(((n) & 0x3F) << 18))
+#define FLEXSPI_STS2_BREFLOCK			((uint32_t)(1<<17))
+#define FLEXSPI_STS2_BSLVLOCK			((uint32_t)(1<<16))
+#define FLEXSPI_STS2_AREFSEL(n)			((uint32_t)(((n) & 0x3F) << 8))
+#define FLEXSPI_STS2_ASLVSEL(n)			((uint32_t)(((n) & 0x3F) << 2))
+#define FLEXSPI_STS2_AREFLOCK			((uint32_t)(1<<1))
+#define FLEXSPI_STS2_ASLVLOCK			((uint32_t)(1<<0))
 #define FLEXSPI_AHBSPNDSTS		(IMXRT_FLEXSPI.offset0EC)
+#define FLEXSPI_AHBSPNDSTS_DATLFT(n)		((uint32_t)(((n) & 0xFFFF) << 16))
+#define FLEXSPI_AHBSPNDSTS_BUFID(n)		((uint32_t)(((n) & 0x7) << 1))
+#define FLEXSPI_AHBSPNDSTS_ACTIVE		((uint32_t)(1<<0))
 #define FLEXSPI_IPRXFSTS		(IMXRT_FLEXSPI.offset0F0)
+#define FLEXSPI_IPRXFSTS_RDCNTR(n)		((uint32_t)(((n) & 0xFFFF) << 16))
+#define FLEXSPI_IPRXFSTS_FILL(n)		((uint32_t)(((n) & 0xFF) << 0))
 #define FLEXSPI_IPTXFSTS		(IMXRT_FLEXSPI.offset0F4)
+#define FLEXSPI_IPTXFSTS_WRCNTR(n)		((uint32_t)(((n) & 0xFFFF) << 16))
+#define FLEXSPI_IPTXFSTS_FILL(n)		((uint32_t)(((n) & 0xFF) << 0))
 #define FLEXSPI_RFDR0			(IMXRT_FLEXSPI.offset100)
 #define FLEXSPI_RFDR1			(IMXRT_FLEXSPI.offset104)
 #define FLEXSPI_RFDR2			(IMXRT_FLEXSPI.offset108)
@@ -2615,8 +4103,49 @@ typedef struct {
 #define FLEXSPI_LUT61			(IMXRT_FLEXSPI.offset2F4)
 #define FLEXSPI_LUT62			(IMXRT_FLEXSPI.offset2F8)
 #define FLEXSPI_LUT63			(IMXRT_FLEXSPI.offset2FC)
+#define FLEXSPI_LUT_OPCODE1(n)			((uint32_t)(((n) & 0x3F) << 26))
+#define FLEXSPI_LUT_NUM_PADS1(n)		((uint32_t)(((n) & 0x03) << 24))
+#define FLEXSPI_LUT_OPERAND1(n)			((uint32_t)(((n) & 0xFF) << 16))
+#define FLEXSPI_LUT_OPCODE0(n)			((uint32_t)(((n) & 0x3F) << 10))
+#define FLEXSPI_LUT_NUM_PADS0(n)		((uint32_t)(((n) & 0x03) << 8))
+#define FLEXSPI_LUT_OPERAND0(n)			((uint32_t)(((n) & 0xFF) << 0))
+#define FLEXSPI_LUT_INSTRUCTION(opcode, pads, operand) ((uint32_t)(\
+	(((opcode) & 0x3F) << 10) | (((pads) & 0x03) << 8) | ((operand) & 0xFF)))
+// 30.7.8: page 1532
+#define FLEXSPI_LUT_OPCODE_CMD_SDR		0x01
+#define FLEXSPI_LUT_OPCODE_CMD_DDR		0x21
+#define FLEXSPI_LUT_OPCODE_RADDR_SDR		0x02
+#define FLEXSPI_LUT_OPCODE_RADDR_DDR		0x22
+#define FLEXSPI_LUT_OPCODE_CADDR_SDR		0x03
+#define FLEXSPI_LUT_OPCODE_CADDR_DDR		0x23
+#define FLEXSPI_LUT_OPCODE_MODE1_SDR		0x04
+#define FLEXSPI_LUT_OPCODE_MODE1_DDR		0x24
+#define FLEXSPI_LUT_OPCODE_MODE2_SDR		0x05
+#define FLEXSPI_LUT_OPCODE_MODE2_DDR		0x25
+#define FLEXSPI_LUT_OPCODE_MODE4_SDR		0x06
+#define FLEXSPI_LUT_OPCODE_MODE4_DDR		0x26
+#define FLEXSPI_LUT_OPCODE_MODE8_SDR		0x07
+#define FLEXSPI_LUT_OPCODE_MODE8_DDR		0x27
+#define FLEXSPI_LUT_OPCODE_WRITE_SDR		0x08
+#define FLEXSPI_LUT_OPCODE_WRITE_DDR		0x28
+#define FLEXSPI_LUT_OPCODE_READ_SDR		0x09
+#define FLEXSPI_LUT_OPCODE_READ_DDR		0x29
+#define FLEXSPI_LUT_OPCODE_LEARN_SDR		0x0A
+#define FLEXSPI_LUT_OPCODE_LEARN_DDR		0x2A
+#define FLEXSPI_LUT_OPCODE_DATSZ_SDR		0x0B
+#define FLEXSPI_LUT_OPCODE_DATSZ_DDR		0x2B
+#define FLEXSPI_LUT_OPCODE_DUMMY_SDR		0x0C
+#define FLEXSPI_LUT_OPCODE_DUMMY_DDR		0x2C
+#define FLEXSPI_LUT_OPCODE_DUMMY_RWDS_SDR	0x0D
+#define FLEXSPI_LUT_OPCODE_DUMMY_RWDS_DDR	0x2D
+#define FLEXSPI_LUT_OPCODE_JMP_ON_CS		0x1F
+#define FLEXSPI_LUT_OPCODE_STOP			0x00
+#define FLEXSPI_LUT_NUM_PADS_1			0x00
+#define FLEXSPI_LUT_NUM_PADS_2			0x01
+#define FLEXSPI_LUT_NUM_PADS_4			0x02
+#define FLEXSPI_LUT_NUM_PADS_8			0x03
 
-// page 1595
+// 31.5: page 1595
 #define IMXRT_GPC		(*(IMXRT_REGISTER32_t *)0x400F4000)
 #define GPC_CNTR			(IMXRT_GPC.offset000)
 #define GPC_IMR1			(IMXRT_GPC.offset008)
@@ -2629,9 +4158,9 @@ typedef struct {
 #define GPC_ISR4			(IMXRT_GPC.offset024)
 #define GPC_IMR5			(IMXRT_GPC.offset034)
 #define GPC_ISR5			(IMXRT_GPC.offset038)
-#define GPC_CNTR_PDRAM0_PGE				((uint32_t)0x00400000)
-#define GPC_CNTR_MEGA_PUP_REQ				((uint32_t)0x00000008)
-#define GPC_CNTR_MEGA_PDN_REQ				((uint32_t)0x00000004)
+#define GPC_CNTR_PDRAM0_PGE			((uint32_t)(1<<22))
+#define GPC_CNTR_MEGA_PUP_REQ			((uint32_t)(1<<3))
+#define GPC_CNTR_MEGA_PDN_REQ			((uint32_t)(1<<2))
 // page 1602
 #define PGC_MEGA_CTRL			(IMXRT_GPC.offset220)
 #define PGC_MEGA_PUPSCR			(IMXRT_GPC.offset224)
@@ -2641,21 +4170,20 @@ typedef struct {
 #define PGC_CPU_PUPSCR			(IMXRT_GPC.offset2A4)
 #define PGC_CPU_PDNSCR			(IMXRT_GPC.offset2A8)
 #define PGC_CPU_SR			(IMXRT_GPC.offset2AC)
-#define PGC_MEGA_CTRL_PCR				((uint32_t)0x00000001)
-#define PGC_MEGA_PUPSCR_SW2ISO(n)			((uint32_t)(((n) & 0x3F) << 8))
-#define PGC_MEGA_PUPSCR_SW(n)				((uint32_t)(((n) & 0x3F) << 0))
-#define PGC_MEGA_PDNSCR_ISO2SW(n)			((uint32_t)(((n) & 0x3F) << 8))
-#define PGC_MEGA_PDNSCR_ISO(n)				((uint32_t)(((n) & 0x3F) << 0))
-#define PGC_MEGA_SR_PSR					((uint32_t)0x00000001)
-#define PGC_CPU_CTRL_PCR				((uint32_t)0x00000001)
-#define PGC_CPU_PUPSCR_SW2ISO(n)			((uint32_t)(((n) & 0x3F) << 8))
-#define PGC_CPU_PUPSCR_SW(n)				((uint32_t)(((n) & 0x3F) << 0))
-#define PGC_CPU_PDNSCR_ISO2SW(n)			((uint32_t)(((n) & 0x3F) << 8))
-#define PGC_CPU_PDNSCR_ISO(n)				((uint32_t)(((n) & 0x3F) << 0))
-#define PGC_CPU_SR_PSR					((uint32_t)0x00000001)
+#define PGC_MEGA_CTRL_PCR			((uint32_t)(1<<0))
+#define PGC_MEGA_PUPSCR_SW2ISO(n)		((uint32_t)(((n) & 0x3F) << 8))
+#define PGC_MEGA_PUPSCR_SW(n)			((uint32_t)(((n) & 0x3F) << 0))
+#define PGC_MEGA_PDNSCR_ISO2SW(n)		((uint32_t)(((n) & 0x3F) << 8))
+#define PGC_MEGA_PDNSCR_ISO(n)			((uint32_t)(((n) & 0x3F) << 0))
+#define PGC_MEGA_SR_PSR				((uint32_t)(1<<0))
+#define PGC_CPU_CTRL_PCR			((uint32_t)(1<<0))
+#define PGC_CPU_PUPSCR_SW2ISO(n)		((uint32_t)(((n) & 0x3F) << 8))
+#define PGC_CPU_PUPSCR_SW(n)			((uint32_t)(((n) & 0x3F) << 0))
+#define PGC_CPU_PDNSCR_ISO2SW(n)		((uint32_t)(((n) & 0x3F) << 8))
+#define PGC_CPU_PDNSCR_ISO(n)			((uint32_t)(((n) & 0x3F) << 0))
+#define PGC_CPU_SR_PSR				((uint32_t)(1<<0))
 
-
-// page 1658
+// 32.4.1: page 1620
 #define IMXRT_GPIO1		(*(IMXRT_REGISTER32_t *)0x401B8000)
 #define GPIO1_DR			(IMXRT_GPIO1.offset000)
 #define GPIO1_GDIR			(IMXRT_GPIO1.offset004)
@@ -2665,6 +4193,9 @@ typedef struct {
 #define GPIO1_IMR			(IMXRT_GPIO1.offset014)
 #define GPIO1_ISR			(IMXRT_GPIO1.offset018)
 #define GPIO1_EDGE_SEL			(IMXRT_GPIO1.offset01C)
+#define GPIO1_DR_SET			(IMXRT_GPIO1.offset084)
+#define GPIO1_DR_CLEAR			(IMXRT_GPIO1.offset088)
+#define GPIO1_DR_TOGGLE			(IMXRT_GPIO1.offset08C)
 #define IMXRT_GPIO2		(*(IMXRT_REGISTER32_t *)0x401BC000)
 #define GPIO2_DR			(IMXRT_GPIO2.offset000)
 #define GPIO2_GDIR			(IMXRT_GPIO2.offset004)
@@ -2674,6 +4205,9 @@ typedef struct {
 #define GPIO2_IMR			(IMXRT_GPIO2.offset014)
 #define GPIO2_ISR			(IMXRT_GPIO2.offset018)
 #define GPIO2_EDGE_SEL			(IMXRT_GPIO2.offset01C)
+#define GPIO2_DR_SET			(IMXRT_GPIO2.offset084)
+#define GPIO2_DR_CLEAR			(IMXRT_GPIO2.offset088)
+#define GPIO2_DR_TOGGLE			(IMXRT_GPIO2.offset08C)
 #define IMXRT_GPIO3		(*(IMXRT_REGISTER32_t *)0x401C0000)
 #define GPIO3_DR			(IMXRT_GPIO3.offset000)
 #define GPIO3_GDIR			(IMXRT_GPIO3.offset004)
@@ -2683,6 +4217,9 @@ typedef struct {
 #define GPIO3_IMR			(IMXRT_GPIO3.offset014)
 #define GPIO3_ISR			(IMXRT_GPIO3.offset018)
 #define GPIO3_EDGE_SEL			(IMXRT_GPIO3.offset01C)
+#define GPIO3_DR_SET			(IMXRT_GPIO3.offset084)
+#define GPIO3_DR_CLEAR			(IMXRT_GPIO3.offset088)
+#define GPIO3_DR_TOGGLE			(IMXRT_GPIO3.offset08C)
 #define IMXRT_GPIO4		(*(IMXRT_REGISTER32_t *)0x401C4000)
 #define GPIO4_DR			(IMXRT_GPIO4.offset000)
 #define GPIO4_GDIR			(IMXRT_GPIO4.offset004)
@@ -2692,6 +4229,9 @@ typedef struct {
 #define GPIO4_IMR			(IMXRT_GPIO4.offset014)
 #define GPIO4_ISR			(IMXRT_GPIO4.offset018)
 #define GPIO4_EDGE_SEL			(IMXRT_GPIO4.offset01C)
+#define GPIO4_DR_SET			(IMXRT_GPIO4.offset084)
+#define GPIO4_DR_CLEAR			(IMXRT_GPIO4.offset088)
+#define GPIO4_DR_TOGGLE			(IMXRT_GPIO4.offset08C)
 #define IMXRT_GPIO5		(*(IMXRT_REGISTER32_t *)0x400C0000)
 #define GPIO5_DR			(IMXRT_GPIO5.offset000)
 #define GPIO5_GDIR			(IMXRT_GPIO5.offset004)
@@ -2701,8 +4241,11 @@ typedef struct {
 #define GPIO5_IMR			(IMXRT_GPIO5.offset014)
 #define GPIO5_ISR			(IMXRT_GPIO5.offset018)
 #define GPIO5_EDGE_SEL			(IMXRT_GPIO5.offset01C)
+#define GPIO5_DR_SET			(IMXRT_GPIO5.offset084)
+#define GPIO5_DR_CLEAR			(IMXRT_GPIO5.offset088)
+#define GPIO5_DR_TOGGLE			(IMXRT_GPIO5.offset08C)
 
-// page 1686
+// 33.6: page 1651
 #define IMXRT_GPT1		(*(IMXRT_REGISTER32_t *)0x401EC000)
 #define GPT1_CR				(IMXRT_GPT1.offset000)
 #define GPT1_PR				(IMXRT_GPT1.offset004)
@@ -2725,8 +4268,40 @@ typedef struct {
 #define GPT2_ICR1			(IMXRT_GPT2.offset01C)
 #define GPT2_ICR2			(IMXRT_GPT2.offset020)
 #define GPT2_CNT			(IMXRT_GPT2.offset024)
+#define GPT_CR_FO3				((uint32_t)(1<<31))
+#define GPT_CR_FO2				((uint32_t)(1<<30))
+#define GPT_CR_FO1				((uint32_t)(1<<29))
+#define GPT_CR_OM3(n)				((uint32_t)(((n) & 0x07) << 26))
+#define GPT_CR_OM2(n)				((uint32_t)(((n) & 0x07) << 23))
+#define GPT_CR_OM1(n)				((uint32_t)(((n) & 0x07) << 20))
+#define GPT_CR_IM2(n)				((uint32_t)(((n) & 0x03) << 18))
+#define GPT_CR_IM1(n)				((uint32_t)(((n) & 0x03) << 16))
+#define GPT_CR_SWR				((uint32_t)(1<<15))
+#define GPT_CR_EN_24M				((uint32_t)(1<<10))
+#define GPT_CR_FRR				((uint32_t)(1<<9))
+#define GPT_CR_CLKSRC(n)			((uint32_t)(((n) & 0x07) << 6))
+#define GPT_CR_STOPEN				((uint32_t)(1<<5))
+#define GPT_CR_DOZEEN				((uint32_t)(1<<4))
+#define GPT_CR_WAITEN				((uint32_t)(1<<3))
+#define GPT_CR_DBGEN				((uint32_t)(1<<2))
+#define GPT_CR_ENMOD				((uint32_t)(1<<1))
+#define GPT_CR_EN				((uint32_t)(1<<0))
+#define GPT_PR_PRESCALER24M(n)			((uint32_t)(((n) & 0x0F) << 12))
+#define GPT_PR_PRESCALER(n)			((uint32_t)(((n) & 0xFFF) << 0))
+#define GPT_SR_ROV				((uint32_t)(1<<5))
+#define GPT_SR_IF2				((uint32_t)(1<<4))
+#define GPT_SR_IF1				((uint32_t)(1<<3))
+#define GPT_SR_OF3				((uint32_t)(1<<2))
+#define GPT_SR_OF2				((uint32_t)(1<<1))
+#define GPT_SR_OF1				((uint32_t)(1<<0))
+#define GPT_IR_ROVIE				((uint32_t)(1<<5))
+#define GPT_IR_IF2IE				((uint32_t)(1<<4))
+#define GPT_IR_IF1IE				((uint32_t)(1<<3))
+#define GPT_IR_OF3IE				((uint32_t)(1<<2))
+#define GPT_IR_OF2IE				((uint32_t)(1<<1))
+#define GPT_IR_OF1IE				((uint32_t)(1<<0))
 
-// page 1669
+// 34.4: page 1671
 #define IMXRT_IOMUXC_GPR	(*(IMXRT_REGISTER32_t *)0x400AC000)
 #define IOMUXC_GPR_GPR0			(IMXRT_IOMUXC_GPR.offset000)
 #define IOMUXC_GPR_GPR1			(IMXRT_IOMUXC_GPR.offset004)
@@ -2754,236 +4329,236 @@ typedef struct {
 #define IOMUXC_GPR_GPR23		(IMXRT_IOMUXC_GPR.offset05C)
 #define IOMUXC_GPR_GPR24		(IMXRT_IOMUXC_GPR.offset060)
 #define IOMUXC_GPR_GPR25		(IMXRT_IOMUXC_GPR.offset064)
-#define IOMUXC_GPR_GPR1_CM7_FORCE_HCLK_EN		((uint32_t)0x80000000)
-#define IOMUXC_GPR_GPR1_ENET_IPG_CLK_S_EN		((uint32_t)0x00800000)
-#define IOMUXC_GPR_GPR1_EXC_MON				((uint32_t)0x00400000)
-#define IOMUXC_GPR_GPR1_SAI3_MCLK_DIR			((uint32_t)0x00200000)
-#define IOMUXC_GPR_GPR1_SAI2_MCLK_DIR			((uint32_t)0x00100000)
-#define IOMUXC_GPR_GPR1_SAI1_MCLK_DIR			((uint32_t)0x00080000)
-#define IOMUXC_GPR_GPR1_ENET1_TX_CLK_DIR		((uint32_t)0x00020000)
-#define IOMUXC_GPR_GPR1_USB_EXP_MODE			((uint32_t)0x00008000)
-#define IOMUXC_GPR_GPR1_ENET1_CLK_SEL			((uint32_t)0x00002000)
-#define IOMUXC_GPR_GPR1_GINT				((uint32_t)0x00001000)
-#define IOMUXC_GPR_GPR1_SAI3_MCLK3_SEL(n)		((uint32_t)(((n) & 0x03) << 10))
-#define IOMUXC_GPR_GPR1_SAI2_MCLK3_SEL(n)		((uint32_t)(((n) & 0x03) << 8))
-#define IOMUXC_GPR_GPR1_SAI1_MCLK3_SEL(n)		((uint32_t)(((n) & 0x03) << 6))
-#define IOMUXC_GPR_GPR1_SAI1_MCLK2_SEL(n)		((uint32_t)(((n) & 0x07) << 3))
-#define IOMUXC_GPR_GPR1_SAI1_MCLK1_SEL(n)		((uint32_t)(((n) & 0x07) << 0))
-#define IOMUXC_GPR_GPR1_SAI3_MCLK3_SEL_MASK		IOMUXC_GPR_GPR1_SAI3_MCLK3_SEL(3)
-#define IOMUXC_GPR_GPR1_SAI2_MCLK3_SEL_MASK		IOMUXC_GPR_GPR1_SAI2_MCLK3_SEL(3)
-#define IOMUXC_GPR_GPR1_SAI1_MCLK3_SEL_MASK		IOMUXC_GPR_GPR1_SAI1_MCLK3_SEL(3)
-#define IOMUXC_GPR_GPR1_SAI1_MCLK2_SEL_MASK		IOMUXC_GPR_GPR1_SAI1_MCLK2_SEL(7)
-#define IOMUXC_GPR_GPR1_SAI1_MCLK1_SEL_MASK		IOMUXC_GPR_GPR1_SAI1_MCLK1_SEL(7)
-#define IOMUXC_GPR_GPR2_QTIMER4_TMR_CNTS_FREEZE		((uint32_t)0x80000000)
-#define IOMUXC_GPR_GPR2_QTIMER3_TMR_CNTS_FREEZE		((uint32_t)0x40000000)
-#define IOMUXC_GPR_GPR2_QTIMER2_TMR_CNTS_FREEZE		((uint32_t)0x20000000)
-#define IOMUXC_GPR_GPR2_QTIMER1_TMR_CNTS_FREEZE		((uint32_t)0x10000000)
-#define IOMUXC_GPR_GPR2_MQS_OVERSAMPLE			((uint32_t)0x04000000)
-#define IOMUXC_GPR_GPR2_MQS_EN				((uint32_t)0x02000000)
-#define IOMUXC_GPR_GPR2_MQS_SW_RST			((uint32_t)0x01000000)
-#define IOMUXC_GPR_GPR2_MQS_CLK_DIV(n)			((uint32_t)(((n) & 0xFF) << 16))
-#define IOMUXC_GPR_GPR2_L2_MEM_DEEPSLEEP		((uint32_t)0x00004000)
-#define IOMUXC_GPR_GPR2_L2_MEM_EN_POWERSAVING		((uint32_t)0x00001000)
-#define IOMUXC_GPR_GPR2_MQS_CLK_DIV_MASK		IOMUXC_GPR_GPR2_MQS_CLK_DIV(255)
-#define IOMUXC_GPR_GPR3_OCRAM_STATUS(n)			((uint32_t)(((n) & 0x0F) << 16))
-#define IOMUXC_GPR_GPR3_DCP_KEY_SEL			((uint32_t)0x00000010)
-#define IOMUXC_GPR_GPR3_OCRAM_CTL(n)			((uint32_t)(((n) & 0x0F) << 0))
-#define IOMUXC_GPR_GPR4_FLEXIO2_STOP_ACK		((uint32_t)0x20000000)
-#define IOMUXC_GPR_GPR4_FLEXIO1_STOP_ACK		((uint32_t)0x10000000)
-#define IOMUXC_GPR_GPR4_FLEXSPI_STOP_ACK		((uint32_t)0x08000000)
-#define IOMUXC_GPR_GPR4_PIT_STOP_ACK			((uint32_t)0x04000000)
-#define IOMUXC_GPR_GPR4_SEMC_STOP_ACK			((uint32_t)0x02000000)
-#define IOMUXC_GPR_GPR4_SAI3_STOP_ACK			((uint32_t)0x00800000)
-#define IOMUXC_GPR_GPR4_SAI2_STOP_ACK			((uint32_t)0x00400000)
-#define IOMUXC_GPR_GPR4_SAI1_STOP_ACK			((uint32_t)0x00200000)
-#define IOMUXC_GPR_GPR4_ENET_STOP_ACK			((uint32_t)0x00100000)
-#define IOMUXC_GPR_GPR4_TRNG_STOP_ACK			((uint32_t)0x00080000)
-#define IOMUXC_GPR_GPR4_CAN2_STOP_ACK			((uint32_t)0x00040000)
-#define IOMUXC_GPR_GPR4_CAN1_STOP_ACK			((uint32_t)0x00020000)
-#define IOMUXC_GPR_GPR4_EDMA_STOP_ACK			((uint32_t)0x00010000)
-#define IOMUXC_GPR_GPR4_FLEXIO2_STOP_REQ		((uint32_t)0x00002000)
-#define IOMUXC_GPR_GPR4_FLEXIO1_STOP_REQ		((uint32_t)0x00001000)
-#define IOMUXC_GPR_GPR4_FLEXSPI_STOP_REQ		((uint32_t)0x00000800)
-#define IOMUXC_GPR_GPR4_PIT_STOP_REQ			((uint32_t)0x00000400)
-#define IOMUXC_GPR_GPR4_SEMC_STOP_REQ			((uint32_t)0x00000200)
-#define IOMUXC_GPR_GPR4_SAI3_STOP_REQ			((uint32_t)0x00000080)
-#define IOMUXC_GPR_GPR4_SAI2_STOP_REQ			((uint32_t)0x00000040)
-#define IOMUXC_GPR_GPR4_SAI1_STOP_REQ			((uint32_t)0x00000020)
-#define IOMUXC_GPR_GPR4_ENET_STOP_REQ			((uint32_t)0x00000010)
-#define IOMUXC_GPR_GPR4_TRNG_STOP_REQ			((uint32_t)0x00000008)
-#define IOMUXC_GPR_GPR4_CAN2_STOP_REQ			((uint32_t)0x00000004)
-#define IOMUXC_GPR_GPR4_CAN1_STOP_REQ			((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR4_EDMA_STOP_REQ			((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR5_VREF_1M_CLK_GPT2		((uint32_t)0x20000000)
-#define IOMUXC_GPR_GPR5_VREF_1M_CLK_GPT1		((uint32_t)0x10000000)
-#define IOMUXC_GPR_GPR5_ENET_EVENT3IN_SEL		((uint32_t)0x02000000)
-#define IOMUXC_GPR_GPR5_GPT2_CAPIN2_SEL			((uint32_t)0x01000000)
-#define IOMUXC_GPR_GPR5_GPT2_CAPIN1_SEL			((uint32_t)0x00800000)
-#define IOMUXC_GPR_GPR5_WDOG2_MASK			((uint32_t)0x00000080)
-#define IOMUXC_GPR_GPR5_WDOG1_MASK			((uint32_t)0x00000040)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_19		((uint32_t)0x80000000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_18		((uint32_t)0x40000000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_17		((uint32_t)0x20000000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_16		((uint32_t)0x10000000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_15		((uint32_t)0x08000000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_14		((uint32_t)0x04000000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_13		((uint32_t)0x02000000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_12		((uint32_t)0x01000000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_11		((uint32_t)0x00800000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_10		((uint32_t)0x00400000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_9		((uint32_t)0x00200000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_8		((uint32_t)0x00100000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_7		((uint32_t)0x00080000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_6		((uint32_t)0x00040000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_5		((uint32_t)0x00020000)
-#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_4		((uint32_t)0x00010000)
-#define IOMUXC_GPR_GPR6_QTIMER4_TRM3_INPUT_SEL		((uint32_t)0x00008000)
-#define IOMUXC_GPR_GPR6_QTIMER4_TRM2_INPUT_SEL		((uint32_t)0x00004000)
-#define IOMUXC_GPR_GPR6_QTIMER4_TRM1_INPUT_SEL		((uint32_t)0x00002000)
-#define IOMUXC_GPR_GPR6_QTIMER4_TRM0_INPUT_SEL		((uint32_t)0x00001000)
-#define IOMUXC_GPR_GPR6_QTIMER3_TRM3_INPUT_SEL		((uint32_t)0x00000800)
-#define IOMUXC_GPR_GPR6_QTIMER3_TRM2_INPUT_SEL		((uint32_t)0x00000400)
-#define IOMUXC_GPR_GPR6_QTIMER3_TRM1_INPUT_SEL		((uint32_t)0x00000200)
-#define IOMUXC_GPR_GPR6_QTIMER3_TRM0_INPUT_SEL		((uint32_t)0x00000100)
-#define IOMUXC_GPR_GPR6_QTIMER2_TRM3_INPUT_SEL		((uint32_t)0x00000080)
-#define IOMUXC_GPR_GPR6_QTIMER2_TRM2_INPUT_SEL		((uint32_t)0x00000040)
-#define IOMUXC_GPR_GPR6_QTIMER2_TRM1_INPUT_SEL		((uint32_t)0x00000020)
-#define IOMUXC_GPR_GPR6_QTIMER2_TRM0_INPUT_SEL		((uint32_t)0x00000010)
-#define IOMUXC_GPR_GPR6_QTIMER1_TRM3_INPUT_SEL		((uint32_t)0x00000008)
-#define IOMUXC_GPR_GPR6_QTIMER1_TRM2_INPUT_SEL		((uint32_t)0x00000004)
-#define IOMUXC_GPR_GPR6_QTIMER1_TRM1_INPUT_SEL		((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR6_QTIMER1_TRM0_INPUT_SEL		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR7_LPUART8_STOP_ACK		((uint32_t)0x80000000)
-#define IOMUXC_GPR_GPR7_LPUART7_STOP_ACK		((uint32_t)0x40000000)
-#define IOMUXC_GPR_GPR7_LPUART6_STOP_ACK		((uint32_t)0x20000000)
-#define IOMUXC_GPR_GPR7_LPUART5_STOP_ACK		((uint32_t)0x10000000)
-#define IOMUXC_GPR_GPR7_LPUART4_STOP_ACK		((uint32_t)0x08000000)
-#define IOMUXC_GPR_GPR7_LPUART3_STOP_ACK		((uint32_t)0x04000000)
-#define IOMUXC_GPR_GPR7_LPUART2_STOP_ACK		((uint32_t)0x02000000)
-#define IOMUXC_GPR_GPR7_LPUART1_STOP_ACK		((uint32_t)0x01000000)
-#define IOMUXC_GPR_GPR7_LPSPI4_STOP_ACK			((uint32_t)0x00800000)
-#define IOMUXC_GPR_GPR7_LPSPI3_STOP_ACK			((uint32_t)0x00400000)
-#define IOMUXC_GPR_GPR7_LPSPI2_STOP_ACK			((uint32_t)0x00200000)
-#define IOMUXC_GPR_GPR7_LPSPI1_STOP_ACK			((uint32_t)0x00100000)
-#define IOMUXC_GPR_GPR7_LPI2C4_STOP_ACK			((uint32_t)0x00080000)
-#define IOMUXC_GPR_GPR7_LPI2C3_STOP_ACK			((uint32_t)0x00040000)
-#define IOMUXC_GPR_GPR7_LPI2C2_STOP_ACK			((uint32_t)0x00020000)
-#define IOMUXC_GPR_GPR7_LPI2C1_STOP_ACK			((uint32_t)0x00010000)
-#define IOMUXC_GPR_GPR7_LPUART8_STOP_REQ		((uint32_t)0x00008000)
-#define IOMUXC_GPR_GPR7_LPUART7_STOP_REQ		((uint32_t)0x00004000)
-#define IOMUXC_GPR_GPR7_LPUART6_STOP_REQ		((uint32_t)0x00002000)
-#define IOMUXC_GPR_GPR7_LPUART5_STOP_REQ		((uint32_t)0x00001000)
-#define IOMUXC_GPR_GPR7_LPUART4_STOP_REQ		((uint32_t)0x00000800)
-#define IOMUXC_GPR_GPR7_LPUART3_STOP_REQ		((uint32_t)0x00000400)
-#define IOMUXC_GPR_GPR7_LPUART2_STOP_REQ		((uint32_t)0x00000200)
-#define IOMUXC_GPR_GPR7_LPUART1_STOP_REQ		((uint32_t)0x00000100)
-#define IOMUXC_GPR_GPR7_LPSPI4_STOP_REQ			((uint32_t)0x00000080)
-#define IOMUXC_GPR_GPR7_LPSPI3_STOP_REQ			((uint32_t)0x00000040)
-#define IOMUXC_GPR_GPR7_LPSPI2_STOP_REQ			((uint32_t)0x00000020)
-#define IOMUXC_GPR_GPR7_LPSPI1_STOP_REQ			((uint32_t)0x00000010)
-#define IOMUXC_GPR_GPR7_LPI2C4_STOP_REQ			((uint32_t)0x00000008)
-#define IOMUXC_GPR_GPR7_LPI2C3_STOP_REQ			((uint32_t)0x00000004)
-#define IOMUXC_GPR_GPR7_LPI2C2_STOP_REQ			((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR7_LPI2C1_STOP_REQ			((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR8_LPUART8_IPG_DOZE		((uint32_t)0x80000000)
-#define IOMUXC_GPR_GPR8_LPUART8_IPG_STOP_MODE		((uint32_t)0x40000000)
-#define IOMUXC_GPR_GPR8_LPUART7_IPG_DOZE		((uint32_t)0x20000000)
-#define IOMUXC_GPR_GPR8_LPUART7_IPG_STOP_MODE		((uint32_t)0x10000000)
-#define IOMUXC_GPR_GPR8_LPUART6_IPG_DOZE		((uint32_t)0x08000000)
-#define IOMUXC_GPR_GPR8_LPUART6_IPG_STOP_MODE		((uint32_t)0x04000000)
-#define IOMUXC_GPR_GPR8_LPUART5_IPG_DOZE		((uint32_t)0x02000000)
-#define IOMUXC_GPR_GPR8_LPUART5_IPG_STOP_MODE		((uint32_t)0x01000000)
-#define IOMUXC_GPR_GPR8_LPUART4_IPG_DOZE		((uint32_t)0x00800000)
-#define IOMUXC_GPR_GPR8_LPUART4_IPG_STOP_MODE		((uint32_t)0x00400000)
-#define IOMUXC_GPR_GPR8_LPUART3_IPG_DOZE		((uint32_t)0x00200000)
-#define IOMUXC_GPR_GPR8_LPUART3_IPG_STOP_MODE		((uint32_t)0x00100000)
-#define IOMUXC_GPR_GPR8_LPUART2_IPG_DOZE		((uint32_t)0x00080000)
-#define IOMUXC_GPR_GPR8_LPUART2_IPG_STOP_MODE		((uint32_t)0x00040000)
-#define IOMUXC_GPR_GPR8_LPUART1_IPG_DOZE		((uint32_t)0x00020000)
-#define IOMUXC_GPR_GPR8_LPUART1_IPG_STOP_MODE		((uint32_t)0x00010000)
-#define IOMUXC_GPR_GPR8_LPSPI4_IPG_DOZE			((uint32_t)0x00008000)
-#define IOMUXC_GPR_GPR8_LPSPI4_IPG_STOP_MODE		((uint32_t)0x00004000)
-#define IOMUXC_GPR_GPR8_LPSPI3_IPG_DOZE			((uint32_t)0x00002000)
-#define IOMUXC_GPR_GPR8_LPSPI3_IPG_STOP_MODE		((uint32_t)0x00001000)
-#define IOMUXC_GPR_GPR8_LPSPI2_IPG_DOZE			((uint32_t)0x00000800)
-#define IOMUXC_GPR_GPR8_LPSPI2_IPG_STOP_MODE		((uint32_t)0x00000400)
-#define IOMUXC_GPR_GPR8_LPSPI1_IPG_DOZE			((uint32_t)0x00000200)
-#define IOMUXC_GPR_GPR8_LPSPI1_IPG_STOP_MODE		((uint32_t)0x00000100)
-#define IOMUXC_GPR_GPR8_LPI2C4_IPG_DOZE			((uint32_t)0x00000080)
-#define IOMUXC_GPR_GPR8_LPI2C4_IPG_STOP_MODE		((uint32_t)0x00000040)
-#define IOMUXC_GPR_GPR8_LPI2C3_IPG_DOZE			((uint32_t)0x00000020)
-#define IOMUXC_GPR_GPR8_LPI2C3_IPG_STOP_MODE		((uint32_t)0x00000010)
-#define IOMUXC_GPR_GPR8_LPI2C2_IPG_DOZE			((uint32_t)0x00000008)
-#define IOMUXC_GPR_GPR8_LPI2C2_IPG_STOP_MODE		((uint32_t)0x00000004)
-#define IOMUXC_GPR_GPR8_LPI2C1_IPG_DOZE			((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR8_LPI2C1_IPG_STOP_MODE		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR10_LOCK_OCRAM_TZ_ADDR(n)		((uint32_t)(((n) & 0x7F) << 25))
-#define IOMUXC_GPR_GPR10_LOCK_OCRAM_TZ_EN		((uint32_t)0x01000000)
-#define IOMUXC_GPR_GPR10_LOCK_DCPKEY_OCOTP_OR_KEYMUX	((uint32_t)0x00100000)
-#define IOMUXC_GPR_GPR10_LOCK_SEC_ERR_RESP		((uint32_t)0x00040000)
-#define IOMUXC_GPR_GPR10_LOCK_DBG_EN			((uint32_t)0x00020000)
-#define IOMUXC_GPR_GPR10_LOCK_NIDEN			((uint32_t)0x00010000)
-#define IOMUXC_GPR_GPR10_OCRAM_TZ_ADDR(n)		((uint32_t)(((n) & 0x7F) << 9))
-#define IOMUXC_GPR_GPR10_OCRAM_TZ_EN			((uint32_t)0x00000100)
-#define IOMUXC_GPR_GPR10_DCPKEY_OCOTP_OR_KEYMUX		((uint32_t)0x00000010)
-#define IOMUXC_GPR_GPR10_SEC_ERR_RESP			((uint32_t)0x00000004)
-#define IOMUXC_GPR_GPR10_DBG_EN				((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR10_NIDEN				((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR11_LOCK_BEE_DE_RX_EN(n)		((uint32_t)(((n) & 0x0F) << 24))
+#define IOMUXC_GPR_GPR1_CM7_FORCE_HCLK_EN	((uint32_t)(1<<31))
+#define IOMUXC_GPR_GPR1_ENET_IPG_CLK_S_EN	((uint32_t)(1<<23))
+#define IOMUXC_GPR_GPR1_EXC_MON			((uint32_t)(1<<22))
+#define IOMUXC_GPR_GPR1_SAI3_MCLK_DIR		((uint32_t)(1<<21))
+#define IOMUXC_GPR_GPR1_SAI2_MCLK_DIR		((uint32_t)(1<<20))
+#define IOMUXC_GPR_GPR1_SAI1_MCLK_DIR		((uint32_t)(1<<19))
+#define IOMUXC_GPR_GPR1_ENET1_TX_CLK_DIR	((uint32_t)(1<<17))
+#define IOMUXC_GPR_GPR1_USB_EXP_MODE		((uint32_t)(1<<15))
+#define IOMUXC_GPR_GPR1_ENET1_CLK_SEL		((uint32_t)(1<<13))
+#define IOMUXC_GPR_GPR1_GINT			((uint32_t)(1<<12))
+#define IOMUXC_GPR_GPR1_SAI3_MCLK3_SEL(n)	((uint32_t)(((n) & 0x03) << 10))
+#define IOMUXC_GPR_GPR1_SAI2_MCLK3_SEL(n)	((uint32_t)(((n) & 0x03) << 8))
+#define IOMUXC_GPR_GPR1_SAI1_MCLK3_SEL(n)	((uint32_t)(((n) & 0x03) << 6))
+#define IOMUXC_GPR_GPR1_SAI1_MCLK2_SEL(n)	((uint32_t)(((n) & 0x07) << 3))
+#define IOMUXC_GPR_GPR1_SAI1_MCLK1_SEL(n)	((uint32_t)(((n) & 0x07) << 0))
+#define IOMUXC_GPR_GPR1_SAI3_MCLK3_SEL_MASK	IOMUXC_GPR_GPR1_SAI3_MCLK3_SEL(3)
+#define IOMUXC_GPR_GPR1_SAI2_MCLK3_SEL_MASK	IOMUXC_GPR_GPR1_SAI2_MCLK3_SEL(3)
+#define IOMUXC_GPR_GPR1_SAI1_MCLK3_SEL_MASK	IOMUXC_GPR_GPR1_SAI1_MCLK3_SEL(3)
+#define IOMUXC_GPR_GPR1_SAI1_MCLK2_SEL_MASK	IOMUXC_GPR_GPR1_SAI1_MCLK2_SEL(7)
+#define IOMUXC_GPR_GPR1_SAI1_MCLK1_SEL_MASK	IOMUXC_GPR_GPR1_SAI1_MCLK1_SEL(7)
+#define IOMUXC_GPR_GPR2_QTIMER4_TMR_CNTS_FREEZE	((uint32_t)(1<<31))
+#define IOMUXC_GPR_GPR2_QTIMER3_TMR_CNTS_FREEZE	((uint32_t)(1<<30))
+#define IOMUXC_GPR_GPR2_QTIMER2_TMR_CNTS_FREEZE	((uint32_t)(1<<29))
+#define IOMUXC_GPR_GPR2_QTIMER1_TMR_CNTS_FREEZE	((uint32_t)(1<<28))
+#define IOMUXC_GPR_GPR2_MQS_OVERSAMPLE		((uint32_t)(1<<26))
+#define IOMUXC_GPR_GPR2_MQS_EN			((uint32_t)(1<<25))
+#define IOMUXC_GPR_GPR2_MQS_SW_RST		((uint32_t)(1<<24))
+#define IOMUXC_GPR_GPR2_MQS_CLK_DIV(n)		((uint32_t)(((n) & 0xFF) << 16))
+#define IOMUXC_GPR_GPR2_L2_MEM_DEEPSLEEP	((uint32_t)(1<<14))
+#define IOMUXC_GPR_GPR2_L2_MEM_EN_POWERSAVING	((uint32_t)(1<<12))
+#define IOMUXC_GPR_GPR2_MQS_CLK_DIV_MASK	IOMUXC_GPR_GPR2_MQS_CLK_DIV(255)
+#define IOMUXC_GPR_GPR3_OCRAM_STATUS(n)		((uint32_t)(((n) & 0x0F) << 16))
+#define IOMUXC_GPR_GPR3_DCP_KEY_SEL		((uint32_t)(1<<4))
+#define IOMUXC_GPR_GPR3_OCRAM_CTL(n)		((uint32_t)(((n) & 0x0F) << 0))
+#define IOMUXC_GPR_GPR4_FLEXIO2_STOP_ACK	((uint32_t)(1<<29))
+#define IOMUXC_GPR_GPR4_FLEXIO1_STOP_ACK	((uint32_t)(1<<28))
+#define IOMUXC_GPR_GPR4_FLEXSPI_STOP_ACK	((uint32_t)(1<<27))
+#define IOMUXC_GPR_GPR4_PIT_STOP_ACK		((uint32_t)(1<<26))
+#define IOMUXC_GPR_GPR4_SEMC_STOP_ACK		((uint32_t)(1<<25))
+#define IOMUXC_GPR_GPR4_SAI3_STOP_ACK		((uint32_t)(1<<23))
+#define IOMUXC_GPR_GPR4_SAI2_STOP_ACK		((uint32_t)(1<<22))
+#define IOMUXC_GPR_GPR4_SAI1_STOP_ACK		((uint32_t)(1<<21))
+#define IOMUXC_GPR_GPR4_ENET_STOP_ACK		((uint32_t)(1<<20))
+#define IOMUXC_GPR_GPR4_TRNG_STOP_ACK		((uint32_t)(1<<19))
+#define IOMUXC_GPR_GPR4_CAN2_STOP_ACK		((uint32_t)(1<<18))
+#define IOMUXC_GPR_GPR4_CAN1_STOP_ACK		((uint32_t)(1<<17))
+#define IOMUXC_GPR_GPR4_EDMA_STOP_ACK		((uint32_t)(1<<16))
+#define IOMUXC_GPR_GPR4_FLEXIO2_STOP_REQ	((uint32_t)(1<<13))
+#define IOMUXC_GPR_GPR4_FLEXIO1_STOP_REQ	((uint32_t)(1<<12))
+#define IOMUXC_GPR_GPR4_FLEXSPI_STOP_REQ	((uint32_t)(1<<11))
+#define IOMUXC_GPR_GPR4_PIT_STOP_REQ		((uint32_t)(1<<10))
+#define IOMUXC_GPR_GPR4_SEMC_STOP_REQ		((uint32_t)(1<<9))
+#define IOMUXC_GPR_GPR4_SAI3_STOP_REQ		((uint32_t)(1<<7))
+#define IOMUXC_GPR_GPR4_SAI2_STOP_REQ		((uint32_t)(1<<6))
+#define IOMUXC_GPR_GPR4_SAI1_STOP_REQ		((uint32_t)(1<<5))
+#define IOMUXC_GPR_GPR4_ENET_STOP_REQ		((uint32_t)(1<<4))
+#define IOMUXC_GPR_GPR4_TRNG_STOP_REQ		((uint32_t)(1<<3))
+#define IOMUXC_GPR_GPR4_CAN2_STOP_REQ		((uint32_t)(1<<2))
+#define IOMUXC_GPR_GPR4_CAN1_STOP_REQ		((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR4_EDMA_STOP_REQ		((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR5_VREF_1M_CLK_GPT2	((uint32_t)(1<<29))
+#define IOMUXC_GPR_GPR5_VREF_1M_CLK_GPT1	((uint32_t)(1<<28))
+#define IOMUXC_GPR_GPR5_ENET_EVENT3IN_SEL	((uint32_t)(1<<25))
+#define IOMUXC_GPR_GPR5_GPT2_CAPIN2_SEL		((uint32_t)(1<<24))
+#define IOMUXC_GPR_GPR5_GPT2_CAPIN1_SEL		((uint32_t)(1<<23))
+#define IOMUXC_GPR_GPR5_WDOG2_MASK		((uint32_t)(1<<7))
+#define IOMUXC_GPR_GPR5_WDOG1_MASK		((uint32_t)(1<<6))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_19	((uint32_t)(1<<31))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_18	((uint32_t)(1<<30))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_17	((uint32_t)(1<<29))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_16	((uint32_t)(1<<28))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_15	((uint32_t)(1<<27))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_14	((uint32_t)(1<<26))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_13	((uint32_t)(1<<25))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_12	((uint32_t)(1<<24))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_11	((uint32_t)(1<<23))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_10	((uint32_t)(1<<22))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_9	((uint32_t)(1<<21))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_8	((uint32_t)(1<<20))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_7	((uint32_t)(1<<19))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_6	((uint32_t)(1<<18))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_5	((uint32_t)(1<<17))
+#define IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_4	((uint32_t)(1<<16))
+#define IOMUXC_GPR_GPR6_QTIMER4_TRM3_INPUT_SEL	((uint32_t)(1<<15))
+#define IOMUXC_GPR_GPR6_QTIMER4_TRM2_INPUT_SEL	((uint32_t)(1<<14))
+#define IOMUXC_GPR_GPR6_QTIMER4_TRM1_INPUT_SEL	((uint32_t)(1<<13))
+#define IOMUXC_GPR_GPR6_QTIMER4_TRM0_INPUT_SEL	((uint32_t)(1<<12))
+#define IOMUXC_GPR_GPR6_QTIMER3_TRM3_INPUT_SEL	((uint32_t)(1<<11))
+#define IOMUXC_GPR_GPR6_QTIMER3_TRM2_INPUT_SEL	((uint32_t)(1<<10))
+#define IOMUXC_GPR_GPR6_QTIMER3_TRM1_INPUT_SEL	((uint32_t)(1<<9))
+#define IOMUXC_GPR_GPR6_QTIMER3_TRM0_INPUT_SEL	((uint32_t)(1<<8))
+#define IOMUXC_GPR_GPR6_QTIMER2_TRM3_INPUT_SEL	((uint32_t)(1<<7))
+#define IOMUXC_GPR_GPR6_QTIMER2_TRM2_INPUT_SEL	((uint32_t)(1<<6))
+#define IOMUXC_GPR_GPR6_QTIMER2_TRM1_INPUT_SEL	((uint32_t)(1<<5))
+#define IOMUXC_GPR_GPR6_QTIMER2_TRM0_INPUT_SEL	((uint32_t)(1<<4))
+#define IOMUXC_GPR_GPR6_QTIMER1_TRM3_INPUT_SEL	((uint32_t)(1<<3))
+#define IOMUXC_GPR_GPR6_QTIMER1_TRM2_INPUT_SEL	((uint32_t)(1<<2))
+#define IOMUXC_GPR_GPR6_QTIMER1_TRM1_INPUT_SEL	((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR6_QTIMER1_TRM0_INPUT_SEL	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR7_LPUART8_STOP_ACK	((uint32_t)(1<<31))
+#define IOMUXC_GPR_GPR7_LPUART7_STOP_ACK	((uint32_t)(1<<30))
+#define IOMUXC_GPR_GPR7_LPUART6_STOP_ACK	((uint32_t)(1<<29))
+#define IOMUXC_GPR_GPR7_LPUART5_STOP_ACK	((uint32_t)(1<<28))
+#define IOMUXC_GPR_GPR7_LPUART4_STOP_ACK	((uint32_t)(1<<27))
+#define IOMUXC_GPR_GPR7_LPUART3_STOP_ACK	((uint32_t)(1<<26))
+#define IOMUXC_GPR_GPR7_LPUART2_STOP_ACK	((uint32_t)(1<<25))
+#define IOMUXC_GPR_GPR7_LPUART1_STOP_ACK	((uint32_t)(1<<24))
+#define IOMUXC_GPR_GPR7_LPSPI4_STOP_ACK		((uint32_t)(1<<23))
+#define IOMUXC_GPR_GPR7_LPSPI3_STOP_ACK		((uint32_t)(1<<22))
+#define IOMUXC_GPR_GPR7_LPSPI2_STOP_ACK		((uint32_t)(1<<21))
+#define IOMUXC_GPR_GPR7_LPSPI1_STOP_ACK		((uint32_t)(1<<20))
+#define IOMUXC_GPR_GPR7_LPI2C4_STOP_ACK		((uint32_t)(1<<19))
+#define IOMUXC_GPR_GPR7_LPI2C3_STOP_ACK		((uint32_t)(1<<18))
+#define IOMUXC_GPR_GPR7_LPI2C2_STOP_ACK		((uint32_t)(1<<17))
+#define IOMUXC_GPR_GPR7_LPI2C1_STOP_ACK		((uint32_t)(1<<16))
+#define IOMUXC_GPR_GPR7_LPUART8_STOP_REQ	((uint32_t)(1<<15))
+#define IOMUXC_GPR_GPR7_LPUART7_STOP_REQ	((uint32_t)(1<<14))
+#define IOMUXC_GPR_GPR7_LPUART6_STOP_REQ	((uint32_t)(1<<13))
+#define IOMUXC_GPR_GPR7_LPUART5_STOP_REQ	((uint32_t)(1<<12))
+#define IOMUXC_GPR_GPR7_LPUART4_STOP_REQ	((uint32_t)(1<<11))
+#define IOMUXC_GPR_GPR7_LPUART3_STOP_REQ	((uint32_t)(1<<10))
+#define IOMUXC_GPR_GPR7_LPUART2_STOP_REQ	((uint32_t)(1<<9))
+#define IOMUXC_GPR_GPR7_LPUART1_STOP_REQ	((uint32_t)(1<<8))
+#define IOMUXC_GPR_GPR7_LPSPI4_STOP_REQ		((uint32_t)(1<<7))
+#define IOMUXC_GPR_GPR7_LPSPI3_STOP_REQ		((uint32_t)(1<<6))
+#define IOMUXC_GPR_GPR7_LPSPI2_STOP_REQ		((uint32_t)(1<<5))
+#define IOMUXC_GPR_GPR7_LPSPI1_STOP_REQ		((uint32_t)(1<<4))
+#define IOMUXC_GPR_GPR7_LPI2C4_STOP_REQ		((uint32_t)(1<<3))
+#define IOMUXC_GPR_GPR7_LPI2C3_STOP_REQ		((uint32_t)(1<<2))
+#define IOMUXC_GPR_GPR7_LPI2C2_STOP_REQ		((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR7_LPI2C1_STOP_REQ		((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR8_LPUART8_IPG_DOZE	((uint32_t)(1<<31))
+#define IOMUXC_GPR_GPR8_LPUART8_IPG_STOP_MODE	((uint32_t)(1<<30))
+#define IOMUXC_GPR_GPR8_LPUART7_IPG_DOZE	((uint32_t)(1<<29))
+#define IOMUXC_GPR_GPR8_LPUART7_IPG_STOP_MODE	((uint32_t)(1<<28))
+#define IOMUXC_GPR_GPR8_LPUART6_IPG_DOZE	((uint32_t)(1<<27))
+#define IOMUXC_GPR_GPR8_LPUART6_IPG_STOP_MODE	((uint32_t)(1<<26))
+#define IOMUXC_GPR_GPR8_LPUART5_IPG_DOZE	((uint32_t)(1<<25))
+#define IOMUXC_GPR_GPR8_LPUART5_IPG_STOP_MODE	((uint32_t)(1<<24))
+#define IOMUXC_GPR_GPR8_LPUART4_IPG_DOZE	((uint32_t)(1<<23))
+#define IOMUXC_GPR_GPR8_LPUART4_IPG_STOP_MODE	((uint32_t)(1<<22))
+#define IOMUXC_GPR_GPR8_LPUART3_IPG_DOZE	((uint32_t)(1<<21))
+#define IOMUXC_GPR_GPR8_LPUART3_IPG_STOP_MODE	((uint32_t)(1<<20))
+#define IOMUXC_GPR_GPR8_LPUART2_IPG_DOZE	((uint32_t)(1<<19))
+#define IOMUXC_GPR_GPR8_LPUART2_IPG_STOP_MODE	((uint32_t)(1<<18))
+#define IOMUXC_GPR_GPR8_LPUART1_IPG_DOZE	((uint32_t)(1<<17))
+#define IOMUXC_GPR_GPR8_LPUART1_IPG_STOP_MODE	((uint32_t)(1<<16))
+#define IOMUXC_GPR_GPR8_LPSPI4_IPG_DOZE		((uint32_t)(1<<15))
+#define IOMUXC_GPR_GPR8_LPSPI4_IPG_STOP_MODE	((uint32_t)(1<<14))
+#define IOMUXC_GPR_GPR8_LPSPI3_IPG_DOZE		((uint32_t)(1<<13))
+#define IOMUXC_GPR_GPR8_LPSPI3_IPG_STOP_MODE	((uint32_t)(1<<12))
+#define IOMUXC_GPR_GPR8_LPSPI2_IPG_DOZE		((uint32_t)(1<<11))
+#define IOMUXC_GPR_GPR8_LPSPI2_IPG_STOP_MODE	((uint32_t)(1<<10))
+#define IOMUXC_GPR_GPR8_LPSPI1_IPG_DOZE		((uint32_t)(1<<9))
+#define IOMUXC_GPR_GPR8_LPSPI1_IPG_STOP_MODE	((uint32_t)(1<<8))
+#define IOMUXC_GPR_GPR8_LPI2C4_IPG_DOZE		((uint32_t)(1<<7))
+#define IOMUXC_GPR_GPR8_LPI2C4_IPG_STOP_MODE	((uint32_t)(1<<6))
+#define IOMUXC_GPR_GPR8_LPI2C3_IPG_DOZE		((uint32_t)(1<<5))
+#define IOMUXC_GPR_GPR8_LPI2C3_IPG_STOP_MODE	((uint32_t)(1<<4))
+#define IOMUXC_GPR_GPR8_LPI2C2_IPG_DOZE		((uint32_t)(1<<3))
+#define IOMUXC_GPR_GPR8_LPI2C2_IPG_STOP_MODE	((uint32_t)(1<<2))
+#define IOMUXC_GPR_GPR8_LPI2C1_IPG_DOZE		((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR8_LPI2C1_IPG_STOP_MODE	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR10_LOCK_OCRAM_TZ_ADDR(n)	((uint32_t)(((n) & 0x7F) << 25))
+#define IOMUXC_GPR_GPR10_LOCK_OCRAM_TZ_EN	((uint32_t)(1<<24))
+#define IOMUXC_GPR_GPR10_LOCK_DCPKEY_OCOTP_OR_KEYMUX	((uint32_t)(1<<20))
+#define IOMUXC_GPR_GPR10_LOCK_SEC_ERR_RESP	((uint32_t)(1<<18))
+#define IOMUXC_GPR_GPR10_LOCK_DBG_EN		((uint32_t)(1<<17))
+#define IOMUXC_GPR_GPR10_LOCK_NIDEN		((uint32_t)(1<<16))
+#define IOMUXC_GPR_GPR10_OCRAM_TZ_ADDR(n)	((uint32_t)(((n) & 0x7F) << 9))
+#define IOMUXC_GPR_GPR10_OCRAM_TZ_EN		((uint32_t)(1<<8))
+#define IOMUXC_GPR_GPR10_DCPKEY_OCOTP_OR_KEYMUX	((uint32_t)(1<<4))
+#define IOMUXC_GPR_GPR10_SEC_ERR_RESP		((uint32_t)(1<<2))
+#define IOMUXC_GPR_GPR10_DBG_EN			((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR10_NIDEN			((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR11_LOCK_BEE_DE_RX_EN(n)	((uint32_t)(((n) & 0x0F) << 24))
 #define IOMUXC_GPR_GPR11_LOCK_M7_APC_AC_R3_CTRL(n)	((uint32_t)(((n) & 0x03) << 22))
 #define IOMUXC_GPR_GPR11_LOCK_M7_APC_AC_R2_CTRL(n)	((uint32_t)(((n) & 0x03) << 20))
 #define IOMUXC_GPR_GPR11_LOCK_M7_APC_AC_R1_CTRL(n)	((uint32_t)(((n) & 0x03) << 18))
 #define IOMUXC_GPR_GPR11_LOCK_M7_APC_AC_R0_CTRL(n)	((uint32_t)(((n) & 0x03) << 16))
-#define IOMUXC_GPR_GPR11_BEE_DE_RX_EN(n)		((uint32_t)(((n) & 0x0F) << 8))
-#define IOMUXC_GPR_GPR11_M7_APC_AC_R3_CTRL(n)		((uint32_t)(((n) & 0x03) << 6))
-#define IOMUXC_GPR_GPR11_M7_APC_AC_R2_CTRL(n)		((uint32_t)(((n) & 0x03) << 4))
-#define IOMUXC_GPR_GPR11_M7_APC_AC_R1_CTRL(n)		((uint32_t)(((n) & 0x03) << 2))
-#define IOMUXC_GPR_GPR11_M7_APC_AC_R0_CTRL(n)		((uint32_t)(((n) & 0x03) << 0))
-#define IOMUXC_GPR_GPR12_ACMP_IPG_STOP_MODE		((uint32_t)0x00000010)
-#define IOMUXC_GPR_GPR12_FLEXIO2_IPG_DOZE		((uint32_t)0x00000008)
-#define IOMUXC_GPR_GPR12_FLEXIO2_IPG_STOP_MODE		((uint32_t)0x00000004)
-#define IOMUXC_GPR_GPR12_FLEXIO1_IPG_DOZE		((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR12_FLEXIO1_IPG_STOP_MODE		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR13_CACHE_USB			((uint32_t)0x00002000)
-#define IOMUXC_GPR_GPR13_CACHE_ENET			((uint32_t)0x00000080)
-#define IOMUXC_GPR_GPR13_AWCACHE_USDHC			((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR13_ARCACHE_USDHC			((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR14_CM7_MX6RT_CFGDTCMSZ(n)		((uint32_t)(((n) & 0x0F) << 20))
-#define IOMUXC_GPR_GPR14_CM7_MX6RT_CFGITCMSZ(n)		((uint32_t)(((n) & 0x0F) << 16))
-#define IOMUXC_GPR_GPR14_ACMP4_SAMPLE_SYNC_EN		((uint32_t)0x00000800)
-#define IOMUXC_GPR_GPR14_ACMP3_SAMPLE_SYNC_EN		((uint32_t)0x00000400)
-#define IOMUXC_GPR_GPR14_ACMP2_SAMPLE_SYNC_EN		((uint32_t)0x00000200)
-#define IOMUXC_GPR_GPR14_ACMP1_SAMPLE_SYNC_EN		((uint32_t)0x00000100)
-#define IOMUXC_GPR_GPR14_ACMP4_CMP_IGEN_TRIM_UP		((uint32_t)0x00000080)
-#define IOMUXC_GPR_GPR14_ACMP3_CMP_IGEN_TRIM_UP		((uint32_t)0x00000040)
-#define IOMUXC_GPR_GPR14_ACMP2_CMP_IGEN_TRIM_UP		((uint32_t)0x00000020)
-#define IOMUXC_GPR_GPR14_ACMP1_CMP_IGEN_TRIM_UP		((uint32_t)0x00000010)
-#define IOMUXC_GPR_GPR14_ACMP4_CMP_IGEN_TRIM_DN		((uint32_t)0x00000008)
-#define IOMUXC_GPR_GPR14_ACMP3_CMP_IGEN_TRIM_DN		((uint32_t)0x00000004)
-#define IOMUXC_GPR_GPR14_ACMP2_CMP_IGEN_TRIM_DN		((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR14_ACMP1_CMP_IGEN_TRIM_DN		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR16_CM7_INIT_VTOR(n)		((uint32_t)(((n) & 0x1FFFFFF) << 7))
-#define IOMUXC_GPR_GPR16_FLEXRAM_BANK_CFG_SEL		((uint32_t)0x00000004)
-#define IOMUXC_GPR_GPR16_INIT_DTCM_EN			((uint32_t)0x00000002)
-#define IOMUXC_GPR_GPR16_INIT_ITCM_EN			((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR18_M7_APC_AC_R0_BOT(n)		((uint32_t)(((n) & 0x1FFFFFFF) << 3))
-#define IOMUXC_GPR_GPR18_LOCK_M7_APC_AC_R0_BOT		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR19_M7_APC_AC_R0_TOP(n)		((uint32_t)(((n) & 0x1FFFFFFF) << 3))
-#define IOMUXC_GPR_GPR19_LOCK_M7_APC_AC_R0_TOP		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR20_M7_APC_AC_R1_BOT(n)		((uint32_t)(((n) & 0x1FFFFFFF) << 3))
-#define IOMUXC_GPR_GPR20_LOCK_M7_APC_AC_R1_BOT		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR21_M7_APC_AC_R1_TOP(n)		((uint32_t)(((n) & 0x1FFFFFFF) << 3))
-#define IOMUXC_GPR_GPR21_LOCK_M7_APC_AC_R1_TOP		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR22_M7_APC_AC_R2_BOT(n)		((uint32_t)(((n) & 0x1FFFFFFF) << 3))
-#define IOMUXC_GPR_GPR22_LOCK_M7_APC_AC_R2_BOT		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR23_M7_APC_AC_R2_TOP(n)		((uint32_t)(((n) & 0x1FFFFFFF) << 3))
-#define IOMUXC_GPR_GPR23_LOCK_M7_APC_AC_R2_TOP		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR24_M7_APC_AC_R3_BOT(n)		((uint32_t)(((n) & 0x1FFFFFFF) << 3))
-#define IOMUXC_GPR_GPR24_LOCK_M7_APC_AC_R3_BOT		((uint32_t)0x00000001)
-#define IOMUXC_GPR_GPR25_M7_APC_AC_R3_TOP(n)		((uint32_t)(((n) & 0x1FFFFFFF) << 3))
-#define IOMUXC_GPR_GPR25_LOCK_M7_APC_AC_R3_TOP		((uint32_t)0x00000001)
+#define IOMUXC_GPR_GPR11_BEE_DE_RX_EN(n)	((uint32_t)(((n) & 0x0F) << 8))
+#define IOMUXC_GPR_GPR11_M7_APC_AC_R3_CTRL(n)	((uint32_t)(((n) & 0x03) << 6))
+#define IOMUXC_GPR_GPR11_M7_APC_AC_R2_CTRL(n)	((uint32_t)(((n) & 0x03) << 4))
+#define IOMUXC_GPR_GPR11_M7_APC_AC_R1_CTRL(n)	((uint32_t)(((n) & 0x03) << 2))
+#define IOMUXC_GPR_GPR11_M7_APC_AC_R0_CTRL(n)	((uint32_t)(((n) & 0x03) << 0))
+#define IOMUXC_GPR_GPR12_ACMP_IPG_STOP_MODE	((uint32_t)(1<<4))
+#define IOMUXC_GPR_GPR12_FLEXIO2_IPG_DOZE	((uint32_t)(1<<3))
+#define IOMUXC_GPR_GPR12_FLEXIO2_IPG_STOP_MODE	((uint32_t)(1<<2))
+#define IOMUXC_GPR_GPR12_FLEXIO1_IPG_DOZE	((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR12_FLEXIO1_IPG_STOP_MODE	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR13_CACHE_USB		((uint32_t)(1<<13))
+#define IOMUXC_GPR_GPR13_CACHE_ENET		((uint32_t)(1<<7))
+#define IOMUXC_GPR_GPR13_AWCACHE_USDHC		((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR13_ARCACHE_USDHC		((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR14_CM7_MX6RT_CFGDTCMSZ(n)	((uint32_t)(((n) & 0x0F) << 20))
+#define IOMUXC_GPR_GPR14_CM7_MX6RT_CFGITCMSZ(n)	((uint32_t)(((n) & 0x0F) << 16))
+#define IOMUXC_GPR_GPR14_ACMP4_SAMPLE_SYNC_EN	((uint32_t)(1<<11))
+#define IOMUXC_GPR_GPR14_ACMP3_SAMPLE_SYNC_EN	((uint32_t)(1<<10))
+#define IOMUXC_GPR_GPR14_ACMP2_SAMPLE_SYNC_EN	((uint32_t)(1<<9))
+#define IOMUXC_GPR_GPR14_ACMP1_SAMPLE_SYNC_EN	((uint32_t)(1<<8))
+#define IOMUXC_GPR_GPR14_ACMP4_CMP_IGEN_TRIM_UP	((uint32_t)(1<<7))
+#define IOMUXC_GPR_GPR14_ACMP3_CMP_IGEN_TRIM_UP	((uint32_t)(1<<6))
+#define IOMUXC_GPR_GPR14_ACMP2_CMP_IGEN_TRIM_UP	((uint32_t)(1<<5))
+#define IOMUXC_GPR_GPR14_ACMP1_CMP_IGEN_TRIM_UP	((uint32_t)(1<<4))
+#define IOMUXC_GPR_GPR14_ACMP4_CMP_IGEN_TRIM_DN	((uint32_t)(1<<3))
+#define IOMUXC_GPR_GPR14_ACMP3_CMP_IGEN_TRIM_DN	((uint32_t)(1<<2))
+#define IOMUXC_GPR_GPR14_ACMP2_CMP_IGEN_TRIM_DN	((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR14_ACMP1_CMP_IGEN_TRIM_DN	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR16_CM7_INIT_VTOR(n)	((uint32_t)(((n) & 0x1FFFFFF) << 7))
+#define IOMUXC_GPR_GPR16_FLEXRAM_BANK_CFG_SEL	((uint32_t)(1<<2))
+#define IOMUXC_GPR_GPR16_INIT_DTCM_EN		((uint32_t)(1<<1))
+#define IOMUXC_GPR_GPR16_INIT_ITCM_EN		((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR18_M7_APC_AC_R0_BOT(n)	((uint32_t)(((n) & 0x1FFFFFFF) << 3))
+#define IOMUXC_GPR_GPR18_LOCK_M7_APC_AC_R0_BOT	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR19_M7_APC_AC_R0_TOP(n)	((uint32_t)(((n) & 0x1FFFFFFF) << 3))
+#define IOMUXC_GPR_GPR19_LOCK_M7_APC_AC_R0_TOP	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR20_M7_APC_AC_R1_BOT(n)	((uint32_t)(((n) & 0x1FFFFFFF) << 3))
+#define IOMUXC_GPR_GPR20_LOCK_M7_APC_AC_R1_BOT	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR21_M7_APC_AC_R1_TOP(n)	((uint32_t)(((n) & 0x1FFFFFFF) << 3))
+#define IOMUXC_GPR_GPR21_LOCK_M7_APC_AC_R1_TOP	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR22_M7_APC_AC_R2_BOT(n)	((uint32_t)(((n) & 0x1FFFFFFF) << 3))
+#define IOMUXC_GPR_GPR22_LOCK_M7_APC_AC_R2_BOT	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR23_M7_APC_AC_R2_TOP(n)	((uint32_t)(((n) & 0x1FFFFFFF) << 3))
+#define IOMUXC_GPR_GPR23_LOCK_M7_APC_AC_R2_TOP	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR24_M7_APC_AC_R3_BOT(n)	((uint32_t)(((n) & 0x1FFFFFFF) << 3))
+#define IOMUXC_GPR_GPR24_LOCK_M7_APC_AC_R3_BOT	((uint32_t)(1<<0))
+#define IOMUXC_GPR_GPR25_M7_APC_AC_R3_TOP(n)	((uint32_t)(((n) & 0x1FFFFFFF) << 3))
+#define IOMUXC_GPR_GPR25_LOCK_M7_APC_AC_R3_TOP	((uint32_t)(1<<0))
 
-// page 1750
+// 34.5: page 1717
 #define IMXRT_IOMUXC_SNVS	(*(IMXRT_REGISTER32_t *)0x400A8000)
 #define IOMUXC_SNVS_SW_MUX_CTL_PAD_WAKEUP		(IMXRT_IOMUXC_SNVS.offset000)
 #define IOMUXC_SNVS_SW_MUX_CTL_PAD_PMIC_ON_REQ		(IMXRT_IOMUXC_SNVS.offset004)
@@ -2995,14 +4570,14 @@ typedef struct {
 #define IOMUXC_SNVS_SW_PAD_CTL_PAD_PMIC_ON_REQ		(IMXRT_IOMUXC_SNVS.offset01C)
 #define IOMUXC_SNVS_SW_PAD_CTL_PAD_PMIC_STBY_REQ	(IMXRT_IOMUXC_SNVS.offset020)
 
-// page 1765
+// 34.6: page 1732
 #define IMXRT_IOMUXC_SNVS_GPR	(*(IMXRT_REGISTER32_t *)0x400A4000)
 #define IOMUXC_SNVS_GPR_GPR0		(IMXRT_IOMUXC_SNVS_GPR.offset000)
 #define IOMUXC_SNVS_GPR_GPR1		(IMXRT_IOMUXC_SNVS_GPR.offset004)
 #define IOMUXC_SNVS_GPR_GPR2		(IMXRT_IOMUXC_SNVS_GPR.offset008)
 #define IOMUXC_SNVS_GPR_GPR3		(IMXRT_IOMUXC_SNVS_GPR.offset00C)
 
-// page 1769
+// 34.7: page 1736
 #define IMXRT_IOMUXC		(*(IMXRT_REGISTER32_t *)0x401F8000)
 #define IMXRT_IOMUXC_b		(*(IMXRT_REGISTER32_t *)0x401F8400)
 #define IOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_00	(IMXRT_IOMUXC.offset014)
@@ -3407,15 +4982,23 @@ typedef struct {
 #define IOMUXC_XBAR1_IN25_SELECT_INPUT		(IMXRT_IOMUXC_b.offset250)
 #define IOMUXC_XBAR1_IN19_SELECT_INPUT		(IMXRT_IOMUXC_b.offset254)
 #define IOMUXC_XBAR1_IN21_SELECT_INPUT		(IMXRT_IOMUXC_b.offset258)
+#define IOMUXC_PAD_SRE					((uint32_t)(1<<0))
+#define IOMUXC_PAD_DSE(n)				((uint32_t)(((n) & 0x07) << 3))
+#define IOMUXC_PAD_SPEED(n)				((uint32_t)(((n) & 0x03) << 6))
+#define IOMUXC_PAD_ODE					((uint32_t)(1<<11))
+#define IOMUXC_PAD_PKE					((uint32_t)(1<<12))
+#define IOMUXC_PAD_PUE					((uint32_t)(1<<13))
+#define IOMUXC_PAD_PUS(n)				((uint32_t)(((n) & 0x03) << 14))
+#define IOMUXC_PAD_HYS					((uint32_t)(1<<16))
 
-// page 2356
+// 35.6: page 2301
 #define IMXRT_KPP		(*(IMXRT_REGISTER16_t *)0x401FC000)
 #define KPP_KPCR			(IMXRT_KPP.offset000)
 #define KPP_KPSR			(IMXRT_KPP.offset002)
 #define KPP_KDDR			(IMXRT_KPP.offset004)
 #define KPP_KPDR			(IMXRT_KPP.offset006)
 
-// page 2380
+// 36.4: page 2325
 #define IMXRT_LCDIF		(*(IMXRT_REGISTER32_t *)0x402B8000)
 #define LCDIF_CTRL			(IMXRT_LCDIF.offset000)
 #define LCDIF_CTRL_SET			(IMXRT_LCDIF.offset004)
@@ -3499,7 +5082,56 @@ typedef struct {
 #define LCDIF_PIGEON_11_1		(IMXRT_LCDIF_b.offset2D0)
 #define LCDIF_PIGEON_11_2		(IMXRT_LCDIF_b.offset2E0)
 
-// page 2415
+// 37.4: page 2371
+#if 0
+typedef struct {
+	const uint32_t VERID;
+	const uint32_t PARAM;
+	const uint32_t unused1;
+	const uint32_t unused2;
+	volatile uint32_t MCR;			(IMXRT_LPI2C1.offset010)
+	volatile uint32_t MSR;			(IMXRT_LPI2C1.offset014)
+	volatile uint32_t MIER;			(IMXRT_LPI2C1.offset018)
+	volatile uint32_t MDER;			(IMXRT_LPI2C1.offset01C)
+	volatile uint32_t MCFGR0;			(IMXRT_LPI2C1.offset020)
+	volatile uint32_t MCFGR1;			(IMXRT_LPI2C1.offset024)
+	volatile uint32_t MCFGR2;			(IMXRT_LPI2C1.offset028)
+	volatile uint32_t MCFGR3;			(IMXRT_LPI2C1.offset02C)
+	volatile uint32_t unused3[4];
+	volatile uint32_t MDMR;			(IMXRT_LPI2C1.offset040)
+	volatile uint32_t unused4;
+	volatile uint32_t MCCR0	;		(IMXRT_LPI2C1.offset048)
+	volatile uint32_t unused4;
+	volatile uint32_t MCCR1;			(IMXRT_LPI2C1.offset050)
+	volatile uint32_t unused4;
+	volatile uint32_t MFCR;			(IMXRT_LPI2C1.offset058)
+	volatile uint32_t MFSR;			(IMXRT_LPI2C1.offset05C)
+	volatile uint32_t MTDR;			(IMXRT_LPI2C1.offset060)
+	volatile uint32_t unused4[3];
+	volatile uint32_t MRDR;			(IMXRT_LPI2C1.offset070)
+	volatile uint32_t unused4[39];
+	volatile uint32_t SCR;			(IMXRT_LPI2C1.offset110)
+	volatile uint32_t SSR;			(IMXRT_LPI2C1.offset114)
+	volatile uint32_t SIER;			(IMXRT_LPI2C1.offset118)
+	volatile uint32_t SDER;			(IMXRT_LPI2C1.offset11C)
+	volatile uint32_t unused4;
+	volatile uint32_t SCFGR1;			(IMXRT_LPI2C1.offset124)
+	volatile uint32_t SCFGR2;			(IMXRT_LPI2C1.offset128)
+	volatile uint32_t unused4[5];
+	volatile uint32_t SAMR;			(IMXRT_LPI2C1.offset140)
+	volatile uint32_t unused4[3];
+	volatile uint32_t SASR;			(IMXRT_LPI2C1.offset150)
+	volatile uint32_t unused4[3];
+	volatile uint32_t STAR;			(IMXRT_LPI2C1.offset154)
+	volatile uint32_t unused4[3];
+	volatile uint32_t STDR;			(IMXRT_LPI2C1.offset160)
+	volatile uint32_t unused4[3];
+	volatile uint32_t SRDR;			(IMXRT_LPI2C1.offset170)
+} IMXRT_LPI2C_t;
+#define IMXRT_LPI2C1		(*(IMXRT_LPI2C_t *)0x403F0000)
+
+#else
+
 #define IMXRT_LPI2C1		(*(IMXRT_REGISTER32_t *)0x403F0000)
 #define LPI2C1_VERID			(IMXRT_LPI2C1.offset000)
 #define LPI2C1_PARAM			(IMXRT_LPI2C1.offset004)
@@ -3616,8 +5248,137 @@ typedef struct {
 #define LPI2C4_STAR			(IMXRT_LPI2C4.offset154)
 #define LPI2C4_STDR			(IMXRT_LPI2C4.offset160)
 #define LPI2C4_SRDR			(IMXRT_LPI2C4.offset170)
+#endif
+#define LPI2C_MCR_RRF				((uint32_t)(1<<9))
+#define LPI2C_MCR_RTF				((uint32_t)(1<<8))
+#define LPI2C_MCR_DBGEN				((uint32_t)(1<<3))
+#define LPI2C_MCR_DOZEN				((uint32_t)(1<<2))
+#define LPI2C_MCR_RST				((uint32_t)(1<<1))
+#define LPI2C_MCR_MEN				((uint32_t)(1<<0))
+#define LPI2C_MSR_BBF				((uint32_t)(1<<25))
+#define LPI2C_MSR_MBF				((uint32_t)(1<<24))
+#define LPI2C_MSR_DMF				((uint32_t)(1<<14))
+#define LPI2C_MSR_PLTF				((uint32_t)(1<<13))
+#define LPI2C_MSR_FEF				((uint32_t)(1<<12))
+#define LPI2C_MSR_ALF				((uint32_t)(1<<11))
+#define LPI2C_MSR_NDF				((uint32_t)(1<<10))
+#define LPI2C_MSR_SDF				((uint32_t)(1<<9))
+#define LPI2C_MSR_EPF				((uint32_t)(1<<8))
+#define LPI2C_MSR_RDF				((uint32_t)(1<<1))
+#define LPI2C_MSR_TDF				((uint32_t)(1<<0))
+#define LPI2C_MIER_DMIE				((uint32_t)(1<<14))
+#define LPI2C_MIER_PLTIE			((uint32_t)(1<<13))
+#define LPI2C_MIER_FEIE				((uint32_t)(1<<12))
+#define LPI2C_MIER_ALIE				((uint32_t)(1<<11))
+#define LPI2C_MIER_NDIE				((uint32_t)(1<<10))
+#define LPI2C_MIER_SDIE				((uint32_t)(1<<9))
+#define LPI2C_MIER_EPIE				((uint32_t)(1<<8))
+#define LPI2C_MIER_RDIE				((uint32_t)(1<<1))
+#define LPI2C_MIER_TDIE				((uint32_t)(1<<0))
+#define LPI2C_MDER_RDDE				((uint32_t)(1<<1))
+#define LPI2C_MDER_TDDE				((uint32_t)(1<<0))
+#define LPI2C_MCFGR0_RDMO			((uint32_t)(1<<9))
+#define LPI2C_MCFGR0_CIRFIFO			((uint32_t)(1<<8))
+#define LPI2C_MCFGR0_HRSEL			((uint32_t)(1<<2))
+#define LPI2C_MCFGR0_HRPOL			((uint32_t)(1<<1))
+#define LPI2C_MCFGR0_HREN			((uint32_t)(1<<0))
+#define LPI2C_MCFGR1_PINCFG(n)			((uint32_t)(((n) & 0x07) << 24))
+#define LPI2C_MCFGR1_MATCFG(n)			((uint32_t)(((n) & 0x07) << 16))
+#define LPI2C_MCFGR1_TIMECFG			((uint32_t)(1<<10))
+#define LPI2C_MCFGR1_IGNACK			((uint32_t)(1<<9))
+#define LPI2C_MCFGR1_AUTOSTOP			((uint32_t)(1<<8))
+#define LPI2C_MCFGR1_PRESCALE(n)		((uint32_t)(((n) & 0x07) << 0))
+#define LPI2C_MCFGR2_FILTSDA(n)			((uint32_t)(((n) & 0x0F) << 24))
+#define LPI2C_MCFGR2_FILTSCL(n)			((uint32_t)(((n) & 0x0F) << 16))
+#define LPI2C_MCFGR2_BUSIDLE(n)			((uint32_t)(((n) & 0xFFF) << 0))
+#define LPI2C_MCFGR3_PINLOW(n)			((uint32_t)(((n) & 0xFFF) << 8))
+#define LPI2C_MDMR_MATCH1(n)			((uint32_t)(((n) & 0xFF) << 16))
+#define LPI2C_MDMR_MATCH0(n)			((uint32_t)(((n) & 0xFF) << 0))
+#define LPI2C_MCCR0_DATAVD(n)			((uint32_t)(((n) & 0x3F) << 24))
+#define LPI2C_MCCR0_SETHOLD(n)			((uint32_t)(((n) & 0x3F) << 16))
+#define LPI2C_MCCR0_CLKHI(n)			((uint32_t)(((n) & 0x3F) << 8))
+#define LPI2C_MCCR0_CLKLO(n)			((uint32_t)(((n) & 0x3F) << 0))
+#define LPI2C_MCCR1_DATAVD(n)			((uint32_t)(((n) & 0x3F) << 24))
+#define LPI2C_MCCR1_SETHOLD(n)			((uint32_t)(((n) & 0x3F) << 16))
+#define LPI2C_MCCR1_CLKHI(n)			((uint32_t)(((n) & 0x3F) << 8))
+#define LPI2C_MCCR1_CLKLO(n)			((uint32_t)(((n) & 0x3F) << 0))
+#define LPI2C_MFCR_RXWATER(n)			((uint32_t)(((n) & 0x03) << 16))
+#define LPI2C_MFCR_TXWATER(n)			((uint32_t)(((n) & 0x03) << 0))
+#define LPI2C_MFSR_RXCOUNT(n)			((uint32_t)(((n) & 0x07) << 16))
+#define LPI2C_MFSR_TXCOUNT(n)			((uint32_t)(((n) & 0x07) << 16))
+#define LPI2C_MTDR_CMD(n)			((uint32_t)(((n) & 0x07) << 8))
+#define LPI2C_MTDR_CMD_TRANSMIT			((uint32_t)(0 << 8))
+#define LPI2C_MTDR_CMD_RECEIVE			((uint32_t)(1 << 8))
+#define LPI2C_MTDR_CMD_STOP			((uint32_t)(2 << 8))
+#define LPI2C_MTDR_CMD_DISCARD			((uint32_t)(3 << 8))
+#define LPI2C_MTDR_CMD_START			((uint32_t)(4 << 8))
+#define LPI2C_MTDR_CMD_START_NACK		((uint32_t)(5 << 8))
+#define LPI2C_MTDR_CMD_HS_START			((uint32_t)(6 << 8))
+#define LPI2C_MTDR_CMD_HS_START_NAcK		((uint32_t)(7 << 8))
+#define LPI2C_MTDR_DATA(n)			((uint32_t)(((n) & 0xFF) << 0))
+#define LPI2C_MRDR_RXEMPTY			((uint32_t)(1<<14))
+#define LPI2C_MRDR_DATA(n)			((uint32_t)(((n) & 0xFF) << 0))
+#define LPI2C_SCR_RRF				((uint32_t)(1<<9))
+#define LPI2C_SCR_RTF				((uint32_t)(1<<8))
+#define LPI2C_SCR_FILTDZ			((uint32_t)(1<<5))
+#define LPI2C_SCR_FILTEN			((uint32_t)(1<<4))
+#define LPI2C_SCR_RST				((uint32_t)(1<<1))
+#define LPI2C_SCR_SEN				((uint32_t)(1<<0))
+#define LPI2C_SSR_BBF				((uint32_t)(1<<25))
+#define LPI2C_SSR_SBF				((uint32_t)(1<<24))
+#define LPI2C_SSR_SARF				((uint32_t)(1<<15))
+#define LPI2C_SSR_GCF				((uint32_t)(1<<14))
+#define LPI2C_SSR_AM1F				((uint32_t)(1<<13))
+#define LPI2C_SSR_AM0F				((uint32_t)(1<<12))
+#define LPI2C_SSR_FEF				((uint32_t)(1<<11))
+#define LPI2C_SSR_BEF				((uint32_t)(1<<10))
+#define LPI2C_SSR_SDF				((uint32_t)(1<<9))
+#define LPI2C_SSR_RSF				((uint32_t)(1<<8))
+#define LPI2C_SSR_TAF				((uint32_t)(1<<3))
+#define LPI2C_SSR_AVF				((uint32_t)(1<<2))
+#define LPI2C_SSR_RDF				((uint32_t)(1<<1))
+#define LPI2C_SSR_TDF				((uint32_t)(1<<0))
+#define LPI2C_SIER_SARIE			((uint32_t)(1<<25))
+#define LPI2C_SIER_GCIE				((uint32_t)(1<<24))
+#define LPI2C_SIER_AM1F				((uint32_t)(1<<13))
+#define LPI2C_SIER_AM0IE			((uint32_t)(1<<12))
+#define LPI2C_SIER_FEIE				((uint32_t)(1<<11))
+#define LPI2C_SIER_BEIE				((uint32_t)(1<<10))
+#define LPI2C_SIER_SDIE				((uint32_t)(1<<9))
+#define LPI2C_SIER_RSIE				((uint32_t)(1<<8))
+#define LPI2C_SIER_TAIE				((uint32_t)(1<<3))
+#define LPI2C_SIER_AVIE				((uint32_t)(1<<2))
+#define LPI2C_SIER_RDIE				((uint32_t)(1<<1))
+#define LPI2C_SIER_TDIE				((uint32_t)(1<<0))
+#define LPI2C_SDER_AVDE				((uint32_t)(1<<2))
+#define LPI2C_SDER_RDDE				((uint32_t)(1<<1))
+#define LPI2C_SDER_TDDE				((uint32_t)(1<<0))
+#define LPI2C_SCFGR1_ADDRCFG(n)			((uint32_t)(((n) & 0x07) << 16))
+#define LPI2C_SCFGR1_HSMEN			((uint32_t)(1<<13))
+#define LPI2C_SCFGR1_IGNACK			((uint32_t)(1<<12))
+#define LPI2C_SCFGR1_RXCFG			((uint32_t)(1<<11))
+#define LPI2C_SCFGR1_TXCFG			((uint32_t)(1<<10))
+#define LPI2C_SCFGR1_SAEN			((uint32_t)(1<<9))
+#define LPI2C_SCFGR1_GCEN			((uint32_t)(1<<8))
+#define LPI2C_SCFGR1_ACKSTALL			((uint32_t)(1<<3))
+#define LPI2C_SCFGR1_TXDSTALL			((uint32_t)(1<<2))
+#define LPI2C_SCFGR1_RXSTALL			((uint32_t)(1<<1))
+#define LPI2C_SCFGR1_ADRSTALL			((uint32_t)(1<<0))
+#define LPI2C_SCFGR2_FILTSDA(n)			((uint32_t)(((n) & 0x0F) << 24))
+#define LPI2C_SCFGR2_FILTSCL(n)			((uint32_t)(((n) & 0x0F) << 16))
+#define LPI2C_SCFGR2_DATAVD(n)			((uint32_t)(((n) & 0x3F) << 8))
+#define LPI2C_SCFGR2_CLKHOLD(n)			((uint32_t)(((n) & 0x0F) << 0))
+#define LPI2C_SAMR_ADDR1(n)			((uint32_t)(((n) & 0x7F) << 17))
+#define LPI2C_SAMR_ADDR0(n)			((uint32_t)(((n) & 0x7F) << 1))
+#define LPI2C_SASR_ANV				((uint32_t)(1<<14))
+#define LPI2C_SASR_RADDR(n)			((uint32_t)(((n) & 0x7FF) << 0))
+#define LPI2C_STAR_TXNACK			((uint32_t)(1<<0))
+#define LPI2C_STDR_DATA(n)			((uint32_t)(((n) & 0xFF) << 0))
+#define LPI2C_SRDR_SOF				((uint32_t)(1<<15))
+#define LPI2C_SRDR_RXEMPTY			((uint32_t)(1<<14))
+#define LPI2C_SRDR_DATA(n)			((uint32_t)(((n) & 0xFF) << 0))
 
-// page 2479
+// 38.3.5.2: page 2422
 #define IMXRT_LPSPI1		(*(IMXRT_REGISTER32_t *)0x40394000)
 #define LPSPI1_VERID			(IMXRT_LPSPI1.offset000)
 #define LPSPI1_PARAM			(IMXRT_LPSPI1.offset004)
@@ -3690,214 +5451,292 @@ typedef struct {
 #define LPSPI4_TDR			(IMXRT_LPSPI4.offset064)
 #define LPSPI4_RSR			(IMXRT_LPSPI4.offset070)
 #define LPSPI4_RDR			(IMXRT_LPSPI4.offset074)
+#define LPSPI_CR_RRF				((uint32_t)(1<<9))
+#define LPSPI_CR_RTF				((uint32_t)(1<<8))
+#define LPSPI_CR_DBGEN				((uint32_t)(1<<3))
+#define LPSPI_CR_DOZEN				((uint32_t)(1<<2))
+#define LPSPI_CR_RST				((uint32_t)(1<<1))
+#define LPSPI_CR_MEN				((uint32_t)(1<<0))
+#define LPSPI_SR_MBF				((uint32_t)(1<<24))
+#define LPSPI_SR_DMF				((uint32_t)(1<<13))
+#define LPSPI_SR_REF				((uint32_t)(1<<12))
+#define LPSPI_SR_TEF				((uint32_t)(1<<11))
+#define LPSPI_SR_TCF				((uint32_t)(1<<10))
+#define LPSPI_SR_FCF				((uint32_t)(1<<9))
+#define LPSPI_SR_WCF				((uint32_t)(1<<8))
+#define LPSPI_SR_RDF				((uint32_t)(1<<1))
+#define LPSPI_SR_TDF				((uint32_t)(1<<0))
+#define LPSPI_IER_DMIE				((uint32_t)(1<<13))
+#define LPSPI_IER_REIE				((uint32_t)(1<<12))
+#define LPSPI_IER_TEIE				((uint32_t)(1<<11))
+#define LPSPI_IER_TCIE				((uint32_t)(1<<10))
+#define LPSPI_IER_FCIE				((uint32_t)(1<<9))
+#define LPSPI_IER_WCIE				((uint32_t)(1<<8))
+#define LPSPI_IER_RDIE				((uint32_t)(1<<1))
+#define LPSPI_IER_TDIE				((uint32_t)(1<<0))
+#define LPSPI_DER_RDDE				((uint32_t)(1<<1))
+#define LPSPI_DER_TDDE				((uint32_t)(1<<0))
+#define LPSPI_CFGR0_RDMO			((uint32_t)(1<<9))
+#define LPSPI_CFGR0_CIRFIFO			((uint32_t)(1<<8))
+#define LPSPI_CFGR0_HRSEL			((uint32_t)(1<<2))
+#define LPSPI_CFGR0_HRPOL			((uint32_t)(1<<1))
+#define LPSPI_CFGR0_HREN			((uint32_t)(1<<0))
+#define LPSPI_CFGR1_PCSCFG			((uint32_t)(1<<27))
+#define LPSPI_CFGR1_OUTCFG			((uint32_t)(1<<26))
+#define LPSPI_CFGR1_PINCFG(n)			((uint32_t)(((n) & 0x03) << 24))
+#define LPSPI_CFGR1_MATCFG(n)			((uint32_t)(((n) & 0x07) << 16))
+#define LPSPI_CFGR1_PCSPOL(n)			((uint32_t)(((n) & 0x0F) << 8))
+#define LPSPI_CFGR1_NOSTALL			((uint32_t)(1<<3))
+#define LPSPI_CFGR1_AUTOPCS			((uint32_t)(1<<2))
+#define LPSPI_CFGR1_SAMPLE			((uint32_t)(1<<1))
+#define LPSPI_CFGR1_MASTER			((uint32_t)(1<<0))
+#define LPSPI_CCR_SCKPCS(n)			((uint32_t)(((n) & 0xFF) << 24))
+#define LPSPI_CCR_PCSSCK(n)			((uint32_t)(((n) & 0xFF) << 16))
+#define LPSPI_CCR_DBT(n)			((uint32_t)(((n) & 0xFF) << 8))
+#define LPSPI_CCR_SCKDIV(n)			((uint32_t)(((n) & 0xFF) << 0))
+#define LPSPI_FCR_RXWATER(n)			((uint32_t)(((n) & 0x0F) << 16))
+#define LPSPI_FCR_TXWATER(n)			((uint32_t)(((n) & 0x0F) << 0))
+#define LPSPI_FSR_RXCOUNT(n)			((uint32_t)(((n) & 0x1F) << 16))
+#define LPSPI_FSR_TXCOUNT(n)			((uint32_t)(((n) & 0x1F) << 0))
+#define LPSPI_TCR_CPOL				((uint32_t)(1<<31))
+#define LPSPI_TCR_CPHA				((uint32_t)(1<<30))
+#define LPSPI_TCR_PRESCALE(n)			((uint32_t)(((n) & 0x07) << 27))
+#define LPSPI_TCR_PCS(n)			((uint32_t)(((n) & 0x03) << 24))
+#define LPSPI_TCR_LSBF				((uint32_t)(1<<23))
+#define LPSPI_TCR_BYSW				((uint32_t)(1<<22))
+#define LPSPI_TCR_CONT				((uint32_t)(1<<21))
+#define LPSPI_TCR_CONTC				((uint32_t)(1<<20))
+#define LPSPI_TCR_RXMSK				((uint32_t)(1<<19))
+#define LPSPI_TCR_TXMSK				((uint32_t)(1<<18))
+#define LPSPI_TCR_WIDTH(n)			((uint32_t)(((n) & 0x03) << 16))
+#define LPSPI_TCR_FRAMESZ(n)			((uint32_t)(((n) & 0xFFF) << 0))
+#define LPSPI_RSR_RXEMPTY			((uint32_t)(1<<1))
+#define LPSPI_RSR_SOF				((uint32_t)(1<<0))
 
-// page 2486
-#define IMXRT_LPUART1		(*(IMXRT_REGISTER32_t *)0x40184000)
-#define LPUART1_VERID			(IMXRT_LPUART1.offset000)
-#define LPUART1_PARAM			(IMXRT_LPUART1.offset004)
-#define LPUART1_GLOBAL			(IMXRT_LPUART1.offset008)
-#define LPUART1_PINCFG			(IMXRT_LPUART1.offset00C)
-#define LPUART1_BAUD			(IMXRT_LPUART1.offset010)
-#define LPUART1_STAT			(IMXRT_LPUART1.offset014)
-#define LPUART1_CTRL			(IMXRT_LPUART1.offset018)
-#define LPUART1_DATA			(IMXRT_LPUART1.offset01C)
-#define LPUART1_MATCH			(IMXRT_LPUART1.offset020)
-#define LPUART1_MODIR			(IMXRT_LPUART1.offset024)
-#define LPUART1_FIFO			(IMXRT_LPUART1.offset028)
-#define LPUART1_WATER			(IMXRT_LPUART1.offset02C)
-#define IMXRT_LPUART2		(*(IMXRT_REGISTER32_t *)0x40188000)
-#define LPUART2_VERID			(IMXRT_LPUART2.offset000)
-#define LPUART2_PARAM			(IMXRT_LPUART2.offset004)
-#define LPUART2_GLOBAL			(IMXRT_LPUART2.offset008)
-#define LPUART2_PINCFG			(IMXRT_LPUART2.offset00C)
-#define LPUART2_BAUD			(IMXRT_LPUART2.offset010)
-#define LPUART2_STAT			(IMXRT_LPUART2.offset014)
-#define LPUART2_CTRL			(IMXRT_LPUART2.offset018)
-#define LPUART2_DATA			(IMXRT_LPUART2.offset01C)
-#define LPUART2_MATCH			(IMXRT_LPUART2.offset020)
-#define LPUART2_MODIR			(IMXRT_LPUART2.offset024)
-#define LPUART2_FIFO			(IMXRT_LPUART2.offset028)
-#define LPUART2_WATER			(IMXRT_LPUART2.offset02C)
-#define IMXRT_LPUART3		(*(IMXRT_REGISTER32_t *)0x4018C000)
-#define LPUART3_VERID			(IMXRT_LPUART3.offset000)
-#define LPUART3_PARAM			(IMXRT_LPUART3.offset004)
-#define LPUART3_GLOBAL			(IMXRT_LPUART3.offset008)
-#define LPUART3_PINCFG			(IMXRT_LPUART3.offset00C)
-#define LPUART3_BAUD			(IMXRT_LPUART3.offset010)
-#define LPUART3_STAT			(IMXRT_LPUART3.offset014)
-#define LPUART3_CTRL			(IMXRT_LPUART3.offset018)
-#define LPUART3_DATA			(IMXRT_LPUART3.offset01C)
-#define LPUART3_MATCH			(IMXRT_LPUART3.offset020)
-#define LPUART3_MODIR			(IMXRT_LPUART3.offset024)
-#define LPUART3_FIFO			(IMXRT_LPUART3.offset028)
-#define LPUART3_WATER			(IMXRT_LPUART3.offset02C)
-#define IMXRT_LPUART4		(*(IMXRT_REGISTER32_t *)0x40190000)
-#define LPUART4_VERID			(IMXRT_LPUART4.offset000)
-#define LPUART4_PARAM			(IMXRT_LPUART4.offset004)
-#define LPUART4_GLOBAL			(IMXRT_LPUART4.offset008)
-#define LPUART4_PINCFG			(IMXRT_LPUART4.offset00C)
-#define LPUART4_BAUD			(IMXRT_LPUART4.offset010)
-#define LPUART4_STAT			(IMXRT_LPUART4.offset014)
-#define LPUART4_CTRL			(IMXRT_LPUART4.offset018)
-#define LPUART4_DATA			(IMXRT_LPUART4.offset01C)
-#define LPUART4_MATCH			(IMXRT_LPUART4.offset020)
-#define LPUART4_MODIR			(IMXRT_LPUART4.offset024)
-#define LPUART4_FIFO			(IMXRT_LPUART4.offset028)
-#define LPUART4_WATER			(IMXRT_LPUART4.offset02C)
-#define IMXRT_LPUART5		(*(IMXRT_REGISTER32_t *)0x40194000)
-#define LPUART5_VERID			(IMXRT_LPUART5.offset000)
-#define LPUART5_PARAM			(IMXRT_LPUART5.offset004)
-#define LPUART5_GLOBAL			(IMXRT_LPUART5.offset008)
-#define LPUART5_PINCFG			(IMXRT_LPUART5.offset00C)
-#define LPUART5_BAUD			(IMXRT_LPUART5.offset010)
-#define LPUART5_STAT			(IMXRT_LPUART5.offset014)
-#define LPUART5_CTRL			(IMXRT_LPUART5.offset018)
-#define LPUART5_DATA			(IMXRT_LPUART5.offset01C)
-#define LPUART5_MATCH			(IMXRT_LPUART5.offset020)
-#define LPUART5_MODIR			(IMXRT_LPUART5.offset024)
-#define LPUART5_FIFO			(IMXRT_LPUART5.offset028)
-#define LPUART5_WATER			(IMXRT_LPUART5.offset02C)
-#define IMXRT_LPUART6		(*(IMXRT_REGISTER32_t *)0x40198000)
-#define LPUART6_VERID			(IMXRT_LPUART6.offset000)
-#define LPUART6_PARAM			(IMXRT_LPUART6.offset004)
-#define LPUART6_GLOBAL			(IMXRT_LPUART6.offset008)
-#define LPUART6_PINCFG			(IMXRT_LPUART6.offset00C)
-#define LPUART6_BAUD			(IMXRT_LPUART6.offset010)
-#define LPUART6_STAT			(IMXRT_LPUART6.offset014)
-#define LPUART6_CTRL			(IMXRT_LPUART6.offset018)
-#define LPUART6_DATA			(IMXRT_LPUART6.offset01C)
-#define LPUART6_MATCH			(IMXRT_LPUART6.offset020)
-#define LPUART6_MODIR			(IMXRT_LPUART6.offset024)
-#define LPUART6_FIFO			(IMXRT_LPUART6.offset028)
-#define LPUART6_WATER			(IMXRT_LPUART6.offset02C)
-#define IMXRT_LPUART7		(*(IMXRT_REGISTER32_t *)0x4019C000)
-#define LPUART7_VERID			(IMXRT_LPUART7.offset000)
-#define LPUART7_PARAM			(IMXRT_LPUART7.offset004)
-#define LPUART7_GLOBAL			(IMXRT_LPUART7.offset008)
-#define LPUART7_PINCFG			(IMXRT_LPUART7.offset00C)
-#define LPUART7_BAUD			(IMXRT_LPUART7.offset010)
-#define LPUART7_STAT			(IMXRT_LPUART7.offset014)
-#define LPUART7_CTRL			(IMXRT_LPUART7.offset018)
-#define LPUART7_DATA			(IMXRT_LPUART7.offset01C)
-#define LPUART7_MATCH			(IMXRT_LPUART7.offset020)
-#define LPUART7_MODIR			(IMXRT_LPUART7.offset024)
-#define LPUART7_FIFO			(IMXRT_LPUART7.offset028)
-#define LPUART7_WATER			(IMXRT_LPUART7.offset02C)
-#define IMXRT_LPUART8		(*(IMXRT_REGISTER32_t *)0x401A0000)
-#define LPUART8_VERID			(IMXRT_LPUART8.offset000)
-#define LPUART8_PARAM			(IMXRT_LPUART8.offset004)
-#define LPUART8_GLOBAL			(IMXRT_LPUART8.offset008)
-#define LPUART8_PINCFG			(IMXRT_LPUART8.offset00C)
-#define LPUART8_BAUD			(IMXRT_LPUART8.offset010)
-#define LPUART8_STAT			(IMXRT_LPUART8.offset014)
-#define LPUART8_CTRL			(IMXRT_LPUART8.offset018)
-#define LPUART8_DATA			(IMXRT_LPUART8.offset01C)
-#define LPUART8_MATCH			(IMXRT_LPUART8.offset020)
-#define LPUART8_MODIR			(IMXRT_LPUART8.offset024)
-#define LPUART8_FIFO			(IMXRT_LPUART8.offset028)
-#define LPUART8_WATER			(IMXRT_LPUART8.offset02C)
-#define LPUART_VERID_MAJOR(n)				((uint32_t)(((n) & 0xFF) << 24))
-#define LPUART_VERID_MINOR(n)				((uint32_t)(((n) & 0xFF) << 16))
-#define LPUART_VERID_FEATURE(n)				((uint32_t)(((n) & 0xFFFF) << 0))
-#define LPUART_PARAM_RXFIFO(n)				((uint32_t)(((n) & 0xFF) << 8))
-#define LPUART_PARAM_TXFIFO(n)				((uint32_t)(((n) & 0xFF) << 0))
-#define LPUART_GLOBAL_RST				((uint32_t)0x00000002)
-#define LPUART_PINCFG_TRGSEL(n)				((uint32_t)(((n) & 0x03) << 0))
-#define LPUART_BAUD_MAEN1				((uint32_t)0x80000000)
-#define LPUART_BAUD_MAEN2				((uint32_t)0x40000000)
-#define LPUART_BAUD_M10					((uint32_t)0x20000000)
-#define LPUART_BAUD_OSR(n)				((uint32_t)(((n) & 0x1F) << 24))
-#define LPUART_BAUD_TDMAE				((uint32_t)0x00800000)
-#define LPUART_BAUD_RDMAE				((uint32_t)0x00200000)
-#define LPUART_BAUD_MATCFG(n)				((uint32_t)(((n) & 0x03) << 18))
-#define LPUART_BAUD_BOTHEDGE				((uint32_t)0x00020000)
-#define LPUART_BAUD_RESYNCDIS				((uint32_t)0x00010000)
-#define LPUART_BAUD_LBKDIE				((uint32_t)0x00008000)
-#define LPUART_BAUD_RXEDGIE				((uint32_t)0x00004000)
-#define LPUART_BAUD_SBNS				((uint32_t)0x00002000)
-#define LPUART_BAUD_SBR(n)				((uint32_t)(((n) & 0x01FFF) << 0))
-#define LPUART_STAT_LBKDIF				((uint32_t)0x80000000)
-#define LPUART_STAT_RXEDGIF				((uint32_t)0x40000000)
-#define LPUART_STAT_MSBF				((uint32_t)0x20000000)
-#define LPUART_STAT_RXINV				((uint32_t)0x10000000)
-#define LPUART_STAT_RWUID				((uint32_t)0x08000000)
-#define LPUART_STAT_BRK13				((uint32_t)0x04000000)
-#define LPUART_STAT_LBKDE				((uint32_t)0x02000000)
-#define LPUART_STAT_RAF					((uint32_t)0x01000000)
-#define LPUART_STAT_TDRE				((uint32_t)0x00800000)
-#define LPUART_STAT_TC					((uint32_t)0x00400000)
-#define LPUART_STAT_RDRF				((uint32_t)0x00200000)
-#define LPUART_STAT_IDLE				((uint32_t)0x00100000)
-#define LPUART_STAT_OR					((uint32_t)0x00080000)
-#define LPUART_STAT_NF					((uint32_t)0x00040000)
-#define LPUART_STAT_FE					((uint32_t)0x00020000)
-#define LPUART_STAT_PF					((uint32_t)0x00010000)
-#define LPUART_STAT_MA1F				((uint32_t)0x00008000)
-#define LPUART_STAT_MA2F				((uint32_t)0x00004000)
-#define LPUART_CTRL_R8T9				((uint32_t)0x80000000)
-#define LPUART_CTRL_R9T8				((uint32_t)0x40000000)
-#define LPUART_CTRL_TXDIR				((uint32_t)0x20000000)
-#define LPUART_CTRL_TXINV				((uint32_t)0x10000000)
-#define LPUART_CTRL_ORIE				((uint32_t)0x08000000)
-#define LPUART_CTRL_NEIE				((uint32_t)0x04000000)
-#define LPUART_CTRL_FEIE				((uint32_t)0x02000000)
-#define LPUART_CTRL_PEIE				((uint32_t)0x01000000)
-#define LPUART_CTRL_TIE					((uint32_t)0x00800000)
-#define LPUART_CTRL_TCIE				((uint32_t)0x00400000)
-#define LPUART_CTRL_RIE					((uint32_t)0x00200000)
-#define LPUART_CTRL_ILIE				((uint32_t)0x00100000)
-#define LPUART_CTRL_TE					((uint32_t)0x00080000)
-#define LPUART_CTRL_RE					((uint32_t)0x00040000)
-#define LPUART_CTRL_RWU					((uint32_t)0x00020000)
-#define LPUART_CTRL_SBK					((uint32_t)0x00010000)
-#define LPUART_CTRL_MA1IE				((uint32_t)0x00008000)
-#define LPUART_CTRL_MA2IE				((uint32_t)0x00004000)
-#define LPUART_CTRL_M7					((uint32_t)0x00000800)
-#define LPUART_CTRL_IDLECFG(n)				((uint32_t)(((n) & 0x07) << 8))
-#define LPUART_CTRL_LOOPS				((uint32_t)0x00000080)
-#define LPUART_CTRL_DOZEEN				((uint32_t)0x00000040)
-#define LPUART_CTRL_RSRC				((uint32_t)0x00000020)
-#define LPUART_CTRL_M					((uint32_t)0x00000010)
-#define LPUART_CTRL_WAKE				((uint32_t)0x00000008)
-#define LPUART_CTRL_ILT					((uint32_t)0x00000004)
-#define LPUART_CTRL_PE					((uint32_t)0x00000002)
-#define LPUART_CTRL_PT					((uint32_t)0x00000001)
-#define LPUART_DATA_NOISY				((uint32_t)0x00008000)
-#define LPUART_DATA_PARITYE				((uint32_t)0x00004000)
-#define LPUART_DATA_FRETSC				((uint32_t)0x00002000)
-#define LPUART_DATA_RXEMPT				((uint32_t)0x00001000)
-#define LPUART_DATA_IDLINE				((uint32_t)0x00000800)
-#define LPUART_MATCH_MA2(n)				((uint32_t)(((n) & 0x3FF) << 16))
-#define LPUART_MATCH_MA1(n)				((uint32_t)(((n) & 0x3FF) << 0))
-#define LPUART_MODIR_IREN				((uint32_t)0x00040000)
-#define LPUART_MODIR_TNP(n)				((uint32_t)(((n) & 0x03) << 16))
-#define LPUART_MODIR_RTSWATER(n)			((uint32_t)(((n) & 0x03) << 8))
-#define LPUART_MODIR_TXCTSSRC				((uint32_t)0x00000020)
-#define LPUART_MODIR_TXCTSC				((uint32_t)0x00000010)
-#define LPUART_MODIR_RXRTSE				((uint32_t)0x00000008)
-#define LPUART_MODIR_TXRTSPOL				((uint32_t)0x00000004)
-#define LPUART_MODIR_TXRTSE				((uint32_t)0x00000002)
-#define LPUART_MODIR_TXCTSE				((uint32_t)0x00000001)
-#define LPUART_FIFO_TXEMPT				((uint32_t)0x00800000)
-#define LPUART_FIFO_RXEMPT				((uint32_t)0x00400000)
-#define LPUART_FIFO_TXOF				((uint32_t)0x00020000)
-#define LPUART_FIFO_RXUF				((uint32_t)0x00010000)
-#define LPUART_FIFO_TXFLUSH				((uint32_t)0x00008000)
-#define LPUART_FIFO_RXFLUSH				((uint32_t)0x00004000)
-#define LPUART_FIFO_RXIDEN(n)				((uint32_t)(((n) & 0x07) << 10))
-#define LPUART_FIFO_TXOFE				((uint32_t)0x00000200)
-#define LPUART_FIFO_RXUFE				((uint32_t)0x00000100)
-#define LPUART_FIFO_TXFE				((uint32_t)0x00000080)
-#define LPUART_FIFO_TXFIFOSIZE(n)			((uint32_t)(((n) & 0x07) << 4))
-#define LPUART_FIFO_RXFE				((uint32_t)0x00000008)
-#define LPUART_FIFO_RXFIFOSIZE(n)			((uint32_t)(((n) & 0x07) << 0))
-#define LPUART_WATER_RXCOUNT(n)				((uint32_t)(((n) & 0x07) << 24))
-#define LPUART_WATER_RXWATER(n)				((uint32_t)(((n) & 0x03) << 16))
-#define LPUART_WATER_TXCOUNT(n)				((uint32_t)(((n) & 0x07) << 8))
-#define LPUART_WATER_TXWATER(n)				((uint32_t)(((n) & 0x03) << 0))
+// 39.3.1.1: page 2466
+typedef struct {
+	const uint32_t VERID;
+	const uint32_t PARAM;
+	volatile uint32_t GLOBAL;
+	volatile uint32_t PINCFG;
+	volatile uint32_t BAUD;
+	volatile uint32_t STAT;
+	volatile uint32_t CTRL;
+	volatile uint32_t DATA;
+	volatile uint32_t MATCH;
+	volatile uint32_t MODIR;
+	volatile uint32_t FIFO;
+	volatile uint32_t WATER;
+} IMXRT_LPUART_t;
+#define IMXRT_LPUART1		(*(IMXRT_LPUART_t *)0x40184000)
+#define LPUART1_VERID			(IMXRT_LPUART1.VERID)
+#define LPUART1_PARAM			(IMXRT_LPUART1.PARAM)
+#define LPUART1_GLOBAL			(IMXRT_LPUART1.GLOBAL)
+#define LPUART1_PINCFG			(IMXRT_LPUART1.PINCFG)
+#define LPUART1_BAUD			(IMXRT_LPUART1.BAUD)
+#define LPUART1_STAT			(IMXRT_LPUART1.STAT)
+#define LPUART1_CTRL			(IMXRT_LPUART1.CTRL)
+#define LPUART1_DATA			(IMXRT_LPUART1.DATA)
+#define LPUART1_MATCH			(IMXRT_LPUART1.MATCH)
+#define LPUART1_MODIR			(IMXRT_LPUART1.MODIR)
+#define LPUART1_FIFO			(IMXRT_LPUART1.FIFO)
+#define LPUART1_WATER			(IMXRT_LPUART1.WATER)
+#define IMXRT_LPUART2		(*(IMXRT_LPUART_t *)0x40188000)
+#define LPUART2_VERID			(IMXRT_LPUART2.VERID)
+#define LPUART2_PARAM			(IMXRT_LPUART2.PARAM)
+#define LPUART2_GLOBAL			(IMXRT_LPUART2.GLOBAL)
+#define LPUART2_PINCFG			(IMXRT_LPUART2.PINCFG)
+#define LPUART2_BAUD			(IMXRT_LPUART2.BAUD)
+#define LPUART2_STAT			(IMXRT_LPUART2.STAT)
+#define LPUART2_CTRL			(IMXRT_LPUART2.CTRL)
+#define LPUART2_DATA			(IMXRT_LPUART2.DATA)
+#define LPUART2_MATCH			(IMXRT_LPUART2.MATCH)
+#define LPUART2_MODIR			(IMXRT_LPUART2.MODIR)
+#define LPUART2_FIFO			(IMXRT_LPUART2.FIFO)
+#define LPUART2_WATER			(IMXRT_LPUART2.WATER)
+#define IMXRT_LPUART3		(*(IMXRT_LPUART_t *)0x4018C000)
+#define LPUART3_VERID			(IMXRT_LPUART3.VERID)
+#define LPUART3_PARAM			(IMXRT_LPUART3.PARAM)
+#define LPUART3_GLOBAL			(IMXRT_LPUART3.GLOBAL)
+#define LPUART3_PINCFG			(IMXRT_LPUART3.PINCFG)
+#define LPUART3_BAUD			(IMXRT_LPUART3.BAUD)
+#define LPUART3_STAT			(IMXRT_LPUART3.STAT)
+#define LPUART3_CTRL			(IMXRT_LPUART3.CTRL)
+#define LPUART3_DATA			(IMXRT_LPUART3.DATA)
+#define LPUART3_MATCH			(IMXRT_LPUART3.MATCH)
+#define LPUART3_MODIR			(IMXRT_LPUART3.MODIR)
+#define LPUART3_FIFO			(IMXRT_LPUART3.FIFO)
+#define LPUART3_WATER			(IMXRT_LPUART3.WATER)
+#define IMXRT_LPUART4		(*(IMXRT_LPUART_t *)0x40190000)
+#define LPUART4_VERID			(IMXRT_LPUART4.VERID)
+#define LPUART4_PARAM			(IMXRT_LPUART4.PARAM)
+#define LPUART4_GLOBAL			(IMXRT_LPUART4.GLOBAL)
+#define LPUART4_PINCFG			(IMXRT_LPUART4.PINCFG)
+#define LPUART4_BAUD			(IMXRT_LPUART4.BAUD)
+#define LPUART4_STAT			(IMXRT_LPUART4.STAT)
+#define LPUART4_CTRL			(IMXRT_LPUART4.CTRL)
+#define LPUART4_DATA			(IMXRT_LPUART4.DATA)
+#define LPUART4_MATCH			(IMXRT_LPUART4.MATCH)
+#define LPUART4_MODIR			(IMXRT_LPUART4.MODIR)
+#define LPUART4_FIFO			(IMXRT_LPUART4.FIFO)
+#define LPUART4_WATER			(IMXRT_LPUART4.WATER)
+#define IMXRT_LPUART5		(*(IMXRT_LPUART_t *)0x40194000)
+#define LPUART5_VERID			(IMXRT_LPUART5.VERID)
+#define LPUART5_PARAM			(IMXRT_LPUART5.PARAM)
+#define LPUART5_GLOBAL			(IMXRT_LPUART5.GLOBAL)
+#define LPUART5_PINCFG			(IMXRT_LPUART5.PINCFG)
+#define LPUART5_BAUD			(IMXRT_LPUART5.BAUD)
+#define LPUART5_STAT			(IMXRT_LPUART5.STAT)
+#define LPUART5_CTRL			(IMXRT_LPUART5.CTRL)
+#define LPUART5_DATA			(IMXRT_LPUART5.DATA)
+#define LPUART5_MATCH			(IMXRT_LPUART5.MATCH)
+#define LPUART5_MODIR			(IMXRT_LPUART5.MODIR)
+#define LPUART5_FIFO			(IMXRT_LPUART5.FIFO)
+#define LPUART5_WATER			(IMXRT_LPUART5.WATER)
+#define IMXRT_LPUART6		(*(IMXRT_LPUART_t *)0x40198000)
+#define LPUART6_VERID			(IMXRT_LPUART6.VERID)
+#define LPUART6_PARAM			(IMXRT_LPUART6.PARAM)
+#define LPUART6_GLOBAL			(IMXRT_LPUART6.GLOBAL)
+#define LPUART6_PINCFG			(IMXRT_LPUART6.PINCFG)
+#define LPUART6_BAUD			(IMXRT_LPUART6.BAUD)
+#define LPUART6_STAT			(IMXRT_LPUART6.STAT)
+#define LPUART6_CTRL			(IMXRT_LPUART6.CTRL)
+#define LPUART6_DATA			(IMXRT_LPUART6.DATA)
+#define LPUART6_MATCH			(IMXRT_LPUART6.MATCH)
+#define LPUART6_MODIR			(IMXRT_LPUART6.MODIR)
+#define LPUART6_FIFO			(IMXRT_LPUART6.FIFO)
+#define LPUART6_WATER			(IMXRT_LPUART6.WATER)
+#define IMXRT_LPUART7		(*(IMXRT_LPUART_t *)0x4019C000)
+#define LPUART7_VERID			(IMXRT_LPUART7.VERID)
+#define LPUART7_PARAM			(IMXRT_LPUART7.PARAM)
+#define LPUART7_GLOBAL			(IMXRT_LPUART7.GLOBAL)
+#define LPUART7_PINCFG			(IMXRT_LPUART7.PINCFG)
+#define LPUART7_BAUD			(IMXRT_LPUART7.BAUD)
+#define LPUART7_STAT			(IMXRT_LPUART7.STAT)
+#define LPUART7_CTRL			(IMXRT_LPUART7.CTRL)
+#define LPUART7_DATA			(IMXRT_LPUART7.DATA)
+#define LPUART7_MATCH			(IMXRT_LPUART7.MATCH)
+#define LPUART7_MODIR			(IMXRT_LPUART7.MODIR)
+#define LPUART7_FIFO			(IMXRT_LPUART7.FIFO)
+#define LPUART7_WATER			(IMXRT_LPUART7.WATER)
+#define IMXRT_LPUART8		(*(IMXRT_LPUART_t *)0x401A0000)
+#define LPUART8_VERID			(IMXRT_LPUART8.VERID)
+#define LPUART8_PARAM			(IMXRT_LPUART8.PARAM)
+#define LPUART8_GLOBAL			(IMXRT_LPUART8.GLOBAL)
+#define LPUART8_PINCFG			(IMXRT_LPUART8.PINCFG)
+#define LPUART8_BAUD			(IMXRT_LPUART8.BAUD)
+#define LPUART8_STAT			(IMXRT_LPUART8.STAT)
+#define LPUART8_CTRL			(IMXRT_LPUART8.CTRL)
+#define LPUART8_DATA			(IMXRT_LPUART8.DATA)
+#define LPUART8_MATCH			(IMXRT_LPUART8.MATCH)
+#define LPUART8_MODIR			(IMXRT_LPUART8.MODIR)
+#define LPUART8_FIFO			(IMXRT_LPUART8.FIFO)
+#define LPUART8_WATER			(IMXRT_LPUART8.WATER)
+#define LPUART_VERID_MAJOR(n)			((uint32_t)(((n) & 0xFF) << 24))
+#define LPUART_VERID_MINOR(n)			((uint32_t)(((n) & 0xFF) << 16))
+#define LPUART_VERID_FEATURE(n)			((uint32_t)(((n) & 0xFFFF) << 0))
+#define LPUART_PARAM_RXFIFO(n)			((uint32_t)(((n) & 0xFF) << 8))
+#define LPUART_PARAM_TXFIFO(n)			((uint32_t)(((n) & 0xFF) << 0))
+#define LPUART_GLOBAL_RST			((uint32_t)(1<<1))
+#define LPUART_PINCFG_TRGSEL(n)			((uint32_t)(((n) & 0x03) << 0))
+#define LPUART_BAUD_MAEN1			((uint32_t)(1<<31))
+#define LPUART_BAUD_MAEN2			((uint32_t)(1<<30))
+#define LPUART_BAUD_M10				((uint32_t)(1<<29))
+#define LPUART_BAUD_OSR(n)			((uint32_t)(((n) & 0x1F) << 24))
+#define LPUART_BAUD_TDMAE			((uint32_t)(1<<23))
+#define LPUART_BAUD_RDMAE			((uint32_t)(1<<21))
+#define LPUART_BAUD_MATCFG(n)			((uint32_t)(((n) & 0x03) << 18))
+#define LPUART_BAUD_BOTHEDGE			((uint32_t)(1<<17))
+#define LPUART_BAUD_RESYNCDIS			((uint32_t)(1<<16))
+#define LPUART_BAUD_LBKDIE			((uint32_t)(1<<15))
+#define LPUART_BAUD_RXEDGIE			((uint32_t)(1<<14))
+#define LPUART_BAUD_SBNS			((uint32_t)(1<<13))
+#define LPUART_BAUD_SBR(n)			((uint32_t)(((n) & 0x01FFF) << 0))
+#define LPUART_STAT_LBKDIF			((uint32_t)(1<<31))
+#define LPUART_STAT_RXEDGIF			((uint32_t)(1<<30))
+#define LPUART_STAT_MSBF			((uint32_t)(1<<29))
+#define LPUART_STAT_RXINV			((uint32_t)(1<<28))
+#define LPUART_STAT_RWUID			((uint32_t)(1<<27))
+#define LPUART_STAT_BRK13			((uint32_t)(1<<26))
+#define LPUART_STAT_LBKDE			((uint32_t)(1<<25))
+#define LPUART_STAT_RAF				((uint32_t)(1<<24))
+#define LPUART_STAT_TDRE			((uint32_t)(1<<23))
+#define LPUART_STAT_TC				((uint32_t)(1<<22))
+#define LPUART_STAT_RDRF			((uint32_t)(1<<21))
+#define LPUART_STAT_IDLE			((uint32_t)(1<<20))
+#define LPUART_STAT_OR				((uint32_t)(1<<19))
+#define LPUART_STAT_NF				((uint32_t)(1<<18))
+#define LPUART_STAT_FE				((uint32_t)(1<<17))
+#define LPUART_STAT_PF				((uint32_t)(1<<16))
+#define LPUART_STAT_MA1F			((uint32_t)(1<<15))
+#define LPUART_STAT_MA2F			((uint32_t)(1<<14))
+#define LPUART_CTRL_R8T9			((uint32_t)(1<<31))
+#define LPUART_CTRL_R9T8			((uint32_t)(1<<30))
+#define LPUART_CTRL_TXDIR			((uint32_t)(1<<29))
+#define LPUART_CTRL_TXINV			((uint32_t)(1<<28))
+#define LPUART_CTRL_ORIE			((uint32_t)(1<<27))
+#define LPUART_CTRL_NEIE			((uint32_t)(1<<26))
+#define LPUART_CTRL_FEIE			((uint32_t)(1<<25))
+#define LPUART_CTRL_PEIE			((uint32_t)(1<<24))
+#define LPUART_CTRL_TIE				((uint32_t)(1<<23))
+#define LPUART_CTRL_TCIE			((uint32_t)(1<<22))
+#define LPUART_CTRL_RIE				((uint32_t)(1<<21))
+#define LPUART_CTRL_ILIE			((uint32_t)(1<<20))
+#define LPUART_CTRL_TE				((uint32_t)(1<<19))
+#define LPUART_CTRL_RE				((uint32_t)(1<<18))
+#define LPUART_CTRL_RWU				((uint32_t)(1<<17))
+#define LPUART_CTRL_SBK				((uint32_t)(1<<16))
+#define LPUART_CTRL_MA1IE			((uint32_t)(1<<15))
+#define LPUART_CTRL_MA2IE			((uint32_t)(1<<14))
+#define LPUART_CTRL_M7				((uint32_t)(1<<11))
+#define LPUART_CTRL_IDLECFG(n)			((uint32_t)(((n) & 0x07) << 8))
+#define LPUART_CTRL_LOOPS			((uint32_t)(1<<7))
+#define LPUART_CTRL_DOZEEN			((uint32_t)(1<<6))
+#define LPUART_CTRL_RSRC			((uint32_t)(1<<5))
+#define LPUART_CTRL_M				((uint32_t)(1<<4))
+#define LPUART_CTRL_WAKE			((uint32_t)(1<<3))
+#define LPUART_CTRL_ILT				((uint32_t)(1<<2))
+#define LPUART_CTRL_PE				((uint32_t)(1<<1))
+#define LPUART_CTRL_PT				((uint32_t)(1<<0))
+#define LPUART_DATA_NOISY			((uint32_t)(1<<15))
+#define LPUART_DATA_PARITYE			((uint32_t)(1<<14))
+#define LPUART_DATA_FRETSC			((uint32_t)(1<<13))
+#define LPUART_DATA_RXEMPT			((uint32_t)(1<<12))
+#define LPUART_DATA_IDLINE			((uint32_t)(1<<11))
+#define LPUART_MATCH_MA2(n)			((uint32_t)(((n) & 0x3FF) << 16))
+#define LPUART_MATCH_MA1(n)			((uint32_t)(((n) & 0x3FF) << 0))
+#define LPUART_MODIR_IREN			((uint32_t)(1<<18))
+#define LPUART_MODIR_TNP(n)			((uint32_t)(((n) & 0x03) << 16))
+#define LPUART_MODIR_RTSWATER(n)		((uint32_t)(((n) & 0x03) << 8))
+#define LPUART_MODIR_TXCTSSRC			((uint32_t)(1<<5))
+#define LPUART_MODIR_TXCTSC			((uint32_t)(1<<4))
+#define LPUART_MODIR_RXRTSE			((uint32_t)(1<<3))
+#define LPUART_MODIR_TXRTSPOL			((uint32_t)(1<<2))
+#define LPUART_MODIR_TXRTSE			((uint32_t)(1<<1))
+#define LPUART_MODIR_TXCTSE			((uint32_t)(1<<0))
+#define LPUART_FIFO_TXEMPT			((uint32_t)(1<<23))
+#define LPUART_FIFO_RXEMPT			((uint32_t)(1<<22))
+#define LPUART_FIFO_TXOF			((uint32_t)(1<<17))
+#define LPUART_FIFO_RXUF			((uint32_t)(1<<16))
+#define LPUART_FIFO_TXFLUSH			((uint32_t)(1<<15))
+#define LPUART_FIFO_RXFLUSH			((uint32_t)(1<<14))
+#define LPUART_FIFO_RXIDEN(n)			((uint32_t)(((n) & 0x07) << 10))
+#define LPUART_FIFO_TXOFE			((uint32_t)(1<<9))
+#define LPUART_FIFO_RXUFE			((uint32_t)(1<<8))
+#define LPUART_FIFO_TXFE			((uint32_t)(1<<7))
+#define LPUART_FIFO_TXFIFOSIZE(n)		((uint32_t)(((n) & 0x07) << 4))
+#define LPUART_FIFO_RXFE			((uint32_t)(1<<3))
+#define LPUART_FIFO_RXFIFOSIZE(n)		((uint32_t)(((n) & 0x07) << 0))
+#define LPUART_WATER_RXCOUNT(n)			((uint32_t)(((n) & 0x07) << 24))
+#define LPUART_WATER_RXWATER(n)			((uint32_t)(((n) & 0x03) << 16))
+#define LPUART_WATER_TXCOUNT(n)			((uint32_t)(((n) & 0x07) << 8))
+#define LPUART_WATER_TXWATER(n)			((uint32_t)(((n) & 0x03) << 0))
 
+// 40.4: page 2495
 
-// page 2558
+// 41.3: page 2498  TODO...
+
+// 42.5.1.1: page 2509
 #define IMXRT_OCOTP		(*(IMXRT_REGISTER32_t *)0x401F4000)
 #define HW_OCOTP_CTRL			(IMXRT_OCOTP.offset000)
 #define HW_OCOTP_CTRL_SET		(IMXRT_OCOTP.offset004)
@@ -3914,6 +5753,26 @@ typedef struct {
 #define HW_OCOTP_SCS_TOG		(IMXRT_OCOTP.offset06C)
 #define HW_OCOTP_VERSION		(IMXRT_OCOTP.offset090)
 #define HW_OCOTP_TIMING2		(IMXRT_OCOTP.offset100)
+#define HW_OCOTP_CTRL_WR_UNLOCK(n)		((uint32_t)(((n) & 0xFFFF) << 16))
+#define HW_OCOTP_CTRL_RELOAD_SHADOWS		((uint32_t)(1<<10))
+#define HW_OCOTP_CTRL_ERROR			((uint32_t)(1<<9))
+#define HW_OCOTP_CTRL_BUSY			((uint32_t)(1<<8))
+#define HW_OCOTP_CTRL_ADDR(n)			((uint32_t)(((n) & 0x3F) << 0))
+#define HW_OCOTP_TIMING_WAIT(n)			((uint32_t)(((n) & 0x3F) << 22))
+#define HW_OCOTP_TIMING_STROBE_READ(n)		((uint32_t)(((n) & 0x3F) << 16))
+#define HW_OCOTP_TIMING_RELAX(n)		((uint32_t)(((n) & 0x0F) << 12))
+#define HW_OCOTP_TIMING_STROBE_PROG(n)		((uint32_t)(((n) & 0xFFF) << 0))
+#define HW_OCOTP_READ_CTRL_READ_FUSE		((uint32_t)(1<<0))
+#define HW_OCOTP_SW_STICKY_JTAG_BLOCK_RELEASE	((uint32_t)(1<<4))
+#define HW_OCOTP_SW_STICKY_BLOCK_ROM_PART	((uint32_t)(1<<3))
+#define HW_OCOTP_SW_STICKY_FIELD_RETURN_LOCK	((uint32_t)(1<<2))
+#define HW_OCOTP_SW_STICKY_SRK_REVOKE_LOCK	((uint32_t)(1<<1))
+#define HW_OCOTP_SW_STICKY_BLOCK_DTCP_KEY	((uint32_t)(1<<0))
+#define HW_OCOTP_SCS_LOCK			((uint32_t)(1<<31))
+#define HW_OCOTP_SCS_HAB_JDE			((uint32_t)(1<<0))
+#define HW_OCOTP_TIMING2_RELAX1(n)		((uint32_t)(((n) & 0x7F) << 24))
+#define HW_OCOTP_TIMING2_RELAX_READ(n)		((uint32_t)(((n) & 0x3F) << 16))
+#define HW_OCOTP_TIMING2_RELAX_PROG(n)		((uint32_t)(((n) & 0xFFF) << 0))
 #define IMXRT_OCOTP_VALUE	(*(IMXRT_REGISTER32_t *)0x401F4400)
 #define HW_OCOTP_LOCK			(IMXRT_OCOTP_VALUE.offset000)
 #define HW_OCOTP_CFG0			(IMXRT_OCOTP_VALUE.offset010)
@@ -3943,7 +5802,8 @@ typedef struct {
 #define HW_OCOTP_SJC_RESP1		(IMXRT_OCOTP_VALUE.offset210)
 #define HW_OCOTP_MAC0			(IMXRT_OCOTP_VALUE.offset220)
 #define HW_OCOTP_MAC1			(IMXRT_OCOTP_VALUE.offset230)
-#define HW_OCOTP_GP3			(IMXRT_OCOTP_VALUE.offset240)
+#define HW_OCOTP_MAC2			(IMXRT_OCOTP_VALUE.offset240)
+#define HW_OCOTP_GP3			(IMXRT_OCOTP_VALUE.offset250)
 #define HW_OCOTP_GP1			(IMXRT_OCOTP_VALUE.offset260)
 #define HW_OCOTP_GP2			(IMXRT_OCOTP_VALUE.offset270)
 #define HW_OCOTP_SW_GP1			(IMXRT_OCOTP_VALUE.offset280)
@@ -3955,11 +5815,18 @@ typedef struct {
 #define HW_OCOTP_MISC_CONF1		(IMXRT_OCOTP_VALUE.offset2E0)
 #define HW_OCOTP_SRK_REVOKE		(IMXRT_OCOTP_VALUE.offset2F0)
 
-// page 2631
+// 44.8.1: page 2583
 #define IMXRT_PIT		(*(IMXRT_REGISTER32_t *)0x40084000)
 #define PIT_MCR				(IMXRT_PIT.offset000)
 #define PIT_LTMR64H			(IMXRT_PIT.offset0E0)
 #define PIT_LTMR64L			(IMXRT_PIT.offset0E4)
+typedef struct {
+	volatile uint32_t LDVAL;
+	volatile uint32_t CVAL;
+	volatile uint32_t TCTRL;
+	volatile uint32_t TFLG;
+} IMXRT_PIT_CHANNEL_t;
+#define IMXRT_PIT_CHANNELS		((IMXRT_PIT_CHANNEL_t *)(&(IMXRT_PIT.offset100)))
 #define PIT_LDVAL0			(IMXRT_PIT.offset100)
 #define PIT_CVAL0			(IMXRT_PIT.offset104)
 #define PIT_TCTRL0			(IMXRT_PIT.offset108)
@@ -3976,8 +5843,14 @@ typedef struct {
 #define PIT_CVAL3			(IMXRT_PIT.offset134)
 #define PIT_TCTRL3			(IMXRT_PIT.offset138)
 #define PIT_TFLG3			(IMXRT_PIT.offset13C)
+#define PIT_MCR_MDIS				((uint32_t)(1<<1))
+#define PIT_MCR_FRZ				((uint32_t)(1<<0))
+#define PIT_TCTRL_CHN				((uint32_t)(1<<2))
+#define PIT_TCTRL_TIE				((uint32_t)(1<<1))
+#define PIT_TCTRL_TEN				((uint32_t)(1<<0))
+#define PIT_TFLG_TIF				((uint32_t)(1<<0))
 
-// page 2646
+// 45.7: page 2598
 #define IMXRT_PMU		(*(IMXRT_REGISTER32_t *)0x400D8000)
 #define PMU_REG_1P1			(IMXRT_PMU.offset110)
 #define PMU_REG_1P1_SET			(IMXRT_PMU.offset114)
@@ -4007,806 +5880,417 @@ typedef struct {
 #define PMU_MISC2_SET			(IMXRT_PMU.offset174)
 #define PMU_MISC2_CLR			(IMXRT_PMU.offset178)
 #define PMU_MISC2_TOG			(IMXRT_PMU.offset17C)
+#define PMU_REG_1P1_SELREF_WEAK_LINREG		((uint32_t)(1<<19))
+#define PMU_REG_1P1_ENABLE_WEAK_LINREG		((uint32_t)(1<<18))
+#define PMU_REG_1P1_OK_VDD1P1			((uint32_t)(1<<17))
+#define PMU_REG_1P1_BO_VDD1P1			((uint32_t)(1<<16))
+#define PMU_REG_1P1_OUTPUT_TRG(n)		((uint32_t)(((n) & 0x0F) << 8))
+#define PMU_REG_1P1_BO_OFFSET(n)		((uint32_t)(((n) & 0x07) << 4))
+#define PMU_REG_1P1_ENABLE_PULLDOWN		((uint32_t)(1<<3))
+#define PMU_REG_1P1_ENABLE_ILIMIT		((uint32_t)(1<<2))
+#define PMU_REG_1P1_ENABLE_BO			((uint32_t)(1<<1))
+#define PMU_REG_1P1_ENABLE_LINREG		((uint32_t)(1<<0))
+#define PMU_REG_3P0_OK_VDD3P0			((uint32_t)(1<<17))
+#define PMU_REG_3P0_BO_VDD3P0			((uint32_t)(1<<16))
+#define PMU_REG_3P0_OUTPUT_TRG(n)		((uint32_t)(((n) & 0x1F) << 8))
+#define PMU_REG_3P0_VBUS_SEL			((uint32_t)(1<<7))
+#define PMU_REG_3P0_BO_OFFSET(n)		((uint32_t)(((n) & 0x07) << 4))
+#define PMU_REG_3P0_ENABLE_ILIMIT		((uint32_t)(1<<2))
+#define PMU_REG_3P0_ENABLE_BO			((uint32_t)(1<<1))
+#define PMU_REG_3P0_ENABLE_LINREG		((uint32_t)(1<<0))
+#define PMU_REG_2P5_ENABLE_WEAK_LINREG		((uint32_t)(1<<18))
+#define PMU_REG_2P5_OK_VDD2P5			((uint32_t)(1<<17))
+#define PMU_REG_2P5_BO_VDD2P5			((uint32_t)(1<<16))
+#define PMU_REG_2P5_OUTPUT_TRG(n)		((uint32_t)(((n) & 0x0F) << 8))
+#define PMU_REG_2P5_BO_OFFSET(n)		((uint32_t)(((n) & 0x07) << 4))
+#define PMU_REG_2P5_ENABLE_PULLDOWN		((uint32_t)(1<<3))
+#define PMU_REG_2P5_ENABLE_ILIMIT		((uint32_t)(1<<2))
+#define PMU_REG_2P5_ENABLE_BO			((uint32_t)(1<<1))
+#define PMU_REG_2P5_ENABLE_LINREG		((uint32_t)(1<<0))
+#define PMU_REG_CORE_FET_ODRIVE			((uint32_t)(1<<29))
+#define PMU_REG_CORE_RAMP_RATE(n)		((uint32_t)(((n) & 0x03) << 27))
+#define PMU_REG_CORE_REG2_ADJ(n)		((uint32_t)(((n) & 0x0F) << 23))
+#define PMU_REG_CORE_REG2_TARG(n)		((uint32_t)(((n) & 0x1F) << 18))
+#define PMU_REG_CORE_REG1_ADJ(n)		((uint32_t)(((n) & 0x0F) << 14))
+#define PMU_REG_CORE_REG1_TARG(n)		((uint32_t)(((n) & 0x1F) << 9))
+#define PMU_REG_CORE_REG0_ADJ(n)		((uint32_t)(((n) & 0x0F) << 5))
+#define PMU_REG_CORE_REG0_TARG(n)		((uint32_t)(((n) & 0x1F) << 0))
+#define PMU_MISC0_VID_PLL_PREDIV		((uint32_t)(1<<31))
+#define PMU_MISC0_XTAL_24M_PWD			((uint32_t)(1<<30))
+#define PMU_MISC0_RTC_XTAL_SOURCE		((uint32_t)(1<<29))
+#define PMU_MISC0_CLKGATE_DELAY(n)		((uint32_t)(((n) & 0x07) << 26))
+#define PMU_MISC0_CLKGATE_CTRL			((uint32_t)(1<<25))
+#define PMU_MISC0_OSC_XTALOK_EN			((uint32_t)(1<<16))
+#define PMU_MISC0_OSC_XTALOK			((uint32_t)(1<<15))
+#define PMU_MISC0_OSC_I(n)			((uint32_t)(((n) & 0x03) << 13))
+#define PMU_MISC0_DISCON_HIGH_SNVS		((uint32_t)(1<<12))
+#define PMU_MISC0_STOP_MODE_CONFIG(n)		((uint32_t)(((n) & 0x03) << 10))
+#define PMU_MISC0_REFTOP_VBGUP			((uint32_t)(1<<7))
+#define PMU_MISC0_REFTOP_VBGADJ(n)		((uint32_t)(((n) & 0x07) << 4))
+#define PMU_MISC0_REFTOP_SELFBIASOFF		((uint32_t)(1<<3))
+#define PMU_MISC0_REFTOP_PWD			((uint32_t)(1<<0))
+#define PMU_MISC1_IRQ_DIG_BO			((uint32_t)(1<<31))
+#define PMU_MISC1_IRQ_ANA_BO			((uint32_t)(1<<30))
+#define PMU_MISC1_IRQ_TEMPHIGH			((uint32_t)(1<<29))
+#define PMU_MISC1_IRQ_TEMPLOW			((uint32_t)(1<<28))
+#define PMU_MISC1_IRQ_TEMPPANIC			((uint32_t)(1<<27))
+#define PMU_MISC1_PFD_528_AUTOGATE_EN		((uint32_t)(1<<17))
+#define PMU_MISC1_PFD_480_AUTOGATE_EN		((uint32_t)(1<<16))
+#define PMU_MISC1_LVDSCLK2_IBEN			((uint32_t)(1<<13))
+#define PMU_MISC1_LVDSCLK1_IBEN			((uint32_t)(1<<12))
+#define PMU_MISC1_LVDSCLK2_OBEN			((uint32_t)(1<<11))
+#define PMU_MISC1_LVDSCLK1_OBEN			((uint32_t)(1<<10))
+#define PMU_MISC1_LVDS2_CLK_SEL(n)		((uint32_t)(((n) & 0x1F) << 5))
+#define PMU_MISC1_LVDS1_CLK_SEL(n)		((uint32_t)(((n) & 0x1F) << 0))
+#define PMU_MISC2_VIDEO_DIV(n)			((uint32_t)(((n) & 0x03) << 30))
+#define PMU_MISC2_REG2_STEP_TIME(n)		((uint32_t)(((n) & 0x03) << 28))
+#define PMU_MISC2_REG1_STEP_TIME(n)		((uint32_t)(((n) & 0x03) << 26))
+#define PMU_MISC2_REG0_STEP_TIME(n)		((uint32_t)(((n) & 0x03) << 24))
+#define PMU_MISC2_AUDIO_DIV_MSB			((uint32_t)(1<<23))
+#define PMU_MISC2_REG2_OK			((uint32_t)(1<<22))
+#define PMU_MISC2_REG2_ENABLE_BO		((uint32_t)(1<<21))
+#define PMU_MISC2_REG2_BO_STATUS		((uint32_t)(1<<19))
+#define PMU_MISC2_REG2_BO_OFFSET(n)		((uint32_t)(((n) & 0x07) << 16))
+#define PMU_MISC2_AUDIO_DIV_LSB			((uint32_t)(1<<15))
+#define PMU_MISC2_REG1_ENABLE_BO		((uint32_t)(1<<13))
+#define PMU_MISC2_REG1_BO_STATUS		((uint32_t)(1<<11))
+#define PMU_MISC2_REG1_BO_OFFSET(n)		((uint32_t)(((n) & 0x07) << 8))
+#define PMU_MISC2_PLL3_DISABLE			((uint32_t)(1<<7))
+#define PMU_MISC2_REG0_ENABLE_BO		((uint32_t)(1<<5))
+#define PMU_MISC2_REG0_BO_STATUS		((uint32_t)(1<<3))
+#define PMU_MISC2_REG0_BO_OFFSET(n)		((uint32_t)(((n) & 0x07) << 0))
 
-// page 2728
+// 46.7: page 2656
 #define IMXRT_PXP		(*(IMXRT_REGISTER32_t *)0x402B4000)
-#define PXP_HW_PXP_CTRL
-#define PXP_HW_PXP_CTRL_SET
-#define PXP_HW_PXP_CTRL_CLR
-#define PXP_HW_PXP_CTRL_TOG
-#define PXP_HW_PXP_STAT
-#define PXP_HW_PXP_STAT_SET
-#define PXP_HW_PXP_STAT_CLR
-#define PXP_HW_PXP_STAT_TOG
-#define PXP_HW_PXP_OUT_CTRL
-#define PXP_HW_PXP_OUT_CTRL_SET
-#define PXP_HW_PXP_OUT_CTRL_CLR
-#define PXP_HW_PXP_OUT_CTRL_TOG
-#define PXP_HW_PXP_OUT_BUF
-#define PXP_HW_PXP_OUT_BUF2
-#define PXP_HW_PXP_OUT_PITCH
-#define PXP_HW_PXP_OUT_LRC
-#define PXP_HW_PXP_OUT_PS_ULC
-#define PXP_HW_PXP_OUT_PS_LRC
-#define PXP_HW_PXP_OUT_AS_ULC
-#define PXP_HW_PXP_OUT_AS_LRC
-#define PXP_HW_PXP_PS_CTRL
-#define PXP_HW_PXP_PS_CTRL_SET
-#define PXP_HW_PXP_PS_CTRL_CLR
-#define PXP_HW_PXP_PS_CTRL_TOG
-#define PXP_HW_PXP_PS_BUF
-#define PXP_HW_PXP_PS_UBUF
-#define PXP_HW_PXP_PS_VBUF
-#define PXP_HW_PXP_PS_PITCH
-#define PXP_HW_PXP_PS_BACKGROUND_0
-#define PXP_HW_PXP_PS_SCALE
-#define PXP_HW_PXP_PS_OFFSET
-#define PXP_HW_PXP_PS_CLRKEYLOW_0
-#define PXP_HW_PXP_PS_CLRKEYHIGH_0
-#define PXP_HW_PXP_AS_CTRL
-#define PXP_HW_PXP_AS_BUF
-#define PXP_HW_PXP_AS_PITCH
-#define PXP_HW_PXP_AS_CLRKEYLOW_0
-#define PXP_HW_PXP_AS_CLRKEYHIGH_0
-#define PXP_HW_PXP_CSC1_COEF0
-#define PXP_HW_PXP_CSC1_COEF1
-#define PXP_HW_PXP_CSC1_COEF2
-#define PXP_HW_PXP_CSC2_CTRL
-#define PXP_HW_PXP_CSC2_COEF0
-#define PXP_HW_PXP_CSC2_COEF1
-#define PXP_HW_PXP_CSC2_COEF2
-#define PXP_HW_PXP_CSC2_COEF3
-#define PXP_HW_PXP_CSC2_COEF4
-#define PXP_HW_PXP_CSC2_COEF5
-#define PXP_HW_PXP_LUT_CTRL
-#define PXP_HW_PXP_LUT_ADDR
-#define PXP_HW_PXP_LUT_DATA
-#define PXP_HW_PXP_LUT_EXTMEM
-#define PXP_HW_PXP_CFA
-#define PXP_HW_PXP_ALPHA_A_CTRL
-#define PXP_HW_PXP_PS_BACKGROUND_1
-#define PXP_HW_PXP_PS_CLRKEYLOW_1
-#define PXP_HW_PXP_PS_CLRKEYHIGH_1
-#define PXP_HW_PXP_AS_CLRKEYLOW_1
-#define PXP_HW_PXP_AS_CLRKEYHIGH_1
-#define PXP_HW_PXP_CTRL2
-#define PXP_HW_PXP_CTRL2_SET
-#define PXP_HW_PXP_CTRL2_CLR
-#define PXP_HW_PXP_CTRL2_TOG
-#define PXP_HW_PXP_POWER_REG0
-#define PXP_HW_PXP_POWER_REG1
-#define PXP_HW_PXP_DATA_PATH_CTRL0
-#define PXP_HW_PXP_DATA_PATH_CTRL0_SET
-#define PXP_HW_PXP_DATA_PATH_CTRL0_CLR
-#define PXP_HW_PXP_DATA_PATH_CTRL0_TOG
-#define PXP_HW_PXP_DATA_PATH_CTRL1
-#define PXP_HW_PXP_DATA_PATH_CTRL1_SET
-#define PXP_HW_PXP_DATA_PATH_CTRL1_CLR
-#define PXP_HW_PXP_DATA_PATH_CTRL1_TOG
-#define PXP_HW_PXP_INIT_MEM_CTRL
-#define PXP_HW_PXP_INIT_MEM_CTRL_SET
-
-#define PXP_HW_PXP_INIT_MEM_CTRL_CLR
-#define PXP_HW_PXP_INIT_MEM_CTRL_TOG
-#define PXP_HW_PXP_INIT_MEM_DATA
-#define PXP_HW_PXP_INIT_MEM_DATA_HIGH
-#define PXP_HW_PXP_IRQ_MASK
-#define PXP_HW_PXP_IRQ_MASK_SET
-#define PXP_HW_PXP_IRQ_MASK_CLR
-#define PXP_HW_PXP_IRQ_MASK_TOG
-#define PXP_HW_PXP_IRQ
-#define PXP_HW_PXP_IRQ_SET
-#define PXP_HW_PXP_IRQ_CLR
-#define PXP_HW_PXP_IRQ_TOG
-#define PXP_HW_PXP_NEXT_EN
-#define PXP_HW_PXP_NEXT_EN_SET
-#define PXP_HW_PXP_NEXT_EN_CLR
-#define PXP_HW_PXP_NEXT_EN_TOG
-#define PXP_HW_PXP_NEXT
-#define PXP_HW_PXP_DEBUGCTRL
-#define PXP_HW_PXP_DEBUG
-#define PXP_HW_PXP_VERSION
-#define PXP_HW_PXP_DITHER_STORE_SIZE_CH0
-#define PXP_HW_PXP_WFB_FETCH_CTRL
-
-#define PXP_HW_PXP_WFB_FETCH_CTRL_SET
-#define PXP_HW_PXP_WFB_FETCH_CTRL_CLR
-#define PXP_HW_PXP_WFB_FETCH_CTRL_TOG
-#define PXP_HW_PXP_WFB_FETCH_BUF1_ADDR
-#define PXP_HW_PXP_WFB_FETCH_BUF1_PITCH
-#define PXP_HW_PXP_WFB_FETCH_BUF1_SIZE
-#define PXP_HW_PXP_WFB_FETCH_BUF2_ADDR
-#define PXP_HW_PXP_WFB_FETCH_BUF2_PITCH
-#define PXP_HW_PXP_WFB_FETCH_BUF2_SIZE
-#define PXP_HW_PXP_WFB_ARRAY_PIXEL0_MASK
-#define PXP_HW_PXP_WFB_ARRAY_PIXEL1_MASK
-#define PXP_HW_PXP_WFB_ARRAY_PIXEL2_MASK
-#define PXP_HW_PXP_WFB_ARRAY_PIXEL3_MASK
-#define PXP_HW_PXP_WFB_ARRAY_PIXEL4_MASK
-#define PXP_HW_PXP_WFB_ARRAY_PIXEL5_MASK
-#define PXP_HW_PXP_WFB_ARRAY_PIXEL6_MASK
-#define PXP_HW_PXP_WFB_ARRAY_PIXEL7_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG0_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG1_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG2_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG3_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG4_MASK
-
-#define PXP_HW_PXP_WFB_ARRAY_FLAG5_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG6_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG7_MASK
-#define PXP_HW_PXP_WFB_FETCH_BUF1_CORD
-#define PXP_HW_PXP_WFB_FETCH_BUF2_CORD
-#define PXP_HW_PXP_WFB_ARRAY_FLAG8_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG9_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG10_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG11_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG12_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG13_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG14_MASK
-#define PXP_HW_PXP_WFB_ARRAY_FLAG15_MASK
-#define PXP_HW_PXP_WFB_ARRAY_REG0
-#define PXP_HW_PXP_WFB_ARRAY_REG1
-#define PXP_HW_PXP_WFB_ARRAY_REG2
-#define PXP_HW_PXP_WFE_B_STORE_CTRL_CH0
-#define PXP_HW_PXP_WFE_B_STORE_CTRL_CH0_SET
-#define PXP_HW_PXP_WFE_B_STORE_CTRL_CH0_CLR
-#define PXP_HW_PXP_WFE_B_STORE_CTRL_CH0_TOG
-#define PXP_HW_PXP_WFE_B_STORE_CTRL_CH1
-#define PXP_HW_PXP_WFE_B_STORE_CTRL_CH1_SET
-
-#define PXP_HW_PXP_WFE_B_STORE_CTRL_CH1_CLR
-#define PXP_HW_PXP_WFE_B_STORE_CTRL_CH1_TOG
-#define PXP_HW_PXP_WFE_B_STORE_STATUS_CH0
-#define PXP_HW_PXP_WFE_B_STORE_STATUS_CH1
-#define PXP_HW_PXP_WFE_B_STORE_SIZE_CH0
-#define PXP_HW_PXP_WFE_B_STORE_SIZE_CH1
-#define PXP_HW_PXP_WFE_B_STORE_PITCH
-#define PXP_HW_PXP_WFE_B_STORE_SHIFT_CTRL_CH0
-#define PXP_HW_PXP_WFE_B_STORE_SHIFT_CTRL_CH0_SET
-#define PXP_HW_PXP_WFE_B_STORE_SHIFT_CTRL_CH0_CLR
-#define PXP_HW_PXP_WFE_B_STORE_SHIFT_CTRL_CH0_TOG
-#define PXP_HW_PXP_WFE_B_STORE_SHIFT_CTRL_CH1
-#define PXP_HW_PXP_WFE_B_STORE_SHIFT_CTRL_CH1_SET
-#define PXP_HW_PXP_WFE_B_STORE_SHIFT_CTRL_CH1_CLR
-#define PXP_HW_PXP_WFE_B_STORE_SHIFT_CTRL_CH1_TOG
-#define PXP_HW_PXP_WFE_B_STORE_ADDR_0_CH0
-#define PXP_HW_PXP_WFE_B_STORE_ADDR_1_CH0
-#define PXP_HW_PXP_WFE_B_STORE_FILL_DATA_CH0
-#define PXP_HW_PXP_WFE_B_STORE_ADDR_0_CH1
-#define PXP_HW_PXP_WFE_B_STORE_ADDR_1_CH1
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK0_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK0_L_CH0
-
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK1_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK1_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK2_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK2_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK3_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK3_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK4_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK4_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK5_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK5_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK6_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK6_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK7_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_MASK7_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_SHIFT_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_D_SHIFT_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_F_SHIFT_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_F_SHIFT_H_CH0
-#define PXP_HW_PXP_WFE_B_STORE_F_MASK_L_CH0
-#define PXP_HW_PXP_WFE_B_STORE_F_MASK_H_CH0
-#define PXP_HW_PXP_FETCH_WFE_B_DEBUG
-#define PXP_HW_PXP_DITHER_CTRL
-
-#define PXP_HW_PXP_DITHER_CTRL_SET
-#define PXP_HW_PXP_DITHER_CTRL_CLR
-#define PXP_HW_PXP_DITHER_CTRL_TOG
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA0
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA0_SET
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA0_CLR
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA0_TOG
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA1
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA1_SET
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA1_CLR
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA1_TOG
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA2
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA2_SET
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA2_CLR
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA2_TOG
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA3
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA3_SET
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA3_CLR
-#define PXP_HW_PXP_DITHER_FINAL_LUT_DATA3_TOG
-#define PXP_HW_PXP_WFE_B_CTRL
-#define PXP_HW_PXP_WFE_B_CTRL_SET
-#define PXP_HW_PXP_WFE_B_CTRL_CLR
-
-#define PXP_HW_PXP_WFE_B_CTRL_TOG
-#define PXP_HW_PXP_WFE_B_DIMENSIONS
-#define PXP_HW_PXP_WFE_B_OFFSET
-#define PXP_HW_PXP_WFE_B_SW_DATA_REGS
-#define PXP_HW_PXP_WFE_B_SW_FLAG_REGS
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX0
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX0_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX0_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX0_TOG
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX1
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX1_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX1_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX1_TOG
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX2
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX2_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX2_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX2_TOG
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX3
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX3_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX3_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX3_TOG
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX4
-
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX4_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX4_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX4_TOG
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX5
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX5_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX5_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX5_TOG
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX6
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX6_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX6_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX6_TOG
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX7
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX7_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX7_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX7_TOG
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX8
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX8_SET
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX8_CLR
-#define PXP_HW_PXP_WFE_B_STAGE1_MUX8_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX0
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX0_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX0_CLR
-
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX0_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX1
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX1_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX1_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX1_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX2
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX2_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX2_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX2_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX3
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX3_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX3_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX3_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX4
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX4_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX4_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX4_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX5
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX5_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX5_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX5_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX6
-
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX6_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX6_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX6_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX7
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX7_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX7_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX7_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX8
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX8_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX8_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX8_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX9
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX9_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX9_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX9_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX10
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX10_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX10_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX10_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX11
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX11_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX11_CLR
-
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX11_TOG
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX12
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX12_SET
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX12_CLR
-#define PXP_HW_PXP_WFE_B_STAGE2_MUX12_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX0
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX0_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX0_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX0_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX1
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX1_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX1_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX1_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX2
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX2_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX2_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX2_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX3
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX3_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX3_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX3_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX4
-
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX4_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX4_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX4_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX5
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX5_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX5_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX5_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX6
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX6_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX6_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX6_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX7
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX7_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX7_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX7_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX8
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX8_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX8_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX8_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX9
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX9_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX9_CLR
-
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX9_TOG
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX10
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX10_SET
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX10_CLR
-#define PXP_HW_PXP_WFE_B_STAGE3_MUX10_TOG
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT0_0
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT0_1
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT0_2
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT0_3
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT0_4
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT0_5
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT0_6
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT0_7
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT1_0
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT1_1
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT1_2
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT1_3
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT1_4
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT1_5
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT1_6
-#define PXP_HW_PXP_WFE_B_STG1_5X8_OUT1_7
-#define PXP_HW_PXP_WFE_B_STAGE1_5X8_MASKS_0
-
-#define PXP_HW_PXP_WFE_B_STG1_5X1_OUT0
-#define PXP_HW_PXP_WFE_B_STG1_5X1_MASKS
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT0_0
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT0_1
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT0_2
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT0_3
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT0_4
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT0_5
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT0_6
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT0_7
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT1_0
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT1_1
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT1_2
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT1_3
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT1_4
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT1_5
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT1_6
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT1_7
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT2_0
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT2_1
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT2_2
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT2_3
-
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT2_4
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT2_5
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT2_6
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT2_7
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT3_0
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT3_1
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT3_2
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT3_3
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT3_4
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT3_5
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT3_6
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT3_7
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT4_0
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT4_1
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT4_2
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT4_3
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT4_4
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT4_5
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT4_6
-#define PXP_HW_PXP_WFE_B_STG1_8X1_OUT4_7
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT0_0
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT0_1
-
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT0_2
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT0_3
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT0_4
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT0_5
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT0_6
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT0_7
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT1_0
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT1_1
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT1_2
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT1_3
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT1_4
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT1_5
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT1_6
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT1_7
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT2_0
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT2_1
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT2_2
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT2_3
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT2_4
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT2_5
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT2_6
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT2_7
-
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT3_0
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT3_1
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT3_2
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT3_3
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT3_4
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT3_5
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT3_6
-#define PXP_HW_PXP_WFE_B_STG2_5X6_OUT3_7
-#define PXP_HW_PXP_WFE_B_STAGE2_5X6_MASKS_0
-#define PXP_HW_PXP_WFE_B_STAGE2_5X6_ADDR_0
-#define PXP_HW_PXP_WFE_B_STG2_5X1_OUT0
-#define PXP_HW_PXP_WFE_B_STG2_5X1_OUT1
-#define PXP_HW_PXP_WFE_B_STG2_5X1_OUT2
-#define PXP_HW_PXP_WFE_B_STG2_5X1_OUT3
-#define PXP_HW_PXP_WFE_B_STG2_5X1_MASKS
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT0_0
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT0_1
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT0_2
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT0_3
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT0_4
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT0_5
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT0_6
-
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT0_7
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT1_0
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT1_1
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT1_2
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT1_3
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT1_4
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT1_5
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT1_6
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT1_7
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT2_0
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT2_1
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT2_2
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT2_3
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT2_4
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT2_5
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT2_6
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT2_7
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT3_0
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT3_1
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT3_2
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT3_3
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT3_4
-
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT3_5
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT3_6
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_OUT3_7
-#define PXP_HW_PXP_WFE_B_STG3_F8X1_MASKS
-#define PXP_HW_PXP_ALU_B_CTRL
-#define PXP_HW_PXP_ALU_B_CTRL_SET
-#define PXP_HW_PXP_ALU_B_CTRL_CLR
-#define PXP_HW_PXP_ALU_B_CTRL_TOG
-#define PXP_HW_PXP_ALU_B_BUF_SIZE
-#define PXP_HW_PXP_ALU_B_INST_ENTRY
-#define PXP_HW_PXP_ALU_B_PARAM
-#define PXP_HW_PXP_ALU_B_CONFIG
-#define PXP_HW_PXP_ALU_B_LUT_CONFIG
-#define PXP_HW_PXP_ALU_B_LUT_CONFIG_SET
-#define PXP_HW_PXP_ALU_B_LUT_CONFIG_CLR
-#define PXP_HW_PXP_ALU_B_LUT_CONFIG_TOG
-#define PXP_HW_PXP_ALU_B_LUT_DATA0
-#define PXP_HW_PXP_ALU_B_LUT_DATA1
-#define PXP_HW_PXP_ALU_B_DBG
-#define PXP_HW_PXP_HIST_A_CTRL
-#define PXP_HW_PXP_HIST_A_MASK
-#define PXP_HW_PXP_HIST_A_BUF_SIZE
-
-#define PXP_HW_PXP_HIST_A_TOTAL_PIXEL
-#define PXP_HW_PXP_HIST_A_ACTIVE_AREA_X
-#define PXP_HW_PXP_HIST_A_ACTIVE_AREA_Y
-#define PXP_HW_PXP_HIST_A_RAW_STAT0
-#define PXP_HW_PXP_HIST_A_RAW_STAT1
-#define PXP_HW_PXP_HIST_B_CTRL
-#define PXP_HW_PXP_HIST_B_MASK
-#define PXP_HW_PXP_HIST_B_BUF_SIZE
-#define PXP_HW_PXP_HIST_B_TOTAL_PIXEL
-#define PXP_HW_PXP_HIST_B_ACTIVE_AREA_X
-#define PXP_HW_PXP_HIST_B_ACTIVE_AREA_Y
-#define PXP_HW_PXP_HIST_B_RAW_STAT0
-#define PXP_HW_PXP_HIST_B_RAW_STAT1
-#define PXP_HW_PXP_HIST2_PARAM
-#define PXP_HW_PXP_HIST4_PARAM
-#define PXP_HW_PXP_HIST8_PARAM0
-#define PXP_HW_PXP_HIST8_PARAM1
-#define PXP_HW_PXP_HIST16_PARAM0
-#define PXP_HW_PXP_HIST16_PARAM1
-#define PXP_HW_PXP_HIST16_PARAM2
-#define PXP_HW_PXP_HIST16_PARAM3
-#define PXP_HW_PXP_HIST32_PARAM0
-
-#define PXP_HW_PXP_HIST32_PARAM1
-#define PXP_HW_PXP_HIST32_PARAM2
-#define PXP_HW_PXP_HIST32_PARAM3
-#define PXP_HW_PXP_HIST32_PARAM4
-#define PXP_HW_PXP_HIST32_PARAM5
-#define PXP_HW_PXP_HIST32_PARAM6
-#define PXP_HW_PXP_HIST32_PARAM7
-#define PXP_HW_PXP_HANDSHAKE_READY_MUX0
-#define PXP_HW_PXP_HANDSHAKE_DONE_MUX0
+#define IMXRT_PXP_b		(*(IMXRT_REGISTER32_t *)0x402B4400)
+#define PXP_CTRL			(IMXRT_PXP.offset000)
+#define PXP_CTRL_SET			(IMXRT_PXP.offset004)
+#define PXP_CTRL_CLR			(IMXRT_PXP.offset008)
+#define PXP_CTRL_TOG			(IMXRT_PXP.offset00C)
+#define PXP_STAT			(IMXRT_PXP.offset010)
+#define PXP_STAT_SET			(IMXRT_PXP.offset014)
+#define PXP_STAT_CLR			(IMXRT_PXP.offset018)
+#define PXP_STAT_TOG			(IMXRT_PXP.offset01C)
+#define PXP_OUT_CTRL			(IMXRT_PXP.offset020)
+#define PXP_OUT_CTRL_SET		(IMXRT_PXP.offset024)
+#define PXP_OUT_CTRL_CLR		(IMXRT_PXP.offset028)
+#define PXP_OUT_CTRL_TOG		(IMXRT_PXP.offset02C)
+#define PXP_OUT_BUF			(IMXRT_PXP.offset030)
+#define PXP_OUT_BUF2			(IMXRT_PXP.offset040)
+#define PXP_OUT_PITCH			(IMXRT_PXP.offset050)
+#define PXP_OUT_LRC			(IMXRT_PXP.offset060)
+#define PXP_OUT_PS_ULC			(IMXRT_PXP.offset070)
+#define PXP_OUT_PS_LRC			(IMXRT_PXP.offset080)
+#define PXP_OUT_AS_ULC			(IMXRT_PXP.offset090)
+#define PXP_OUT_AS_LRC			(IMXRT_PXP.offset0A0)
+#define PXP_PS_CTRL			(IMXRT_PXP.offset0B0)
+#define PXP_PS_CTRL_SET			(IMXRT_PXP.offset0B4)
+#define PXP_PS_CTRL_CLR			(IMXRT_PXP.offset0B8)
+#define PXP_PS_CTRL_TOG			(IMXRT_PXP.offset0BC)
+#define PXP_PS_BUF			(IMXRT_PXP.offset0C0)
+#define PXP_PS_UBUF			(IMXRT_PXP.offset0D0)
+#define PXP_PS_VBUF			(IMXRT_PXP.offset0E0)
+#define PXP_PS_PITCH			(IMXRT_PXP.offset0F0)
+#define PXP_PS_BACKGROUND_0		(IMXRT_PXP.offset100)
+#define PXP_PS_SCALE			(IMXRT_PXP.offset110)
+#define PXP_PS_OFFSET			(IMXRT_PXP.offset120)
+#define PXP_PS_CLRKEYLOW_0		(IMXRT_PXP.offset130)
+#define PXP_PS_CLRKEYHIGH_0		(IMXRT_PXP.offset140)
+#define PXP_AS_CTRL			(IMXRT_PXP.offset150)
+#define PXP_AS_BUF			(IMXRT_PXP.offset160)
+#define PXP_AS_PITCH			(IMXRT_PXP.offset170)
+#define PXP_AS_CLRKEYLOW_0		(IMXRT_PXP.offset180)
+#define PXP_AS_CLRKEYHIGH_0		(IMXRT_PXP.offset190)
+#define PXP_CSC1_COEF0			(IMXRT_PXP.offset1A0)
+#define PXP_CSC1_COEF1			(IMXRT_PXP.offset1B0)
+#define PXP_CSC1_COEF2			(IMXRT_PXP.offset1C0)
+#define PXP_POWER			(IMXRT_PXP_b.offset000)
+#define PXP_PORTER_DUFF_CTRL		(IMXRT_PXP_b.offset040)
 
 
-// page 3147
-#define IMXRT_TMR1		(*(IMXRT_REGISTER16_t *)0x401DC000)
-#define TMR1_COMP10			(IMXRT_TMR1.offset000)
-#define TMR1_COMP20			(IMXRT_TMR1.offset002)
-#define TMR1_CAPT0			(IMXRT_TMR1.offset004)
-#define TMR1_LOAD0			(IMXRT_TMR1.offset006)
-#define TMR1_HOLD0			(IMXRT_TMR1.offset008)
-#define TMR1_CNTR0			(IMXRT_TMR1.offset00A)
-#define TMR1_CTRL0			(IMXRT_TMR1.offset00C)
-#define TMR1_SCTRL0			(IMXRT_TMR1.offset00E)
-#define TMR1_CMPLD10			(IMXRT_TMR1.offset010)
-#define TMR1_CMPLD20			(IMXRT_TMR1.offset012)
-#define TMR1_CSCTRL0			(IMXRT_TMR1.offset014)
-#define TMR1_FILT0			(IMXRT_TMR1.offset016)
-#define TMR1_DMA0			(IMXRT_TMR1.offset018)
-#define TMR1_ENBL			(IMXRT_TMR1.offset01E)
-#define TMR1_COMP11			(IMXRT_TMR1.offset020)
-#define TMR1_COMP21			(IMXRT_TMR1.offset022)
-#define TMR1_CAPT1			(IMXRT_TMR1.offset024)
-#define TMR1_LOAD1			(IMXRT_TMR1.offset026)
-#define TMR1_HOLD1			(IMXRT_TMR1.offset028)
-#define TMR1_CNTR1			(IMXRT_TMR1.offset02A)
-#define TMR1_CTRL1			(IMXRT_TMR1.offset02C)
-#define TMR1_SCTRL1			(IMXRT_TMR1.offset02E)
-#define TMR1_CMPLD11			(IMXRT_TMR1.offset030)
-#define TMR1_CMPLD21			(IMXRT_TMR1.offset032)
-#define TMR1_CSCTRL1			(IMXRT_TMR1.offset034)
-#define TMR1_FILT1			(IMXRT_TMR1.offset036)
-#define TMR1_DMA1			(IMXRT_TMR1.offset038)
-#define TMR1_COMP12			(IMXRT_TMR1.offset040)
-#define TMR1_COMP22			(IMXRT_TMR1.offset042)
-#define TMR1_CAPT2			(IMXRT_TMR1.offset044)
-#define TMR1_LOAD2			(IMXRT_TMR1.offset046)
-#define TMR1_HOLD2			(IMXRT_TMR1.offset048)
-#define TMR1_CNTR2			(IMXRT_TMR1.offset04A)
-#define TMR1_CTRL2			(IMXRT_TMR1.offset04C)
-#define TMR1_SCTRL2			(IMXRT_TMR1.offset04E)
-#define TMR1_CMPLD12			(IMXRT_TMR1.offset050)
-#define TMR1_CMPLD22			(IMXRT_TMR1.offset052)
-#define TMR1_CSCTRL2			(IMXRT_TMR1.offset054)
-#define TMR1_FILT2			(IMXRT_TMR1.offset056)
-#define TMR1_DMA2			(IMXRT_TMR1.offset058)
-#define TMR1_COMP13			(IMXRT_TMR1.offset060)
-#define TMR1_COMP23			(IMXRT_TMR1.offset062)
-#define TMR1_CAPT3			(IMXRT_TMR1.offset064)
-#define TMR1_LOAD3			(IMXRT_TMR1.offset066)
-#define TMR1_HOLD3			(IMXRT_TMR1.offset068)
-#define TMR1_CNTR3			(IMXRT_TMR1.offset06A)
-#define TMR1_CTRL3			(IMXRT_TMR1.offset06C)
-#define TMR1_SCTRL3			(IMXRT_TMR1.offset06E)
-#define TMR1_CMPLD13			(IMXRT_TMR1.offset070)
-#define TMR1_CMPLD23			(IMXRT_TMR1.offset072)
-#define TMR1_CSCTRL3			(IMXRT_TMR1.offset074)
-#define TMR1_FILT3			(IMXRT_TMR1.offset076)
-#define TMR1_DMA3			(IMXRT_TMR1.offset078)
-#define IMXRT_TMR2		(*(IMXRT_REGISTER16_t *)0x401E0000)
-#define TMR2_COMP10			(IMXRT_TMR2.offset000)
-#define TMR2_COMP20			(IMXRT_TMR2.offset002)
-#define TMR2_CAPT0			(IMXRT_TMR2.offset004)
-#define TMR2_LOAD0			(IMXRT_TMR2.offset006)
-#define TMR2_HOLD0			(IMXRT_TMR2.offset008)
-#define TMR2_CNTR0			(IMXRT_TMR2.offset00A)
-#define TMR2_CTRL0			(IMXRT_TMR2.offset00C)
-#define TMR2_SCTRL0			(IMXRT_TMR2.offset00E)
-#define TMR2_CMPLD10			(IMXRT_TMR2.offset010)
-#define TMR2_CMPLD20			(IMXRT_TMR2.offset012)
-#define TMR2_CSCTRL0			(IMXRT_TMR2.offset014)
-#define TMR2_FILT0			(IMXRT_TMR2.offset016)
-#define TMR2_DMA0			(IMXRT_TMR2.offset018)
-#define TMR2_ENBL			(IMXRT_TMR2.offset01E)
-#define TMR2_COMP11			(IMXRT_TMR2.offset020)
-#define TMR2_COMP21			(IMXRT_TMR2.offset022)
-#define TMR2_CAPT1			(IMXRT_TMR2.offset024)
-#define TMR2_LOAD1			(IMXRT_TMR2.offset026)
-#define TMR2_HOLD1			(IMXRT_TMR2.offset028)
-#define TMR2_CNTR1			(IMXRT_TMR2.offset02A)
-#define TMR2_CTRL1			(IMXRT_TMR2.offset02C)
-#define TMR2_SCTRL1			(IMXRT_TMR2.offset02E)
-#define TMR2_CMPLD11			(IMXRT_TMR2.offset030)
-#define TMR2_CMPLD21			(IMXRT_TMR2.offset032)
-#define TMR2_CSCTRL1			(IMXRT_TMR2.offset034)
-#define TMR2_FILT1			(IMXRT_TMR2.offset036)
-#define TMR2_DMA1			(IMXRT_TMR2.offset038)
-#define TMR2_COMP12			(IMXRT_TMR2.offset040)
-#define TMR2_COMP22			(IMXRT_TMR2.offset042)
-#define TMR2_CAPT2			(IMXRT_TMR2.offset044)
-#define TMR2_LOAD2			(IMXRT_TMR2.offset046)
-#define TMR2_HOLD2			(IMXRT_TMR2.offset048)
-#define TMR2_CNTR2			(IMXRT_TMR2.offset04A)
-#define TMR2_CTRL2			(IMXRT_TMR2.offset04C)
-#define TMR2_SCTRL2			(IMXRT_TMR2.offset04E)
-#define TMR2_CMPLD12			(IMXRT_TMR2.offset050)
-#define TMR2_CMPLD22			(IMXRT_TMR2.offset052)
-#define TMR2_CSCTRL2			(IMXRT_TMR2.offset054)
-#define TMR2_FILT2			(IMXRT_TMR2.offset056)
-#define TMR2_DMA2			(IMXRT_TMR2.offset058)
-#define TMR2_COMP13			(IMXRT_TMR2.offset060)
-#define TMR2_COMP23			(IMXRT_TMR2.offset062)
-#define TMR2_CAPT3			(IMXRT_TMR2.offset064)
-#define TMR2_LOAD3			(IMXRT_TMR2.offset066)
-#define TMR2_HOLD3			(IMXRT_TMR2.offset068)
-#define TMR2_CNTR3			(IMXRT_TMR2.offset06A)
-#define TMR2_CTRL3			(IMXRT_TMR2.offset06C)
-#define TMR2_SCTRL3			(IMXRT_TMR2.offset06E)
-#define TMR2_CMPLD13			(IMXRT_TMR2.offset070)
-#define TMR2_CMPLD23			(IMXRT_TMR2.offset072)
-#define TMR2_CSCTRL3			(IMXRT_TMR2.offset074)
-#define TMR2_FILT3			(IMXRT_TMR2.offset076)
-#define TMR2_DMA3			(IMXRT_TMR2.offset078)
-#define IMXRT_TMR3		(*(IMXRT_REGISTER16_t *)0x401E4000)
-#define TMR3_COMP10			(IMXRT_TMR3.offset000)
-#define TMR3_COMP20			(IMXRT_TMR3.offset002)
-#define TMR3_CAPT0			(IMXRT_TMR3.offset004)
-#define TMR3_LOAD0			(IMXRT_TMR3.offset006)
-#define TMR3_HOLD0			(IMXRT_TMR3.offset008)
-#define TMR3_CNTR0			(IMXRT_TMR3.offset00A)
-#define TMR3_CTRL0			(IMXRT_TMR3.offset00C)
-#define TMR3_SCTRL0			(IMXRT_TMR3.offset00E)
-#define TMR3_CMPLD10			(IMXRT_TMR3.offset010)
-#define TMR3_CMPLD20			(IMXRT_TMR3.offset012)
-#define TMR3_CSCTRL0			(IMXRT_TMR3.offset014)
-#define TMR3_FILT0			(IMXRT_TMR3.offset016)
-#define TMR3_DMA0			(IMXRT_TMR3.offset018)
-#define TMR3_ENBL			(IMXRT_TMR3.offset01E)
-#define TMR3_COMP11			(IMXRT_TMR3.offset020)
-#define TMR3_COMP21			(IMXRT_TMR3.offset022)
-#define TMR3_CAPT1			(IMXRT_TMR3.offset024)
-#define TMR3_LOAD1			(IMXRT_TMR3.offset026)
-#define TMR3_HOLD1			(IMXRT_TMR3.offset028)
-#define TMR3_CNTR1			(IMXRT_TMR3.offset02A)
-#define TMR3_CTRL1			(IMXRT_TMR3.offset02C)
-#define TMR3_SCTRL1			(IMXRT_TMR3.offset02E)
-#define TMR3_CMPLD11			(IMXRT_TMR3.offset030)
-#define TMR3_CMPLD21			(IMXRT_TMR3.offset032)
-#define TMR3_CSCTRL1			(IMXRT_TMR3.offset034)
-#define TMR3_FILT1			(IMXRT_TMR3.offset036)
-#define TMR3_DMA1			(IMXRT_TMR3.offset038)
-#define TMR3_COMP12			(IMXRT_TMR3.offset040)
-#define TMR3_COMP22			(IMXRT_TMR3.offset042)
-#define TMR3_CAPT2			(IMXRT_TMR3.offset044)
-#define TMR3_LOAD2			(IMXRT_TMR3.offset046)
-#define TMR3_HOLD2			(IMXRT_TMR3.offset048)
-#define TMR3_CNTR2			(IMXRT_TMR3.offset04A)
-#define TMR3_CTRL2			(IMXRT_TMR3.offset04C)
-#define TMR3_SCTRL2			(IMXRT_TMR3.offset04E)
-#define TMR3_CMPLD12			(IMXRT_TMR3.offset050)
-#define TMR3_CMPLD22			(IMXRT_TMR3.offset052)
-#define TMR3_CSCTRL2			(IMXRT_TMR3.offset054)
-#define TMR3_FILT2			(IMXRT_TMR3.offset056)
-#define TMR3_DMA2			(IMXRT_TMR3.offset058)
-#define TMR3_COMP13			(IMXRT_TMR3.offset060)
-#define TMR3_COMP23			(IMXRT_TMR3.offset062)
-#define TMR3_CAPT3			(IMXRT_TMR3.offset064)
-#define TMR3_LOAD3			(IMXRT_TMR3.offset066)
-#define TMR3_HOLD3			(IMXRT_TMR3.offset068)
-#define TMR3_CNTR3			(IMXRT_TMR3.offset06A)
-#define TMR3_CTRL3			(IMXRT_TMR3.offset06C)
-#define TMR3_SCTRL3			(IMXRT_TMR3.offset06E)
-#define TMR3_CMPLD13			(IMXRT_TMR3.offset070)
-#define TMR3_CMPLD23			(IMXRT_TMR3.offset072)
-#define TMR3_CSCTRL3			(IMXRT_TMR3.offset074)
-#define TMR3_FILT3			(IMXRT_TMR3.offset076)
-#define TMR3_DMA3			(IMXRT_TMR3.offset078)
-#define IMXRT_TMR4		(*(IMXRT_REGISTER16_t *)0x401E8000)
-#define TMR4_COMP10			(IMXRT_TMR4.offset000)
-#define TMR4_COMP20			(IMXRT_TMR4.offset002)
-#define TMR4_CAPT0			(IMXRT_TMR4.offset004)
-#define TMR4_LOAD0			(IMXRT_TMR4.offset006)
-#define TMR4_HOLD0			(IMXRT_TMR4.offset008)
-#define TMR4_CNTR0			(IMXRT_TMR4.offset00A)
-#define TMR4_CTRL0			(IMXRT_TMR4.offset00C)
-#define TMR4_SCTRL0			(IMXRT_TMR4.offset00E)
-#define TMR4_CMPLD10			(IMXRT_TMR4.offset010)
-#define TMR4_CMPLD20			(IMXRT_TMR4.offset012)
-#define TMR4_CSCTRL0			(IMXRT_TMR4.offset014)
-#define TMR4_FILT0			(IMXRT_TMR4.offset016)
-#define TMR4_DMA0			(IMXRT_TMR4.offset018)
-#define TMR4_ENBL			(IMXRT_TMR4.offset01E)
-#define TMR4_COMP11			(IMXRT_TMR4.offset020)
-#define TMR4_COMP21			(IMXRT_TMR4.offset022)
-#define TMR4_CAPT1			(IMXRT_TMR4.offset024)
-#define TMR4_LOAD1			(IMXRT_TMR4.offset026)
-#define TMR4_HOLD1			(IMXRT_TMR4.offset028)
-#define TMR4_CNTR1			(IMXRT_TMR4.offset02A)
-#define TMR4_CTRL1			(IMXRT_TMR4.offset02C)
-#define TMR4_SCTRL1			(IMXRT_TMR4.offset02E)
-#define TMR4_CMPLD11			(IMXRT_TMR4.offset030)
-#define TMR4_CMPLD21			(IMXRT_TMR4.offset032)
-#define TMR4_CSCTRL1			(IMXRT_TMR4.offset034)
-#define TMR4_FILT1			(IMXRT_TMR4.offset036)
-#define TMR4_DMA1			(IMXRT_TMR4.offset038)
-#define TMR4_COMP12			(IMXRT_TMR4.offset040)
-#define TMR4_COMP22			(IMXRT_TMR4.offset042)
-#define TMR4_CAPT2			(IMXRT_TMR4.offset044)
-#define TMR4_LOAD2			(IMXRT_TMR4.offset046)
-#define TMR4_HOLD2			(IMXRT_TMR4.offset048)
-#define TMR4_CNTR2			(IMXRT_TMR4.offset04A)
-#define TMR4_CTRL2			(IMXRT_TMR4.offset04C)
-#define TMR4_SCTRL2			(IMXRT_TMR4.offset04E)
-#define TMR4_CMPLD12			(IMXRT_TMR4.offset050)
-#define TMR4_CMPLD22			(IMXRT_TMR4.offset052)
-#define TMR4_CSCTRL2			(IMXRT_TMR4.offset054)
-#define TMR4_FILT2			(IMXRT_TMR4.offset056)
-#define TMR4_DMA2			(IMXRT_TMR4.offset058)
-#define TMR4_COMP13			(IMXRT_TMR4.offset060)
-#define TMR4_COMP23			(IMXRT_TMR4.offset062)
-#define TMR4_CAPT3			(IMXRT_TMR4.offset064)
-#define TMR4_LOAD3			(IMXRT_TMR4.offset066)
-#define TMR4_HOLD3			(IMXRT_TMR4.offset068)
-#define TMR4_CNTR3			(IMXRT_TMR4.offset06A)
-#define TMR4_CTRL3			(IMXRT_TMR4.offset06C)
-#define TMR4_SCTRL3			(IMXRT_TMR4.offset06E)
-#define TMR4_CMPLD13			(IMXRT_TMR4.offset070)
-#define TMR4_CMPLD23			(IMXRT_TMR4.offset072)
-#define TMR4_CSCTRL3			(IMXRT_TMR4.offset074)
-#define TMR4_FILT3			(IMXRT_TMR4.offset076)
-#define TMR4_DMA3			(IMXRT_TMR4.offset078)
+// 47.5: page 2695
+typedef struct {
+	union {
+		struct {
+			volatile uint16_t COMP1;
+			volatile uint16_t COMP2;
+			volatile uint16_t CAPT;
+			volatile uint16_t LOAD;
+			volatile uint16_t HOLD;
+			volatile uint16_t CNTR;
+			volatile uint16_t CTRL;
+			volatile uint16_t SCTRL;
+			volatile uint16_t CMPLD1;
+			volatile uint16_t CMPLD2;
+			volatile uint16_t CSCTRL;
+			volatile uint16_t FILT;
+			volatile uint16_t DMA;
+			volatile uint16_t unused1[3];
+		} CH[4];
+		struct {
+			volatile uint16_t unused2[15];
+			volatile uint16_t ENBL;
+		};
+	};
+} IMXRT_TMR_t;
+#define IMXRT_TMR1		(*(IMXRT_TMR_t *)0x401DC000)
+#define TMR1_COMP10			(IMXRT_TMR1.CH[0].COMP1)
+#define TMR1_COMP20			(IMXRT_TMR1.CH[0].COMP2)
+#define TMR1_CAPT0			(IMXRT_TMR1.CH[0].CAPT)
+#define TMR1_LOAD0			(IMXRT_TMR1.CH[0].LOAD)
+#define TMR1_HOLD0			(IMXRT_TMR1.CH[0].HOLD)
+#define TMR1_CNTR0			(IMXRT_TMR1.CH[0].CNTR)
+#define TMR1_CTRL0			(IMXRT_TMR1.CH[0].CTRL)
+#define TMR1_SCTRL0			(IMXRT_TMR1.CH[0].SCTRL)
+#define TMR1_CMPLD10			(IMXRT_TMR1.CH[0].CMPLD1)
+#define TMR1_CMPLD20			(IMXRT_TMR1.CH[0].CMPLD2)
+#define TMR1_CSCTRL0			(IMXRT_TMR1.CH[0].CSCTRL)
+#define TMR1_FILT0			(IMXRT_TMR1.CH[0].FILT)
+#define TMR1_DMA0			(IMXRT_TMR1.CH[0].DMA)
+#define TMR1_ENBL			(IMXRT_TMR1.ENBL)
+#define TMR1_COMP11			(IMXRT_TMR1.CH[1].COMP1)
+#define TMR1_COMP21			(IMXRT_TMR1.CH[1].COMP2)
+#define TMR1_CAPT1			(IMXRT_TMR1.CH[1].CAPT)
+#define TMR1_LOAD1			(IMXRT_TMR1.CH[1].LOAD)
+#define TMR1_HOLD1			(IMXRT_TMR1.CH[1].HOLD)
+#define TMR1_CNTR1			(IMXRT_TMR1.CH[1].CNTR)
+#define TMR1_CTRL1			(IMXRT_TMR1.CH[1].CTRL)
+#define TMR1_SCTRL1			(IMXRT_TMR1.CH[1].SCTRL)
+#define TMR1_CMPLD11			(IMXRT_TMR1.CH[1].CMPLD1)
+#define TMR1_CMPLD21			(IMXRT_TMR1.CH[1].CMPLD2)
+#define TMR1_CSCTRL1			(IMXRT_TMR1.CH[1].CSCTRL)
+#define TMR1_FILT1			(IMXRT_TMR1.CH[1].FILT)
+#define TMR1_DMA1			(IMXRT_TMR1.CH[1].DMA)
+#define TMR1_COMP12			(IMXRT_TMR1.CH[2].COMP1)
+#define TMR1_COMP22			(IMXRT_TMR1.CH[2].COMP2)
+#define TMR1_CAPT2			(IMXRT_TMR1.CH[2].CAPT)
+#define TMR1_LOAD2			(IMXRT_TMR1.CH[2].LOAD)
+#define TMR1_HOLD2			(IMXRT_TMR1.CH[2].HOLD)
+#define TMR1_CNTR2			(IMXRT_TMR1.CH[2].CNTR)
+#define TMR1_CTRL2			(IMXRT_TMR1.CH[2].CTRL)
+#define TMR1_SCTRL2			(IMXRT_TMR1.CH[2].SCTRL)
+#define TMR1_CMPLD12			(IMXRT_TMR1.CH[2].CMPLD1)
+#define TMR1_CMPLD22			(IMXRT_TMR1.CH[2].CMPLD2)
+#define TMR1_CSCTRL2			(IMXRT_TMR1.CH[2].CSCTRL)
+#define TMR1_FILT2			(IMXRT_TMR1.CH[2].FILT)
+#define TMR1_DMA2			(IMXRT_TMR1.CH[2].DMA)
+#define TMR1_COMP13			(IMXRT_TMR1.CH[3].COMP1)
+#define TMR1_COMP23			(IMXRT_TMR1.CH[3].COMP2)
+#define TMR1_CAPT3			(IMXRT_TMR1.CH[3].CAPT)
+#define TMR1_LOAD3			(IMXRT_TMR1.CH[3].LOAD)
+#define TMR1_HOLD3			(IMXRT_TMR1.CH[3].HOLD)
+#define TMR1_CNTR3			(IMXRT_TMR1.CH[3].CNTR)
+#define TMR1_CTRL3			(IMXRT_TMR1.CH[3].CTRL)
+#define TMR1_SCTRL3			(IMXRT_TMR1.CH[3].SCTRL)
+#define TMR1_CMPLD13			(IMXRT_TMR1.CH[3].CMPLD1)
+#define TMR1_CMPLD23			(IMXRT_TMR1.CH[3].CMPLD2)
+#define TMR1_CSCTRL3			(IMXRT_TMR1.CH[3].CSCTRL)
+#define TMR1_FILT3			(IMXRT_TMR1.CH[3].FILT)
+#define TMR1_DMA3			(IMXRT_TMR1.CH[3].DMA)
+#define IMXRT_TMR2		(*(IMXRT_TMR_t *)0x401E0000)
+#define TMR2_COMP10			(IMXRT_TMR2.CH[0].COMP1)
+#define TMR2_COMP20			(IMXRT_TMR2.CH[0].COMP2)
+#define TMR2_CAPT0			(IMXRT_TMR2.CH[0].CAPT)
+#define TMR2_LOAD0			(IMXRT_TMR2.CH[0].LOAD)
+#define TMR2_HOLD0			(IMXRT_TMR2.CH[0].HOLD)
+#define TMR2_CNTR0			(IMXRT_TMR2.CH[0].CNTR)
+#define TMR2_CTRL0			(IMXRT_TMR2.CH[0].CTRL)
+#define TMR2_SCTRL0			(IMXRT_TMR2.CH[0].SCTRL)
+#define TMR2_CMPLD10			(IMXRT_TMR2.CH[0].CMPLD1)
+#define TMR2_CMPLD20			(IMXRT_TMR2.CH[0].CMPLD2)
+#define TMR2_CSCTRL0			(IMXRT_TMR2.CH[0].CSCTRL)
+#define TMR2_FILT0			(IMXRT_TMR2.CH[0].FILT)
+#define TMR2_DMA0			(IMXRT_TMR2.CH[0].DMA)
+#define TMR2_ENBL			(IMXRT_TMR2.ENBL)
+#define TMR2_COMP11			(IMXRT_TMR2.CH[1].COMP1)
+#define TMR2_COMP21			(IMXRT_TMR2.CH[1].COMP2)
+#define TMR2_CAPT1			(IMXRT_TMR2.CH[1].CAPT)
+#define TMR2_LOAD1			(IMXRT_TMR2.CH[1].LOAD)
+#define TMR2_HOLD1			(IMXRT_TMR2.CH[1].HOLD)
+#define TMR2_CNTR1			(IMXRT_TMR2.CH[1].CNTR)
+#define TMR2_CTRL1			(IMXRT_TMR2.CH[1].CTRL)
+#define TMR2_SCTRL1			(IMXRT_TMR2.CH[1].SCTRL)
+#define TMR2_CMPLD11			(IMXRT_TMR2.CH[1].CMPLD1)
+#define TMR2_CMPLD21			(IMXRT_TMR2.CH[1].CMPLD2)
+#define TMR2_CSCTRL1			(IMXRT_TMR2.CH[1].CSCTRL)
+#define TMR2_FILT1			(IMXRT_TMR2.CH[1].FILT)
+#define TMR2_DMA1			(IMXRT_TMR2.CH[1].DMA)
+#define TMR2_COMP12			(IMXRT_TMR2.CH[2].COMP1)
+#define TMR2_COMP22			(IMXRT_TMR2.CH[2].COMP2)
+#define TMR2_CAPT2			(IMXRT_TMR2.CH[2].CAPT)
+#define TMR2_LOAD2			(IMXRT_TMR2.CH[2].LOAD)
+#define TMR2_HOLD2			(IMXRT_TMR2.CH[2].HOLD)
+#define TMR2_CNTR2			(IMXRT_TMR2.CH[2].CNTR)
+#define TMR2_CTRL2			(IMXRT_TMR2.CH[2].CTRL)
+#define TMR2_SCTRL2			(IMXRT_TMR2.CH[2].SCTRL)
+#define TMR2_CMPLD12			(IMXRT_TMR2.CH[2].CMPLD1)
+#define TMR2_CMPLD22			(IMXRT_TMR2.CH[2].CMPLD2)
+#define TMR2_CSCTRL2			(IMXRT_TMR2.CH[2].CSCTRL)
+#define TMR2_FILT2			(IMXRT_TMR2.CH[2].FILT)
+#define TMR2_DMA2			(IMXRT_TMR2.CH[2].DMA)
+#define TMR2_COMP13			(IMXRT_TMR2.CH[3].COMP1)
+#define TMR2_COMP23			(IMXRT_TMR2.CH[3].COMP2)
+#define TMR2_CAPT3			(IMXRT_TMR2.CH[3].CAPT)
+#define TMR2_LOAD3			(IMXRT_TMR2.CH[3].LOAD)
+#define TMR2_HOLD3			(IMXRT_TMR2.CH[3].HOLD)
+#define TMR2_CNTR3			(IMXRT_TMR2.CH[3].CNTR)
+#define TMR2_CTRL3			(IMXRT_TMR2.CH[3].CTRL)
+#define TMR2_SCTRL3			(IMXRT_TMR2.CH[3].SCTRL)
+#define TMR2_CMPLD13			(IMXRT_TMR2.CH[3].CMPLD1)
+#define TMR2_CMPLD23			(IMXRT_TMR2.CH[3].CMPLD2)
+#define TMR2_CSCTRL3			(IMXRT_TMR2.CH[3].CSCTRL)
+#define TMR2_FILT3			(IMXRT_TMR2.CH[3].FILT)
+#define TMR2_DMA3			(IMXRT_TMR2.CH[3].DMA)
+#define IMXRT_TMR3		(*(IMXRT_TMR_t *)0x401E4000)
+#define TMR3_COMP10			(IMXRT_TMR3.CH[0].COMP1)
+#define TMR3_COMP20			(IMXRT_TMR3.CH[0].COMP2)
+#define TMR3_CAPT0			(IMXRT_TMR3.CH[0].CAPT)
+#define TMR3_LOAD0			(IMXRT_TMR3.CH[0].LOAD)
+#define TMR3_HOLD0			(IMXRT_TMR3.CH[0].HOLD)
+#define TMR3_CNTR0			(IMXRT_TMR3.CH[0].CNTR)
+#define TMR3_CTRL0			(IMXRT_TMR3.CH[0].CTRL)
+#define TMR3_SCTRL0			(IMXRT_TMR3.CH[0].SCTRL)
+#define TMR3_CMPLD10			(IMXRT_TMR3.CH[0].CMPLD1)
+#define TMR3_CMPLD20			(IMXRT_TMR3.CH[0].CMPLD2)
+#define TMR3_CSCTRL0			(IMXRT_TMR3.CH[0].CSCTRL)
+#define TMR3_FILT0			(IMXRT_TMR3.CH[0].FILT)
+#define TMR3_DMA0			(IMXRT_TMR3.CH[0].DMA)
+#define TMR3_ENBL			(IMXRT_TMR3.ENBL)
+#define TMR3_COMP11			(IMXRT_TMR3.CH[1].COMP1)
+#define TMR3_COMP21			(IMXRT_TMR3.CH[1].COMP2)
+#define TMR3_CAPT1			(IMXRT_TMR3.CH[1].CAPT)
+#define TMR3_LOAD1			(IMXRT_TMR3.CH[1].LOAD)
+#define TMR3_HOLD1			(IMXRT_TMR3.CH[1].HOLD)
+#define TMR3_CNTR1			(IMXRT_TMR3.CH[1].CNTR)
+#define TMR3_CTRL1			(IMXRT_TMR3.CH[1].CTRL)
+#define TMR3_SCTRL1			(IMXRT_TMR3.CH[1].SCTRL)
+#define TMR3_CMPLD11			(IMXRT_TMR3.CH[1].CMPLD1)
+#define TMR3_CMPLD21			(IMXRT_TMR3.CH[1].CMPLD2)
+#define TMR3_CSCTRL1			(IMXRT_TMR3.CH[1].CSCTRL)
+#define TMR3_FILT1			(IMXRT_TMR3.CH[1].FILT)
+#define TMR3_DMA1			(IMXRT_TMR3.CH[1].DMA)
+#define TMR3_COMP12			(IMXRT_TMR3.CH[2].COMP1)
+#define TMR3_COMP22			(IMXRT_TMR3.CH[2].COMP2)
+#define TMR3_CAPT2			(IMXRT_TMR3.CH[2].CAPT)
+#define TMR3_LOAD2			(IMXRT_TMR3.CH[2].LOAD)
+#define TMR3_HOLD2			(IMXRT_TMR3.CH[2].HOLD)
+#define TMR3_CNTR2			(IMXRT_TMR3.CH[2].CNTR)
+#define TMR3_CTRL2			(IMXRT_TMR3.CH[2].CTRL)
+#define TMR3_SCTRL2			(IMXRT_TMR3.CH[2].SCTRL)
+#define TMR3_CMPLD12			(IMXRT_TMR3.CH[2].CMPLD1)
+#define TMR3_CMPLD22			(IMXRT_TMR3.CH[2].CMPLD2)
+#define TMR3_CSCTRL2			(IMXRT_TMR3.CH[2].CSCTRL)
+#define TMR3_FILT2			(IMXRT_TMR3.CH[2].FILT)
+#define TMR3_DMA2			(IMXRT_TMR3.CH[2].DMA)
+#define TMR3_COMP13			(IMXRT_TMR3.CH[3].COMP1)
+#define TMR3_COMP23			(IMXRT_TMR3.CH[3].COMP2)
+#define TMR3_CAPT3			(IMXRT_TMR3.CH[3].CAPT)
+#define TMR3_LOAD3			(IMXRT_TMR3.CH[3].LOAD)
+#define TMR3_HOLD3			(IMXRT_TMR3.CH[3].HOLD)
+#define TMR3_CNTR3			(IMXRT_TMR3.CH[3].CNTR)
+#define TMR3_CTRL3			(IMXRT_TMR3.CH[3].CTRL)
+#define TMR3_SCTRL3			(IMXRT_TMR3.CH[3].SCTRL)
+#define TMR3_CMPLD13			(IMXRT_TMR3.CH[3].CMPLD1)
+#define TMR3_CMPLD23			(IMXRT_TMR3.CH[3].CMPLD2)
+#define TMR3_CSCTRL3			(IMXRT_TMR3.CH[3].CSCTRL)
+#define TMR3_FILT3			(IMXRT_TMR3.CH[3].FILT)
+#define TMR3_DMA3			(IMXRT_TMR3.CH[3].DMA)
+#define IMXRT_TMR4		(*(IMXRT_TMR_t *)0x401E8000)
+#define TMR4_COMP10			(IMXRT_TMR4.CH[0].COMP1)
+#define TMR4_COMP20			(IMXRT_TMR4.CH[0].COMP2)
+#define TMR4_CAPT0			(IMXRT_TMR4.CH[0].CAPT)
+#define TMR4_LOAD0			(IMXRT_TMR4.CH[0].LOAD)
+#define TMR4_HOLD0			(IMXRT_TMR4.CH[0].HOLD)
+#define TMR4_CNTR0			(IMXRT_TMR4.CH[0].CNTR)
+#define TMR4_CTRL0			(IMXRT_TMR4.CH[0].CTRL)
+#define TMR4_SCTRL0			(IMXRT_TMR4.CH[0].SCTRL)
+#define TMR4_CMPLD10			(IMXRT_TMR4.CH[0].CMPLD1)
+#define TMR4_CMPLD20			(IMXRT_TMR4.CH[0].CMPLD2)
+#define TMR4_CSCTRL0			(IMXRT_TMR4.CH[0].CSCTRL)
+#define TMR4_FILT0			(IMXRT_TMR4.CH[0].FILT)
+#define TMR4_DMA0			(IMXRT_TMR4.CH[0].DMA)
+#define TMR4_ENBL			(IMXRT_TMR4.ENBL)
+#define TMR4_COMP11			(IMXRT_TMR4.CH[1].COMP1)
+#define TMR4_COMP21			(IMXRT_TMR4.CH[1].COMP2)
+#define TMR4_CAPT1			(IMXRT_TMR4.CH[1].CAPT)
+#define TMR4_LOAD1			(IMXRT_TMR4.CH[1].LOAD)
+#define TMR4_HOLD1			(IMXRT_TMR4.CH[1].HOLD)
+#define TMR4_CNTR1			(IMXRT_TMR4.CH[1].CNTR)
+#define TMR4_CTRL1			(IMXRT_TMR4.CH[1].CTRL)
+#define TMR4_SCTRL1			(IMXRT_TMR4.CH[1].SCTRL)
+#define TMR4_CMPLD11			(IMXRT_TMR4.CH[1].CMPLD1)
+#define TMR4_CMPLD21			(IMXRT_TMR4.CH[1].CMPLD2)
+#define TMR4_CSCTRL1			(IMXRT_TMR4.CH[1].CSCTRL)
+#define TMR4_FILT1			(IMXRT_TMR4.CH[1].FILT)
+#define TMR4_DMA1			(IMXRT_TMR4.CH[1].DMA)
+#define TMR4_COMP12			(IMXRT_TMR4.CH[2].COMP1)
+#define TMR4_COMP22			(IMXRT_TMR4.CH[2].COMP2)
+#define TMR4_CAPT2			(IMXRT_TMR4.CH[2].CAPT)
+#define TMR4_LOAD2			(IMXRT_TMR4.CH[2].LOAD)
+#define TMR4_HOLD2			(IMXRT_TMR4.CH[2].HOLD)
+#define TMR4_CNTR2			(IMXRT_TMR4.CH[2].CNTR)
+#define TMR4_CTRL2			(IMXRT_TMR4.CH[2].CTRL)
+#define TMR4_SCTRL2			(IMXRT_TMR4.CH[2].SCTRL)
+#define TMR4_CMPLD12			(IMXRT_TMR4.CH[2].CMPLD1)
+#define TMR4_CMPLD22			(IMXRT_TMR4.CH[2].CMPLD2)
+#define TMR4_CSCTRL2			(IMXRT_TMR4.CH[2].CSCTRL)
+#define TMR4_FILT2			(IMXRT_TMR4.CH[2].FILT)
+#define TMR4_DMA2			(IMXRT_TMR4.CH[2].DMA)
+#define TMR4_COMP13			(IMXRT_TMR4.CH[3].COMP1)
+#define TMR4_COMP23			(IMXRT_TMR4.CH[3].COMP2)
+#define TMR4_CAPT3			(IMXRT_TMR4.CH[3].CAPT)
+#define TMR4_LOAD3			(IMXRT_TMR4.CH[3].LOAD)
+#define TMR4_HOLD3			(IMXRT_TMR4.CH[3].HOLD)
+#define TMR4_CNTR3			(IMXRT_TMR4.CH[3].CNTR)
+#define TMR4_CTRL3			(IMXRT_TMR4.CH[3].CTRL)
+#define TMR4_SCTRL3			(IMXRT_TMR4.CH[3].SCTRL)
+#define TMR4_CMPLD13			(IMXRT_TMR4.CH[3].CMPLD1)
+#define TMR4_CMPLD23			(IMXRT_TMR4.CH[3].CMPLD2)
+#define TMR4_CSCTRL3			(IMXRT_TMR4.CH[3].CSCTRL)
+#define TMR4_FILT3			(IMXRT_TMR4.CH[3].FILT)
+#define TMR4_DMA3			(IMXRT_TMR4.CH[3].DMA)
+#define TMR_CTRL_CM(n)				((uint16_t)(((n) & 0x07) << 13))
+#define TMR_CTRL_PCS(n)				((uint16_t)(((n) & 0x0F) << 9))
+#define TMR_CTRL_SCS(n)				((uint16_t)(((n) & 0x03) << 7))
+#define TMR_CTRL_ONCE				((uint16_t)(1<<6))
+#define TMR_CTRL_LENGTH				((uint16_t)(1<<5))
+#define TMR_CTRL_DIR				((uint16_t)(1<<4))
+#define TMR_CTRL_COINIT				((uint16_t)(1<<3))
+#define TMR_CTRL_OUTMODE(n)			((uint16_t)(((n) & 0x07) << 0))
+#define TMR_SCTRL_TCF				((uint16_t)(1<<15))
+#define TMR_SCTRL_TCFIE				((uint16_t)(1<<14))
+#define TMR_SCTRL_TOF				((uint16_t)(1<<13))
+#define TMR_SCTRL_TOFIE				((uint16_t)(1<<12))
+#define TMR_SCTRL_IEF				((uint16_t)(1<<11))
+#define TMR_SCTRL_IEFIE				((uint16_t)(1<<10))
+#define TMR_SCTRL_IPS				((uint16_t)(1<<9))
+#define TMR_SCTRL_INPUT				((uint16_t)(1<<8))
+#define TMR_SCTRL_CAPTURE_MODE(n)		((uint16_t)(((n) & 0x03) << 6))
+#define TMR_SCTRL_MSTR				((uint16_t)(1<<5))
+#define TMR_SCTRL_EEOF				((uint16_t)(1<<4))
+#define TMR_SCTRL_VAL				((uint16_t)(1<<3))
+#define TMR_SCTRL_FORCE				((uint16_t)(1<<2))
+#define TMR_SCTRL_OPS				((uint16_t)(1<<1))
+#define TMR_SCTRL_OEN				((uint16_t)(1<<0))
+#define TMR_CSCTRL_DBG_EN(n)			((uint16_t)(((n) & 0x03) << 14))
+#define TMR_CSCTRL_FAULT			((uint16_t)(1<<13))
+#define TMR_CSCTRL_ALT_LOAD			((uint16_t)(1<<12))
+#define TMR_CSCTRL_ROC				((uint16_t)(1<<11))
+#define TMR_CSCTRL_TCI				((uint16_t)(1<<10))
+#define TMR_CSCTRL_UP				((uint16_t)(1<<9))
+#define TMR_CSCTRL_TCF2EN			((uint16_t)(1<<7))
+#define TMR_CSCTRL_TCF1EN			((uint16_t)(1<<6))
+#define TMR_CSCTRL_TCF2				((uint16_t)(1<<5))
+#define TMR_CSCTRL_TCF1				((uint16_t)(1<<4))
+#define TMR_CSCTRL_CL2(n)			((uint16_t)(((n) & 0x03) << 2))
+#define TMR_CSCTRL_CL1(n)			((uint16_t)(((n) & 0x03) << 0))
+#define TMR_FILT_FILT_CNT(n)			((uint16_t)(((n) & 0x07) << 8))
+#define TMR_FILT_FILT_PER(n)			((uint16_t)(((n) & 0xFF) << 0))
+#define TMR_DMA_CMPLD2DE			((uint16_t)(1<<2))
+#define TMR_DMA_CMPLD1DE			((uint16_t)(1<<1))
+#define TMR_DMA_IEFDE				((uint16_t)(1<<0))
 
-#define IMXRT_ROMC		(*(IMXRT_REGISTER32_t *)0x40180000)
-#define ROMC_ROMPATCH7D			(IMXRT_ROMC.offset0D4)
-#define ROMC_ROMPATCH6D			(IMXRT_ROMC.offset0D8)
-#define ROMC_ROMPATCH5D			(IMXRT_ROMC.offset0DC)
-#define ROMC_ROMPATCH4D			(IMXRT_ROMC.offset0E0)
-#define ROMC_ROMPATCH3D			(IMXRT_ROMC.offset0E4)
-#define ROMC_ROMPATCH2D			(IMXRT_ROMC.offset0E8)
-#define ROMC_ROMPATCH1D			(IMXRT_ROMC.offset0EC)
-#define ROMC_ROMPATCH0D			(IMXRT_ROMC.offset0F0)
-#define ROMC_ROMPATCHCNTL		(IMXRT_ROMC.offset0F4)
-#define ROMC_ROMPATCHENH		(IMXRT_ROMC.offset0F8)
-#define ROMC_ROMPATCHENL		(IMXRT_ROMC.offset0FC)
-#define ROMC_ROMPATCH0A			(IMXRT_ROMC.offset100)
-#define ROMC_ROMPATCH1A			(IMXRT_ROMC.offset104)
-#define ROMC_ROMPATCH2A			(IMXRT_ROMC.offset108)
-#define ROMC_ROMPATCH3A			(IMXRT_ROMC.offset10C)
-#define ROMC_ROMPATCH4A			(IMXRT_ROMC.offset110)
-#define ROMC_ROMPATCH5A			(IMXRT_ROMC.offset114)
-#define ROMC_ROMPATCH6A			(IMXRT_ROMC.offset118)
-#define ROMC_ROMPATCH7A			(IMXRT_ROMC.offset11C)
-#define ROMC_ROMPATCH8A			(IMXRT_ROMC.offset120)
-#define ROMC_ROMPATCH9A			(IMXRT_ROMC.offset124)
-#define ROMC_ROMPATCH10A		(IMXRT_ROMC.offset128)
-#define ROMC_ROMPATCH11A		(IMXRT_ROMC.offset12C)
-#define ROMC_ROMPATCH12A		(IMXRT_ROMC.offset130)
-#define ROMC_ROMPATCH13A		(IMXRT_ROMC.offset134)
-#define ROMC_ROMPATCH14A		(IMXRT_ROMC.offset138)
-#define ROMC_ROMPATCH15A		(IMXRT_ROMC.offset13C)
-#define ROMC_ROMPATCHSR			(IMXRT_ROMC.offset208)
-
-
-// page 3216
+// 48.4.1.1: page 2748
 #define IMXRT_I2S1		(*(IMXRT_REGISTER32_t *)0x40384000)
 #define I2S1_VERID			(IMXRT_I2S1.offset000)
 #define I2S1_PARAM			(IMXRT_I2S1.offset004)
@@ -4907,7 +6391,7 @@ typedef struct {
 #define I2S3_RFR3			(IMXRT_I2S3.offset0CC)
 #define I2S3_RMR			(IMXRT_I2S3.offset0E0)
 
-// page 3290
+// 49.3.1.1: page 2784
 #define IMXRT_SEMC		(*(IMXRT_REGISTER32_t *)0x402F0000)
 #define SEMC_MCR			(IMXRT_SEMC.offset000)
 #define SEMC_IOCR			(IMXRT_SEMC.offset004)
@@ -4965,7 +6449,7 @@ typedef struct {
 #define SEMC_STS14			(IMXRT_SEMC.offset0F8)
 #define SEMC_STS15			(IMXRT_SEMC.offset0FC)
 
-// page 3398
+// 50.6.1: page 2895
 #define IMXRT_SNVS		(*(IMXRT_REGISTER32_t *)0x400D4000)
 #define SNVS_HPLR			(IMXRT_SNVS.offset000)
 #define SNVS_HPCOMR			(IMXRT_SNVS.offset004)
@@ -4985,7 +6469,7 @@ typedef struct {
 #define SNVS_HPVIDR1			(IMXRT_SNVS_b.offset3F8)
 #define SNVS_HPVIDR2			(IMXRT_SNVS_b.offset3FC)
 
-// page 3500
+// 51.5: page 2938
 #define IMXRT_SPDIF		(*(IMXRT_REGISTER32_t *)0x400D4000)
 #define SPDIF_SCR			(IMXRT_SPDIF.offset000)
 #define SPDIF_SRCD			(IMXRT_SPDIF.offset004)
@@ -5006,12 +6490,11 @@ typedef struct {
 #define SPDIF_SRFM			(IMXRT_SPDIF.offset044)
 #define SPDIF_STC			(IMXRT_SPDIF.offset050)
 
-// page 3521
+// 52.7: page 2969
 #define IMXRT_SRC		(*(IMXRT_REGISTER32_t *)0x400F8000)
 #define SRC_SCR				(IMXRT_SRC.offset000)
 #define SRC_SBMR1			(IMXRT_SRC.offset004)
 #define SRC_SRSR			(IMXRT_SRC.offset008)
-#define SRC_SISR			(IMXRT_SRC.offset014)
 #define SRC_SBMR2			(IMXRT_SRC.offset01C)
 #define SRC_GPR1			(IMXRT_SRC.offset020)
 #define SRC_GPR2			(IMXRT_SRC.offset024)
@@ -5024,7 +6507,9 @@ typedef struct {
 #define SRC_GPR9			(IMXRT_SRC.offset040)
 #define SRC_GPR10			(IMXRT_SRC.offset044)
 
-// page 3554
+// 53.3: page 2986  TODO...
+
+// 54.3: page 2998
 #define IMXRT_TSC		(*(IMXRT_REGISTER32_t *)0x400E0000)
 #define TSC_BASIC_SETTING		(IMXRT_TSC.offset000)
 #define TSC_PS_INPUT_BUFFER_ADDR	(IMXRT_TSC.offset010)
@@ -5036,7 +6521,7 @@ typedef struct {
 #define TSC_DEBUG_MODE			(IMXRT_TSC.offset070)
 #define TSC_DEBUG_MODE2			(IMXRT_TSC.offset080)
 
-// page 3575
+// 55.4.1.1: page 3022
 #define IMXRT_USB1		(*(IMXRT_REGISTER32_t *)0x402E0000)
 #define USB1_ID				(IMXRT_USB1.offset000)
 #define USB1_HWGENERAL			(IMXRT_USB1.offset004)
@@ -5129,8 +6614,96 @@ typedef struct {
 #define USB2_ENDPTCTRL5			(IMXRT_USB2.offset1D4)
 #define USB2_ENDPTCTRL6			(IMXRT_USB2.offset1D8)
 #define USB2_ENDPTCTRL7			(IMXRT_USB2.offset1DC)
+#define USB_USBCMD_ITC(n)			((uint32_t)(((n) & 0xFF) << 16))
+#define USB_USBCMD_FS_2				((uint32_t)(1<<15))
+#define USB_USBCMD_SUTW				((uint32_t)(1<<13))
+#define USB_USBCMD_ATDTW			((uint32_t)(1<<12))
+#define USB_USBCMD_ASPE				((uint32_t)(1<<11))
+#define USB_USBCMD_ASP(n)			((uint32_t)(((n) & 0x03) << 8))
+#define USB_USBCMD_IAA				((uint32_t)(1<<6))
+#define USB_USBCMD_ASE				((uint32_t)(1<<5))
+#define USB_USBCMD_PSE				((uint32_t)(1<<4))
+#define USB_USBCMD_FS_1(n)			((uint32_t)(((n) & 0x03) << 2))
+#define USB_USBCMD_RST				((uint32_t)(1<<1))
+#define USB_USBCMD_RS				((uint32_t)(1<<0))
+#define USB_USBSTS_TI1				((uint32_t)(1<<25))
+#define USB_USBSTS_TI0				((uint32_t)(1<<24))
+#define USB_USBSTS_NAKI				((uint32_t)(1<<16))
+#define USB_USBSTS_AS				((uint32_t)(1<<15))
+#define USB_USBSTS_PS				((uint32_t)(1<<14))
+#define USB_USBSTS_RCL				((uint32_t)(1<<13))
+#define USB_USBSTS_HCH				((uint32_t)(1<<12))
+#define USB_USBSTS_ULPII			((uint32_t)(1<<10))
+#define USB_USBSTS_SLI				((uint32_t)(1<<8))
+#define USB_USBSTS_SRI				((uint32_t)(1<<7))
+#define USB_USBSTS_URI				((uint32_t)(1<<6))
+#define USB_USBSTS_AAI				((uint32_t)(1<<5))
+#define USB_USBSTS_SEI				((uint32_t)(1<<4))
+#define USB_USBSTS_FRI				((uint32_t)(1<<3))
+#define USB_USBSTS_PCI				((uint32_t)(1<<2))
+#define USB_USBSTS_UEI				((uint32_t)(1<<1))
+#define USB_USBSTS_UI				((uint32_t)(1<<0))
+#define USB_USBINTR_TIE1			((uint32_t)(1<<25))
+#define USB_USBINTR_TIE0			((uint32_t)(1<<24))
+#define USB_USBINTR_UPIE			((uint32_t)(1<<19))
+#define USB_USBINTR_UAIE			((uint32_t)(1<<18))
+#define USB_USBINTR_NAKE			((uint32_t)(1<<16))
+#define USB_USBINTR_ULPIE			((uint32_t)(1<<10))
+#define USB_USBINTR_SLE				((uint32_t)(1<<8))
+#define USB_USBINTR_SRE				((uint32_t)(1<<7))
+#define USB_USBINTR_URE				((uint32_t)(1<<6))
+#define USB_USBINTR_AAE				((uint32_t)(1<<5))
+#define USB_USBINTR_SEE				((uint32_t)(1<<4))
+#define USB_USBINTR_FRE				((uint32_t)(1<<3))
+#define USB_USBINTR_PCE				((uint32_t)(1<<2))
+#define USB_USBINTR_UEE				((uint32_t)(1<<1))
+#define USB_USBINTR_UE				((uint32_t)(1<<0))
+#define USB_DEVICEADDR_USBADR(n)		((uint32_t)(((n) & 0x7F) << 25))
+#define USB_DEVICEADDR_USBADRA			((uint32_t)(1<<24))
+#define USB_PORTSC1_PTS_1(n)			((uint32_t)(((n) & 0x03) << 30))
+#define USB_PORTSC1_STS				((uint32_t)(1<<29))
+#define USB_PORTSC1_PTW				((uint32_t)(1<<28))
+#define USB_PORTSC1_PSPD(n)			((uint32_t)(((n) & 0x03) << 26))
+#define USB_PORTSC1_PTS_2			((uint32_t)(1<<25))
+#define USB_PORTSC1_PFSC			((uint32_t)(1<<24))
+#define USB_PORTSC1_PHCD			((uint32_t)(1<<23))
+#define USB_PORTSC1_WKOC			((uint32_t)(1<<22))
+#define USB_PORTSC1_WKDC			((uint32_t)(1<<21))
+#define USB_PORTSC1_WKCN			((uint32_t)(1<<20))
+#define USB_PORTSC1_PTC(n)			((uint32_t)(((n) & 0x0F) << 16))
+#define USB_PORTSC1_PIC(n)			((uint32_t)(((n) & 0x03) << 14))
+#define USB_PORTSC1_PO				((uint32_t)(1<<13))
+#define USB_PORTSC1_PP				((uint32_t)(1<<12))
+#define USB_PORTSC1_LS(n)			((uint32_t)(((n) & 0x03) << 10))
+#define USB_PORTSC1_HSP				((uint32_t)(1<<9))
+#define USB_PORTSC1_PR				((uint32_t)(1<<8))
+#define USB_PORTSC1_SUSP			((uint32_t)(1<<7))
+#define USB_PORTSC1_FPR				((uint32_t)(1<<6))
+#define USB_PORTSC1_OCC				((uint32_t)(1<<5))
+#define USB_PORTSC1_OCA				((uint32_t)(1<<4))
+#define USB_PORTSC1_PEC				((uint32_t)(1<<3))
+#define USB_PORTSC1_PE				((uint32_t)(1<<2))
+#define USB_PORTSC1_CSC				((uint32_t)(1<<1))
+#define USB_PORTSC1_CCS				((uint32_t)(1<<0))
+#define USB_USBMODE_SDIS			((uint32_t)(1<<4))
+#define USB_USBMODE_SLOM			((uint32_t)(1<<3))
+#define USB_USBMODE_ES				((uint32_t)(1<<2))
+#define USB_USBMODE_CM(n)			((uint32_t)(((n) & 0x03) << 0))
+#define USB_USBMODE_CM_MASK			USB_USBMODE_CM(3)
+#define USB_ENDPTCTRL_TXE			((uint32_t)(1<<23))
+#define USB_ENDPTCTRL_TXR			((uint32_t)(1<<22))
+#define USB_ENDPTCTRL_TXI			((uint32_t)(1<<21))
+#define USB_ENDPTCTRL_TXT(n)			((uint32_t)(((n) & 0x03) << 18))
+#define USB_ENDPTCTRL_TXD			((uint32_t)(1<<17))
+#define USB_ENDPTCTRL_TXS			((uint32_t)(1<<16))
+#define USB_ENDPTCTRL_RXE			((uint32_t)(1<<7))
+#define USB_ENDPTCTRL_RXR			((uint32_t)(1<<6))
+#define USB_ENDPTCTRL_RXI			((uint32_t)(1<<5))
+#define USB_ENDPTCTRL_RXT(n)			((uint32_t)(((n) & 0x03) << 2))
+#define USB_ENDPTCTRL_RXD			((uint32_t)(1<<0))
+#define USB_ENDPTCTRL_RXS			((uint32_t)(1<<1))
 
-// page 3835
+// 56.3: page 3283
 #define IMXRT_USBPHY1		(*(IMXRT_REGISTER32_t *)0x400D9000)
 #define USBPHY1_PWD			(IMXRT_USBPHY1.offset000)
 #define USBPHY1_PWD_SET			(IMXRT_USBPHY1.offset004)
@@ -5187,8 +6760,52 @@ typedef struct {
 #define USBPHY2_DEBUG1_CLR		(IMXRT_USBPHY2.offset078)
 #define USBPHY2_DEBUG1_TOG		(IMXRT_USBPHY2.offset07C)
 #define USBPHY2_VERSION			(IMXRT_USBPHY2.offset080)
+#define USBPHY_PWD_RXPWDRX			((uint32_t)(1<<20))
+#define USBPHY_PWD_RXPWDDIFF			((uint32_t)(1<<19))
+#define USBPHY_PWD_RXPWD1PT1			((uint32_t)(1<<18))
+#define USBPHY_PWD_RXPWDENV			((uint32_t)(1<<17))
+#define USBPHY_PWD_TXPWDV2I			((uint32_t)(1<<12))
+#define USBPHY_PWD_TXPWDIBIAS			((uint32_t)(1<<11))
+#define USBPHY_PWD_TXPWDFS			((uint32_t)(1<<10))
+#define USBPHY_TX_USBPHY_TX_EDGECTRL(n)		((uint32_t)(((n) & 0x07) << 26))
+#define USBPHY_TX_TXCAL45DP(n)			((uint32_t)(((n) & 0x0F) << 16))
+#define USBPHY_TX_TXCAL45DN(n)			((uint32_t)(((n) & 0x0F) << 8))
+#define USBPHY_TX_D_CAL(n)			((uint32_t)(((n) & 0x0F) << 0))
+#define USBPHY_RX_RXDBYPASS			((uint32_t)(1<<22))
+#define USBPHY_RX_DISCONADJ(n)			((uint32_t)(((n) & 0x07) << 4))
+#define USBPHY_RX_ENVADJ(n)			((uint32_t)(((n) & 0x07) << 0))
+#define USBPHY_CTRL_SFTRST			((uint32_t)(1<<31))
+#define USBPHY_CTRL_CLKGATE			((uint32_t)(1<<30))
+#define USBPHY_CTRL_UTMI_SUSPENDM		((uint32_t)(1<<29))
+#define USBPHY_CTRL_HOST_FORCE_LS_SE0		((uint32_t)(1<<28))
+#define USBPHY_CTRL_OTG_ID_VALUE		((uint32_t)(1<<27))
+#define USBPHY_CTRL_FSDLL_RST_EN		((uint32_t)(1<<24))
+#define USBPHY_CTRL_ENVBUSCHG_WKUP		((uint32_t)(1<<23))
+#define USBPHY_CTRL_ENIDCHG_WKUP		((uint32_t)(1<<22))
+#define USBPHY_CTRL_ENDPDMCHG_WKUP		((uint32_t)(1<<21))
+#define USBPHY_CTRL_ENAUTOCLR_PHY_PWD		((uint32_t)(1<<20))
+#define USBPHY_CTRL_ENAUTOCLR_CLKGATE		((uint32_t)(1<<19))
+#define USBPHY_CTRL_ENAUTO_PWRON_PLL		((uint32_t)(1<<18))
+#define USBPHY_CTRL_WAKEUP_IRQ			((uint32_t)(1<<17))
+#define USBPHY_CTRL_ENIRQWAKEUP			((uint32_t)(1<<16))
+#define USBPHY_CTRL_ENUTMILEVEL3		((uint32_t)(1<<15))
+#define USBPHY_CTRL_ENUTMILEVEL2		((uint32_t)(1<<14))
+#define USBPHY_CTRL_DATA_ON_LRADC		((uint32_t)(1<<13))
+#define USBPHY_CTRL_DEVPLUGIN_IRQ		((uint32_t)(1<<12))
+#define USBPHY_CTRL_ENIRQDEVPLUGIN		((uint32_t)(1<<11))
+#define USBPHY_CTRL_RESUME_IRQ			((uint32_t)(1<<10))
+#define USBPHY_CTRL_ENIRQRESUMEDETECT		((uint32_t)(1<<9))
+#define USBPHY_CTRL_RESUMEIRQSTICKY		((uint32_t)(1<<8))
+#define USBPHY_CTRL_ENOTGIDDETECT		((uint32_t)(1<<7))
+#define USBPHY_CTRL_OTG_ID_CHG_IRQ		((uint32_t)(1<<6))
+#define USBPHY_CTRL_DEVPLUGIN_POLARITY		((uint32_t)(1<<5))
+#define USBPHY_CTRL_ENDEVPLUGINDETECT		((uint32_t)(1<<4))
+#define USBPHY_CTRL_HOSTDISCONDETECT_IRQ	((uint32_t)(1<<3))
+#define USBPHY_CTRL_ENIRQHOSTDISCON		((uint32_t)(1<<2))
+#define USBPHY_CTRL_ENHOSTDISCONDETECT		((uint32_t)(1<<1))
+#define USBPHY_CTRL_ENOTG_ID_CHG_IRQ		((uint32_t)(1<<0))
 
-// page 3926
+// 57.9.1.1: page 3381
 #define IMXRT_USDHC1		(*(IMXRT_REGISTER32_t *)0x402C0000)
 #define USDHC1_DS_ADDR			(IMXRT_USDHC1.offset000)
 #define USDHC1_BLK_ATT			(IMXRT_USDHC1.offset004)
@@ -5250,7 +6867,7 @@ typedef struct {
 #define USDHC2_VEND_SPEC2		(IMXRT_USDHC2.offset0C8)
 #define USDHC2_TUNING_CTRL		(IMXRT_USDHC2.offset0CC)
 
-// page 4009
+// 58.7.1.1: page 3461
 #define IMXRT_WDOG1		(*(IMXRT_REGISTER16_t *)0x400B8000)
 #define WDOG1_WCR			(IMXRT_WDOG1.offset000)
 #define WDOG1_WSR			(IMXRT_WDOG1.offset002)
@@ -5264,14 +6881,14 @@ typedef struct {
 #define WDOG2_WICR			(IMXRT_WDOG2.offset006)
 #define WDOG2_WMCR			(IMXRT_WDOG2.offset008)
 
-// page 4017
+// 59.3.1.1: page 3471
 #define IMXRT_WDOG3		(*(IMXRT_REGISTER32_t *)0x400BC000)
 #define WDOG3_CS			(IMXRT_WDOG3.offset000)
 #define WDOG3_CNT			(IMXRT_WDOG3.offset004)
 #define WDOG3_TOVAL			(IMXRT_WDOG3.offset008)
 #define WDOG3_WIN			(IMXRT_WDOG3.offset00C)
 
-// page 4036
+// 60.4: page 3491
 #define IMXRT_XBARA1		(*(IMXRT_REGISTER16_t *)0x403BC000)
 #define XBARA1_SEL0			(IMXRT_XBARA1.offset000)
 #define XBARA1_SEL1			(IMXRT_XBARA1.offset002)
@@ -5306,7 +6923,7 @@ typedef struct {
 #define XBARA1_CTRL0			(IMXRT_XBARA1.offset03C)
 #define XBARA1_CTRL1			(IMXRT_XBARA1.offset03E)
 
-// page 4059
+// 61.3: page 3537
 #define IMXRT_XBARB2		(*(IMXRT_REGISTER16_t *)0x403C0000)
 #define XBARB2_SEL0			(IMXRT_XBARB2.offset000)
 #define XBARB2_SEL1			(IMXRT_XBARB2.offset002)
@@ -5326,7 +6943,7 @@ typedef struct {
 #define XBARB3_SEL6			(IMXRT_XBARB3.offset00C)
 #define XBARB3_SEL7			(IMXRT_XBARB3.offset00E)
 
-// page 4069
+// 62.5: page 3548
 #define IMXRT_XTALOSC24M	(*(IMXRT_REGISTER32_t *)0x400D8000)
 #define XTALOSC24M_MISC0		(IMXRT_XTALOSC24M.offset150)
 #define XTALOSC24M_LOWPWR_CTRL		(IMXRT_XTALOSC24M.offset270)
@@ -5347,10 +6964,131 @@ typedef struct {
 #define XTALOSC24M_OSC_CONFIG2_TOG	(IMXRT_XTALOSC24M.offset2CC)
 
 
+// 0 = highest priority
+// Cortex-M7: 0,16,32,48,64,80,96,112,128,144,160,176,192,208,224,240
+#define NVIC_SET_PRIORITY(irqnum, priority)  (*((volatile uint8_t *)0xE000E400 + (irqnum)) = (uint8_t)(priority))
+#define NVIC_GET_PRIORITY(irqnum) (*((uint8_t *)0xE000E400 + (irqnum)))
 
 
+#define __disable_irq() __asm__ volatile("CPSID i":::"memory");
+#define __enable_irq()  __asm__ volatile("CPSIE i":::"memory");
 
 
+// System Control Space (SCS), ARMv7 ref manual, B3.2, page 708
+#define SCB_CPUID               (*(const    uint32_t *)0xE000ED00) // CPUID Base Register
+#define SCB_ICSR                (*(volatile uint32_t *)0xE000ED04) // Interrupt Control and State
+#define SCB_ICSR_NMIPENDSET             ((uint32_t)(1<<31))
+#define SCB_ICSR_PENDSVSET              ((uint32_t)(1<<28))
+#define SCB_ICSR_PENDSVCLR              ((uint32_t)(1<<27))
+#define SCB_ICSR_PENDSTSET              ((uint32_t)(1<<26))
+#define SCB_ICSR_PENDSTCLR              ((uint32_t)(1<<25))
+#define SCB_ICSR_ISRPREEMPT             ((uint32_t)(1<<23))
+#define SCB_ICSR_ISRPENDING             ((uint32_t)(1<<22))
+#define SCB_ICSR_RETTOBASE              ((uint32_t)(1<<11))
+#define SCB_VTOR                (*(volatile uint32_t *)0xE000ED08) // Vector Table Offset
+#define SCB_AIRCR               (*(volatile uint32_t *)0xE000ED0C) // Application Interrupt & Reset
+#define SCB_SCR                 (*(volatile uint32_t *)0xE000ED10) // System Control Register
+#define SCB_SCR_SEVONPEND   ((uint8_t)0x10)        // Send Event on Pending bit
+#define SCB_SCR_SLEEPDEEP   ((uint8_t)0x04)        // Sleep or Deep Sleep
+#define SCB_SCR_SLEEPONEXIT ((uint8_t)0x02)        // Sleep-on-exit
+#define SCB_CCR                 (*(volatile uint32_t *)0xE000ED14) // Configuration and Control
+#define SCB_CCR_BP			((uint32_t)(1<<18))	// Branch prediction enable 
+#define SCB_CCR_IC			((uint32_t)(1<<17))	// Instruction caches enable
+#define SCB_CCR_DC			((uint32_t)(1<<16))
+#define SCB_CCR_STKALIGN		((uint32_t)(1<<9))
+#define SCB_CCR_BFHFNMIGN		((uint32_t)(1<<8))
+#define SCB_CCR_DIV_0_TRP		((uint32_t)(1<<4))
+#define SCB_CCR_UNALIGN_TRP		((uint32_t)(1<<3))
+#define SCB_CCR_USERSETMPEND		((uint32_t)(1<<1))
+#define SCB_CCR_NONBASETHRDENA		((uint32_t)(1<<0))
+#define SCB_SHPR1               (*(volatile uint32_t *)0xE000ED18) // System Handler Priority 1
+#define SCB_SHPR2               (*(volatile uint32_t *)0xE000ED1C) // System Handler Priority 2
+#define SCB_SHPR3               (*(volatile uint32_t *)0xE000ED20) // System Handler Priority 3
+#define SCB_SHCSR               (*(volatile uint32_t *)0xE000ED24) // System Handler Control & State
+#define SCB_CFSR                (*(volatile uint32_t *)0xE000ED28) // Configurable Fault Status
+#define SCB_HFSR                (*(volatile uint32_t *)0xE000ED2C) // HardFault Status
+#define SCB_DFSR                (*(volatile uint32_t *)0xE000ED30) // Debug Fault Status
+#define SCB_MMFAR               (*(volatile uint32_t *)0xE000ED34) // MemManage Fault Address
+#define SCB_BFAR                (*(volatile uint32_t *)0xE000ED38) // Bus Fault Address
+#define SCB_AFAR                (*(volatile uint32_t *)0xE000ED3C) // Aux Fault Address
+#define SCB_CPACR               (*(volatile uint32_t *)0xE000ED88) // Coprocessor Access Control
+#define SCB_FPCCR               (*(volatile uint32_t *)0xE000EF34) // FP Context Control
+#define SCB_FPCAR               (*(volatile uint32_t *)0xE000EF38) // FP Context Address
+#define SCB_FPDSCR              (*(volatile uint32_t *)0xE000EF3C) // FP Default Status Control
+#define SCB_MVFR0               (*(volatile uint32_t *)0xE000EF40) // Media & FP Feature 0
+#define SCB_MVFR1               (*(volatile uint32_t *)0xE000EF44) // Media & FP Feature 1
+#define SCB_MVFR2               (*(volatile uint32_t *)0xE000EF48) // Media & FP Feature 2
 
+#define SYST_CSR                (*(volatile uint32_t *)0xE000E010) // SysTick Control and Status
+#define SYST_CSR_COUNTFLAG              ((uint32_t)(1<<16))
+#define SYST_CSR_CLKSOURCE              ((uint32_t)(1<<2))
+#define SYST_CSR_TICKINT                ((uint32_t)(1<<1))
+#define SYST_CSR_ENABLE                 ((uint32_t)(1<<0))
+#define SYST_RVR                (*(volatile uint32_t *)0xE000E014) // SysTick Reload Value Register
+#define SYST_CVR                (*(volatile uint32_t *)0xE000E018) // SysTick Current Value Register
+#define SYST_CALIB              (*(const    uint32_t *)0xE000E01C) // SysTick Calibration Value
+
+// Nested Vectored Interrupt Controller, Table 3-4 & ARMv7 ref, appendix B3.4 (page 750)
+#define NVIC_ISER0              (*(volatile uint32_t *)0xE000E100)
+#define NVIC_ISER1              (*(volatile uint32_t *)0xE000E104)
+#define NVIC_ISER2              (*(volatile uint32_t *)0xE000E108)
+#define NVIC_ISER3              (*(volatile uint32_t *)0xE000E10C)
+#define NVIC_ICER0              (*(volatile uint32_t *)0xE000E180)
+#define NVIC_ICER1              (*(volatile uint32_t *)0xE000E184)
+#define NVIC_ICER2              (*(volatile uint32_t *)0xE000E188)
+#define NVIC_ICER3              (*(volatile uint32_t *)0xE000E18C)
+#define NVIC_STIR		(*(volatile uint32_t *)0xE000EF00)
+#define NVIC_ENABLE_IRQ(n)      (*(&NVIC_ISER0 + ((n) >> 5)) = (1 << ((n) & 31)))
+#define NVIC_DISABLE_IRQ(n)     (*(&NVIC_ICER0 + ((n) >> 5)) = (1 << ((n) & 31)))
+#define NVIC_SET_PENDING(n)     (*((volatile uint32_t *)0xE000E200 + ((n) >> 5)) = (1 << ((n) & 31)))
+#define NVIC_CLEAR_PENDING(n)   (*((volatile uint32_t *)0xE000E280 + ((n) >> 5)) = (1 << ((n) & 31)))
+#define NVIC_IS_ENABLED(n)      (*(&NVIC_ISER0 + ((n) >> 5)) & (1 << ((n) & 31)))
+#define NVIC_IS_PENDING(n)      (*((volatile uint32_t *)0xE000E200 + ((n) >> 5)) & (1 << ((n) & 31)))
+#define NVIC_IS_ACTIVE(n)       (*((volatile uint32_t *)0xE000E300 + ((n) >> 5)) & (1 << ((n) & 31)))
+#define NVIC_TRIGGER_IRQ(n)     NVIC_STIR=(n)
+
+#define ARM_DEMCR               (*(volatile uint32_t *)0xE000EDFC) // Debug Exception and Monitor Control
+#define ARM_DEMCR_TRCENA                (1 << 24)        // Enable debugging & monitoring blocks
+#define ARM_DWT_CTRL            (*(volatile uint32_t *)0xE0001000) // DWT control register
+#define ARM_DWT_CTRL_CYCCNTENA          (1 << 0)                // Enable cycle count
+#define ARM_DWT_CYCCNT          (*(volatile uint32_t *)0xE0001004) // Cycle count register
+
+#define SCB_MPU_TYPE		(*(volatile uint32_t *)0xE000ED90) // 
+#define SCB_MPU_CTRL		(*(volatile uint32_t *)0xE000ED94) // 
+#define SCB_MPU_CTRL_PRIVDEFENA		((uint32_t)(1<<2)) // Enables default memory map
+#define SCB_MPU_CTRL_HFNMIENA		((uint32_t)(1<<1)) // Use MPU for HardFault & NMI
+#define SCB_MPU_CTRL_ENABLE		((uint32_t)(1<<0)) // Enables MPU
+#define SCB_MPU_RNR		(*(volatile uint32_t *)0xE000ED98) // 
+#define SCB_MPU_RBAR		(*(volatile uint32_t *)0xE000ED9C) // 
+#define SCB_MPU_RBAR_ADDR_MASK		((uint32_t)(0xFFFFFFE0))
+#define SCB_MPU_RBAR_VALID		((uint32_t)(1<<4))
+#define SCB_MPU_RBAR_REGION(n)		((uint32_t)((n) & 15))
+#define SCB_MPU_RASR		(*(volatile uint32_t *)0xE000EDA0) // ARM DDI0403E, pg 696
+#define SCB_MPU_RASR_XN			((uint32_t)(1<<28))
+#define SCB_MPU_RASR_AP(n)		((uint32_t)(((n) & 7) << 24))
+#define SCB_MPU_RASR_TEX(n)		((uint32_t)(((n) & 7) << 19))
+#define SCB_MPU_RASR_S			((uint32_t)(1<<18))
+#define SCB_MPU_RASR_C			((uint32_t)(1<<17))
+#define SCB_MPU_RASR_B			((uint32_t)(1<<16))
+#define SCB_MPU_RASR_SRD(n)		((uint32_t)(((n) & 255) << 8))
+#define SCB_MPU_RASR_SIZE(n)		((uint32_t)(((n) & 31) << 1))
+#define SCB_MPU_RASR_ENABLE		((uint32_t)(1<<0))
+#define SCB_MPU_RBAR_A1		(*(volatile uint32_t *)0xE000EDA4) // 
+#define SCB_MPU_RASR_A1		(*(volatile uint32_t *)0xE000EDA8) // 
+#define SCB_MPU_RBAR_A2		(*(volatile uint32_t *)0xE000EDAC) // 
+#define SCB_MPU_RASR_A2		(*(volatile uint32_t *)0xE000EDB0) // 
+#define SCB_MPU_RBAR_A3		(*(volatile uint32_t *)0xE000EDB4) // 
+#define SCB_MPU_RASR_A3		(*(volatile uint32_t *)0xE000EDB8) // 
+
+#define SCB_CACHE_ICIALLU	(*(volatile uint32_t *)0xE000EF50)
+#define SCB_CACHE_ICIMVAU	(*(volatile uint32_t *)0xE000EF58)
+#define SCB_CACHE_DCIMVAC	(*(volatile uint32_t *)0xE000EF5C)
+#define SCB_CACHE_DCISW		(*(volatile uint32_t *)0xE000EF60)
+#define SCB_CACHE_DCCMVAU	(*(volatile uint32_t *)0xE000EF64)
+#define SCB_CACHE_DCCMVAC	(*(volatile uint32_t *)0xE000EF68)
+#define SCB_CACHE_DCCSW		(*(volatile uint32_t *)0xE000EF6C)
+#define SCB_CACHE_DCCIMVAC	(*(volatile uint32_t *)0xE000EF70)
+#define SCB_CACHE_DCCISW	(*(volatile uint32_t *)0xE000EF74)
+#define SCB_CACHE_BPIALL	(*(volatile uint32_t *)0xE000EF78)
 
 
