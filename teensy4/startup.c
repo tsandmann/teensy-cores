@@ -16,20 +16,23 @@ extern unsigned long _ebss;
 
 
 __attribute__ ((used, aligned(1024)))
-void (* _VectorsRam[160+16])(void);
+void (* _VectorsRam[NVIC_NUM_INTERRUPTS+16])(void);
 
 static void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end);
 static void memory_clear(uint32_t *dest, uint32_t *dest_end);
 static void configure_systick(void);
 extern void systick_isr(void);
+extern void pendablesrvreq_isr(void);
 void configure_cache(void);
 void unused_interrupt_vector(void);
 void usb_pll_start();
-extern void analog_init(void);
-extern void pwm_init(void);
+extern void analog_init(void); // analog.c
+extern void pwm_init(void); // pwm.c
+uint32_t set_arm_clock(uint32_t frequency); // clockspeed.c
+extern void __libc_init_array(void); // C++ standard library
 
 
-__attribute__((section(".startup")))
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns")))
 void ResetHandler(void)
 {
 	unsigned int i;
@@ -38,10 +41,10 @@ void ResetHandler(void)
 	//__asm__ volatile("mov sp, %0" : : "r" (0x20010000) : );
 
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
-	IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
-	IOMUXC_SW_PAD_CTL_PAD_GPIO_B0_03 = IOMUXC_PAD_DSE(7);
-	GPIO2_GDIR |= (1<<3);
-	GPIO2_DR_SET = (1<<3);
+	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
+	//IOMUXC_SW_PAD_CTL_PAD_GPIO_B0_03 = IOMUXC_PAD_DSE(7);
+	//GPIO2_GDIR |= (1<<3);
+	//GPIO2_DR_SET = (1<<3); // digitalWrite(13, HIGH);
 
 	// Initialize memory
 	memory_copy(&_stext, &_stextload, &_etext);
@@ -52,7 +55,8 @@ void ResetHandler(void)
 	SCB_CPACR = 0x00F00000;
 
 	// set up blank interrupt & exception vector table
-	for (i=0; i < 176; i++) _VectorsRam[i] = &unused_interrupt_vector;
+	for (i=0; i < NVIC_NUM_INTERRUPTS + 16; i++) _VectorsRam[i] = &unused_interrupt_vector;
+	for (i=0; i < NVIC_NUM_INTERRUPTS; i++) NVIC_SET_PRIORITY(i, 128);
 	SCB_VTOR = (uint32_t)_VectorsRam;
 
 	// Configure clocks
@@ -70,45 +74,19 @@ void ResetHandler(void)
 	configure_cache();
 	configure_systick();
 	usb_pll_start();
-#if 1
 
-	//uint32_t pll1;
-	//uint32_t n = 
-	//pll = CCM_ANALOG_PLL_ARM;
-	printf("ARM PLL = %08lX\n", CCM_ANALOG_PLL_ARM);
+	set_arm_clock(600000000);
+	//set_arm_clock(984000000); Ludicrous Speed
 
-	uint32_t cdcdr = CCM_CBCDR;
-	uint32_t cbcmr = CCM_CBCMR;
-	printf("AHB divisor = %ld\n", ((cdcdr >> 10) & 7) + 1);
-	printf("IPG divisor = %ld\n", ((cdcdr >> 8) & 3) + 1);
-
-	if (cdcdr & CCM_CBCDR_PERIPH_CLK_SEL) {
-		printf("using  periph_clk2_clk_divided\n");
-
-	} else {
-		printf("using  pre_periph_clk_sel\n");
-		uint32_t n = (cbcmr >> 19) & 3;
-		if (n == 0) {
-			printf("using PLL2\n");
-		} else if (n == 1) {
-			printf("using PLL2 PFD2\n");
-		} else if (n == 2) {
-			printf("using PLL2 PFD0\n");
-		} else {
-			printf("using PLL1\n");
-		}
-
-
-	}
-	//set_arm_clock(300000000);
-#endif
-
-	// TODO: wait at least 20ms before starting USB
+	while (millis() < 20) ; // wait at least 20ms before starting USB
 	usb_init();
 	analog_init();
 	pwm_init();
 
-	// TODO: wait tat least 300ms before calling setup
+	while (millis() < 300) ; // wait at least 300ms before calling user code
+	printf("before C++ constructors\n");
+	__libc_init_array();
+	printf("after C++ constructors\n");
 	printf("before setup\n");
 	setup();
 	printf("after setup\n");
@@ -133,10 +111,12 @@ void ResetHandler(void)
 
 static void configure_systick(void)
 {
+	_VectorsRam[14] = pendablesrvreq_isr;
 	_VectorsRam[15] = systick_isr;
 	SYST_RVR = (SYSTICK_EXT_FREQ / 1000) - 1;
 	SYST_CVR = 0;
 	SYST_CSR = SYST_CSR_TICKINT | SYST_CSR_ENABLE;
+	SCB_SHPR3 = 0x20000000;  // Systick = priority 32
 	ARM_DEMCR |= ARM_DEMCR_TRCENA;
 	ARM_DWT_CTRL |= ARM_DWT_CTRL_CYCCNTENA; // turn on cycle counter
 }
@@ -207,35 +187,6 @@ void configure_cache(void)
 	asm("isb");
 	SCB_CCR |= (SCB_CCR_IC | SCB_CCR_DC);
 }
-
-
-uint32_t set_arm_clock(uint32_t frequency)
-{
-	if (!(CCM_CBCDR & CCM_CBCDR_PERIPH_CLK_SEL)) {
-		//print("need to switch to stable clock while reconfigure of ARM PLL\n");
-		const uint32_t need1s = CCM_ANALOG_PLL_USB1_ENABLE | CCM_ANALOG_PLL_USB1_POWER |
-			CCM_ANALOG_PLL_USB1_LOCK | CCM_ANALOG_PLL_USB1_EN_USB_CLKS;
-		if ((CCM_ANALOG_PLL_USB1 & need1s) == need1s) {
-			//print("  run temporarily from USB/4 (120 MHz)\n");
-
-		} else {
-			//print("  run temporarily from crystal (24 MHz)\n");
-
-		}
-
-	} else {
-		//print("already running from an alternate clock, ok to mess with ARM PLL\n");
-	}
-
-	// if SYS PLL running at 528 MHz
-	//	if frequency == 528
-	//	if frequency == 396
-	//	if frequency == 352
-	//
-
-	return frequency;
-}
-
 
 
 __attribute__((section(".progmem")))
@@ -349,6 +300,7 @@ void unused_interrupt_vector(void)
 #endif
 }
 
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns")))
 static void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
 {
 	if (dest == src) return;
@@ -357,6 +309,7 @@ static void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
 	}
 }
 
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns")))
 static void memory_clear(uint32_t *dest, uint32_t *dest_end)
 {
 	while (dest < dest_end) {
@@ -364,4 +317,92 @@ static void memory_clear(uint32_t *dest, uint32_t *dest_end)
 	}
 }
 
+
+
+// syscall functions need to be in the same C file as the entry point "ResetVector"
+// otherwise the linker will discard them in some cases.
+
+#include <errno.h>
+
+// from the linker script
+extern unsigned long _heap_start;
+extern unsigned long _heap_end;
+
+char *__brkval = (char *)&_heap_start;
+
+void * _sbrk(int incr)
+{
+        char *prev = __brkval;
+        if (incr != 0) {
+                if (prev + incr > (char *)&_heap_end) {
+                        errno = ENOMEM;
+                        return (void *)-1;
+                }
+                __brkval = prev + incr;
+        }
+        return prev;
+}
+
+__attribute__((weak))
+int _read(int file, char *ptr, int len)
+{
+	return 0;
+}
+
+__attribute__((weak))
+int _close(int fd)
+{
+	return -1;
+}
+
+#include <sys/stat.h>
+
+__attribute__((weak))
+int _fstat(int fd, struct stat *st)
+{
+	st->st_mode = S_IFCHR;
+	return 0;
+}
+
+__attribute__((weak))
+int _isatty(int fd)
+{
+	return 1;
+}
+
+__attribute__((weak))
+int _lseek(int fd, long long offset, int whence)
+{
+	return -1;
+}
+
+__attribute__((weak))
+void _exit(int status)
+{
+	while (1);
+}
+
+__attribute__((weak))
+void __cxa_pure_virtual()
+{
+	while (1);
+}
+
+__attribute__((weak))
+int __cxa_guard_acquire (char *g)
+{
+	return !(*g);
+}
+
+__attribute__((weak))
+void __cxa_guard_release(char *g)
+{
+	*g = 1;
+}
+
+__attribute__((weak))
+void abort(void)
+{
+	while (1) ;
+}
 

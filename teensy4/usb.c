@@ -2,6 +2,7 @@
 #define USB_DESC_LIST_DEFINE
 #include "usb_desc.h"
 #include "usb_serial.h"
+#include "core_pins.h" // for delay()
 #include <string.h>
 #include "debug/printf.h"
 
@@ -129,7 +130,7 @@ void usb_init(void)
 		//printf("USBPHY1_RX=%08lX\n", USBPHY1_RX);
 		//printf("USBPHY1_CTRL=%08lX\n", USBPHY1_CTRL);
 		//printf("USB1_USBMODE=%08lX\n", USB1_USBMODE);
-		delay(100);
+		delay(25);
 	}
 #endif
 	// Device Controller Initialization, page 3161
@@ -334,8 +335,8 @@ static void endpoint0_setup(uint64_t setupdata)
 		}
 		break;
 	  case 0x2221: // CDC_SET_CONTROL_LINE_STATE
-		//usb_cdc_line_rtsdtr_millis = systick_millis_count;
-		//usb_cdc_line_rtsdtr = setup.wValue;
+		usb_cdc_line_rtsdtr_millis = systick_millis_count;
+		usb_cdc_line_rtsdtr = setup.wValue;
 	  case 0x2321: // CDC_SEND_BREAK
 		endpoint0_receive(NULL, 0, 0);
 		return;
