@@ -68,7 +68,7 @@ enum IRQ_NUMBER_t {
         IRQ_SAI3_TX =           59,
         IRQ_SPDIF =             60,
         IRQ_BROWNOUT0 =         61,
-        IRQ_Reserved13 =        62,
+        IRQ_Reserved1 =         62,
         IRQ_TEMPERATURE =       63,
         IRQ_TEMPERATURE_PANIC = 64,
         IRQ_USBPHY0 =           65,
@@ -76,7 +76,7 @@ enum IRQ_NUMBER_t {
         IRQ_ADC1 =              67,
         IRQ_ADC2 =              68,
         IRQ_DCDC =              69,
-        IRQ_Reserved1 =         70,
+        IRQ_SOFTWARE =          70,
         IRQ_Reserved2 =         71,
         IRQ_GPIO1_INT0 =        72,
         IRQ_GPIO1_INT1 =        73,
@@ -86,15 +86,15 @@ enum IRQ_NUMBER_t {
         IRQ_GPIO1_INT5 =        77,
         IRQ_GPIO1_INT6 =        78,
         IRQ_GPIO1_INT7 =        79,
-        IRQ_GPI01_0_15 =        80,
+        IRQ_GPIO1_0_15 =        80,
         IRQ_GPIO1_16_31 =       81,
-        IRQ_GPI02_0_15 =        82,
+        IRQ_GPIO2_0_15 =        82,
         IRQ_GPIO2_16_31 =       83,
-        IRQ_GPI03_0_15 =        84,
+        IRQ_GPIO3_0_15 =        84,
         IRQ_GPIO3_16_31 =       85,
-        IRQ_GPI04_0_15 =        86,
+        IRQ_GPIO4_0_15 =        86,
         IRQ_GPIO4_16_31 =       87,
-        IRQ_GPI05_0_15 =        88,
+        IRQ_GPIO5_0_15 =        88,
         IRQ_GPIO5_16_31 =       89,
         IRQ_FLEXIO1 =           90,
         IRQ_FLEXIO2 =           91,
@@ -133,8 +133,8 @@ enum IRQ_NUMBER_t {
         IRQ_ACMP1 =             124,
         IRQ_ACMP2 =             125,
         IRQ_ACMP3 =             126,
-        IRQ_Reserved5 =         127,
-        IRQ_Reserved6 =         128,
+        IRQ_Reserved4 =         127,
+        IRQ_Reserved5 =         128,
         IRQ_ENC1 =              129,
         IRQ_ENC2 =              130,
         IRQ_ENC3 =              131,
@@ -160,8 +160,8 @@ enum IRQ_NUMBER_t {
         IRQ_FLEXPWM4_FAULT =    151,
         IRQ_ENET2 =             152, // RT1060 only
         IRQ_ENET2_TIMER =       153, // RT1060 only
-        IRQ_Reserved9 =         154,
-        IRQ_Reserved10 =        155,
+        IRQ_Reserved6 =         154,
+        IRQ_Reserved7 =         155,
         IRQ_CAN3 =              156, // RT1060 only
         IRQ_GPIO6789 =          157, // RT1060 only
         IRQ_SJC_DEBUG =         158,
@@ -1153,10 +1153,13 @@ typedef struct {
 #define CCM_CSR_REF_EN_B			((uint32_t)(1<<0))
 #define CCM_CCSR_PLL3_SW_CLK_SEL		((uint32_t)(1<<0))
 #define CCM_CACRR_ARM_PODF(n)			((uint32_t)(((n) & 0x07) << 0))
+#define CCM_CACRR_ARM_PODF_MASK			((uint32_t)(0x07 << 0))
 #define CCM_CBCDR_PERIPH_CLK2_PODF(n)		((uint32_t)(((n) & 0x07) << 27))
+#define CCM_CBCDR_PERIPH_CLK2_PODF_MASK		((uint32_t)(0x07 << 27))
 #define CCM_CBCDR_PERIPH_CLK_SEL		((uint32_t)(1<<25))
 #define CCM_CBCDR_SEMC_PODF(n)			((uint32_t)(((n) & 0x07) << 16))
 #define CCM_CBCDR_AHB_PODF(n)			((uint32_t)(((n) & 0x07) << 10))
+#define CCM_CBCDR_AHB_PODF_MASK			((uint32_t)(0x07 << 10))
 #define CCM_CBCDR_IPG_PODF(n)			((uint32_t)(((n) & 0x03) << 8))
 #define CCM_CBCDR_IPG_PODF_MASK			((uint32_t)(0x03 << 8))
 #define CCM_CBCDR_SEMC_ALT_CLK_SEL		((uint32_t)(1<<7))
@@ -1166,12 +1169,12 @@ typedef struct {
 #define CCM_CBCMR_PRE_PERIPH_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 18))
 #define CCM_CBCMR_TRACE_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 14))
 #define CCM_CBCMR_PERIPH_CLK2_SEL(n)		((uint32_t)(((n) & 0x03) << 12))
+#define CCM_CBCMR_PERIPH_CLK2_SEL_MASK		((uint32_t)(0x03 << 12))
 #define CCM_CBCMR_LPSPI_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 4))
 #define CCM_CBCMR_LPSPI_PODF_MASK		((uint32_t)(0x07 << 26))
 #define CCM_CBCMR_LCDIF_PODF_MASK		((uint32_t)(0x07 << 23))
 #define CCM_CBCMR_PRE_PERIPH_CLK_SEL_MASK	((uint32_t)(0x03 << 18))
 #define CCM_CBCMR_TRACE_CLK_SEL_MASK		((uint32_t)(0x03 << 14))
-#define CCM_CBCMR_PERIPH_CLK2_SEL_MASK		((uint32_t)(0x03 << 12))
 #define CCM_CBCMR_LPSPI_CLK_SEL_MASK		((uint32_t)(0x03 << 4))
 #define CCM_CSCMR1_FLEXSPI_CLK_SEL(n)		((uint32_t)(((n) & 0x03) << 29))
 #define CCM_CSCMR1_FLEXSPI_PODF(n)		((uint32_t)(((n) & 0x07) << 23))
@@ -1192,10 +1195,10 @@ typedef struct {
 #define CCM_CSCDR1_UART_CLK_PODF(n)		((uint32_t)(((n) & 0x3F) << 0))
 #define CCM_CS1CDR_FLEXIO2_CLK_PODF(n)		((uint32_t)(((n) & 0x07) << 25))
 #define CCM_CS1CDR_SAI3_CLK_PRED(n)		((uint32_t)(((n) & 0x07) << 22))
-#define CCM_CS1CDR_SAI3_CLK_PODF(n)		((uint32_t)(((n) & 0x1F) << 16))
+#define CCM_CS1CDR_SAI3_CLK_PODF(n)		((uint32_t)(((n) & 0x3F) << 16))
 #define CCM_CS1CDR_FLEXIO2_CLK_PRED(n)		((uint32_t)(((n) & 0x07) << 9))
 #define CCM_CS1CDR_SAI1_CLK_PRED(n)		((uint32_t)(((n) & 0x07) << 6))
-#define CCM_CS1CDR_SAI1_CLK_PODF(n)		((uint32_t)(((n) & 0x1F) << 0))
+#define CCM_CS1CDR_SAI1_CLK_PODF(n)		((uint32_t)(((n) & 0x3F) << 0))
 #define CCM_CS2CDR_SAI2_CLK_PRED(n)		((uint32_t)(((n) & 0x07) << 6))
 #define CCM_CS2CDR_SAI2_CLK_PODF(n)		((uint32_t)(((n) & 0x3F) << 0))
 #define CCM_CDCDR_SPDIF0_CLK_PRED(n)		((uint32_t)(((n) & 0x07) << 25))
@@ -1264,7 +1267,7 @@ typedef struct {
 #define CCM_CCGR0_TRACE(n)			((uint32_t)(((n) & 0x03) << 22))
 #define CCM_CCGR0_CAN2_SERIAL(n)		((uint32_t)(((n) & 0x03) << 20))
 #define CCM_CCGR0_CAN2(n)			((uint32_t)(((n) & 0x03) << 18))
-#define CCM_CCGR0_CAN1_SERIAl(n)		((uint32_t)(((n) & 0x03) << 16))
+#define CCM_CCGR0_CAN1_SERIAL(n)		((uint32_t)(((n) & 0x03) << 16))
 #define CCM_CCGR0_CAN1(n)			((uint32_t)(((n) & 0x03) << 14))
 #define CCM_CCGR0_LPUART3(n)			((uint32_t)(((n) & 0x03) << 12))
 #define CCM_CCGR0_DCP(n)			((uint32_t)(((n) & 0x03) << 10))
@@ -1428,11 +1431,11 @@ typedef struct {
 #define CCM_ANALOG_MISC2_CLR		(IMXRT_CCM_ANALOG.offset178)
 #define CCM_ANALOG_MISC2_TOG		(IMXRT_CCM_ANALOG.offset17C)
 #define CCM_ANALOG_PLL_ARM_LOCK			((uint32_t)(1<<31))
-#define CCM_ANALOG_PLL_ARM_BYPASS		((uint32_t)(1<<11))
-#define CCM_ANALOG_PLL_ARM_ENABLE		((uint32_t)(1<<11))
-#define CCM_ANALOG_PLL_ARM_POWERDOWN		((uint32_t)(1<<11))
-#define CCM_ANALOG_PLL_ARM_DIV_SELECT(n)	((uint32_t)(((n) & 0x3F) << 0))
-#define CCM_ANALOG_PLL_ARM_DIV_SELECT_MASK	((uint32_t)(0x3F << 0))
+#define CCM_ANALOG_PLL_ARM_BYPASS		((uint32_t)(1<<16))
+#define CCM_ANALOG_PLL_ARM_ENABLE		((uint32_t)(1<<13))
+#define CCM_ANALOG_PLL_ARM_POWERDOWN		((uint32_t)(1<<12))
+#define CCM_ANALOG_PLL_ARM_DIV_SELECT(n)	((uint32_t)(((n) & 0x7F) << 0))
+#define CCM_ANALOG_PLL_ARM_DIV_SELECT_MASK	((uint32_t)(0x7F << 0))
 #define CCM_ANALOG_PLL_USB1_LOCK		((uint32_t)(1<<31))
 #define CCM_ANALOG_PLL_USB1_BYPASS		((uint32_t)(1<<16))
 #define CCM_ANALOG_PLL_USB1_ENABLE		((uint32_t)(1<<13))
@@ -1469,6 +1472,47 @@ typedef struct {
 #define DCDC_REG1			(IMXRT_DCDC.offset004)
 #define DCDC_REG2			(IMXRT_DCDC.offset008)
 #define DCDC_REG3			(IMXRT_DCDC.offset00C)
+#define DCDC_REG0_STS_DC_OK			((uint32_t)(1<<31))
+#define DCDC_REG0_XTAL_24M_OK			((uint32_t)(1<<29))
+#define DCDC_REG0_CURRENT_ALERT_RESET		((uint32_t)(1<<28))
+#define DCDC_REG0_XTALOK_DISABLE		((uint32_t)(1<<27))
+#define DCDC_REG0_PWD_CMP_OFFSET		((uint32_t)(1<<26))
+#define DCDC_REG0_LP_HIGH_HYS			((uint32_t)(1<<21))
+#define DCDC_REG0_LP_OVERLOAD_FREQ_SEL		((uint32_t)(1<<20))
+#define DCDC_REG0_LP_OVERLOAD_THRSH(n)		((uint32_t)(((n) & 0x03) << 18))
+#define DCDC_REG0_PWD_HIGH_VOLT_DET		((uint32_t)(1<<17))
+#define DCDC_REG0_EN_LP_OVERLOAD_SNS		((uint32_t)(1<<16))
+#define DCDC_REG0_ADJ_POSLIMIT_BUCK(n)		((uint32_t)(((n) & 0x0F) << 12))
+#define DCDC_REG0_PWD_CMP_BATT_DET		((uint32_t)(1<<11))
+#define DCDC_REG0_OVERCUR_TRIG_ADJ(n)		((uint32_t)(((n) & 0x03) << 9))
+#define DCDC_REG0_PWD_OVERCUR_DET		((uint32_t)(1<<8))
+#define DCDC_REG0_CUR_SNS_THRSH(n)		((uint32_t)(((n) & 0x07) << 5))
+#define DCDC_REG0_PWD_CUR_SNS_CMP		((uint32_t)(1<<4))
+#define DCDC_REG0_PWD_OSC_INT			((uint32_t)(1<<3))
+#define DCDC_REG0_SEL_CLK			((uint32_t)(1<<2))
+#define DCDC_REG0_DISABLE_AUTO_CLK_SWITCH	((uint32_t)(1<<1))
+#define DCDC_REG0_PWD_ZCD			((uint32_t)(1<<0))
+#define DCDC_REG1_VBG_TRIM(n)			((uint32_t)(((n) & 0x1F) << 24))
+#define DCDC_REG1_LOOPCTRL_EN_HYST		((uint32_t)(1<<23))
+#define DCDC_REG1_LOOPCTRL_HST_THRESH		((uint32_t)(1<<21))
+#define DCDC_REG1_LP_CMP_ISRC_SEL(n)		((uint32_t)(((n) & 0x03) << 12))
+#define DCDC_REG1_REG_RLOAD_SW			((uint32_t)(1<<9))
+#define DCDC_REG1_REG_FBK_SEL(n)		((uint32_t)(((n) & 0x03) << 7))
+#define DCDC_REG2_DCM_SET_CTRL			((uint32_t)(1<<28))
+#define DCDC_REG2_DISABLE_PULSE_SKIP		((uint32_t)(1<<27))
+#define DCDC_REG2_LOOPCTRL_HYST_SIGN		((uint32_t)(1<<13))
+#define DCDC_REG2_LOOPCTRL_RCSCALE_THRSH	((uint32_t)(1<<12))
+#define DCDC_REG2_LOOPCTRL_EN_RCSCALE		((uint32_t)(((n) & 0x07) << 9))
+#define DCDC_REG2_LOOPCTRL_DC_FF		((uint32_t)(((n) & 0x07) << 6))
+#define DCDC_REG2_LOOPCTRL_DC_R			((uint32_t)(((n) & 0x0F) << 2))
+#define DCDC_REG2_LOOPCTRL_DC_C			((uint32_t)(((n) & 0x03) << 0))
+#define DCDC_REG3_DISABLE_STEP			((uint32_t)(1<<30))
+#define DCDC_REG3_MISC_DISABLEFET_LOGIC		((uint32_t)(1<<28))
+#define DCDC_REG3_MISC_DELAY_TIMING		((uint32_t)(1<<27))
+#define DCDC_REG3_MINPWR_DC_HALFCLK		((uint32_t)(1<<24))
+#define DCDC_REG3_TARGET_LP(n)			((uint32_t)(((n) & 0x07) << 8))
+#define DCDC_REG3_TRG(n)			((uint32_t)(((n) & 0x1F) << 0))
+#define DCDC_REG3_TRG_MASK			((uint32_t)(0x1F << 0))
 
 // 21.4.1.1: page 849
 #define IMXRT_DMAMUX		(*(IMXRT_REGISTER32_t *)0x400EC000)
@@ -1504,6 +1548,9 @@ typedef struct {
 #define DMAMUX_CHCFG29			(IMXRT_DMAMUX.offset074)
 #define DMAMUX_CHCFG30			(IMXRT_DMAMUX.offset078)
 #define DMAMUX_CHCFG31			(IMXRT_DMAMUX.offset07C)
+#define DMAMUX_CHCFG_ENBL			((uint32_t)(1<<31))
+#define DMAMUX_CHCFG_TRIG			((uint32_t)(1<<30))
+#define DMAMUX_CHCFG_A_ON			((uint32_t)(1<<29))
 
 // 22.3.5.1: page 864
 typedef struct {
@@ -1565,6 +1612,7 @@ typedef struct {
 	volatile uint8_t DCHPRI29;
 	volatile uint8_t DCHPRI28;
 } IMXRT_DMA_t;
+
 typedef struct {
 	volatile const void * volatile SADDR;
 	int16_t SOFF;
@@ -1646,6 +1694,43 @@ typedef struct {
 #define DMA_DCHPRI30			(IMXRT_DMA.DCHPRI30)
 #define DMA_DCHPRI29			(IMXRT_DMA.DCHPRI29)
 #define DMA_DCHPRI28			(IMXRT_DMA.DCHPRI28)
+
+#define DMA_CR_ACTIVE                   ((uint32_t)(1<<31))     // 1=DMA is executing
+#define DMA_CR_CX                       ((uint32_t)(1<<17))     // Cancel Transfer
+#define DMA_CR_ECX                      ((uint32_t)(1<<16))     // Error Cancel Transfer
+#define DMA_CR_GRP1PRI                  ((uint32_t)(1<<10))
+#define DMA_CR_GRP0PRI                  ((uint32_t)(1<<8))
+#define DMA_CR_EMLM                     ((uint32_t)(1<<7))      // Enable Minor Loop Mapping
+#define DMA_CR_CLM                      ((uint32_t)(1<<6))      // Continuous Link Mode
+#define DMA_CR_HALT                     ((uint32_t)(1<<5))      // Halt DMA Operations
+#define DMA_CR_HOE                      ((uint32_t)(1<<4))      // Halt On Error
+#define DMA_CR_ERGA                     ((uint32_t)(1<<3))      // Enable Round Robin Group Arb
+#define DMA_CR_ERCA                     ((uint32_t)(1<<2))      // Enable Round Robin Channel Arb
+#define DMA_CR_EDBG                     ((uint32_t)(1<<1))      // Enable Debug
+#define DMA_CEEI_CEEI(n)                ((uint8_t)(n & 0x1F))   // Clear Enable Error Interrupt
+#define DMA_CEEI_CAEE                   ((uint8_t)1<<6)         // Clear All Enable Error Interrupts
+#define DMA_CEEI_NOP                    ((uint8_t)1<<7)         // NOP
+#define DMA_SEEI_SEEI(n)                ((uint8_t)(n & 0x1F))   // Set Enable Error Interrupt
+#define DMA_SEEI_SAEE                   ((uint8_t)1<<6)         // Set All Enable Error Interrupts
+#define DMA_SEEI_NOP                    ((uint8_t)1<<7)         // NOP
+#define DMA_CERQ_CERQ(n)                ((uint8_t)(n & 0x1F))   // Clear Enable Request
+#define DMA_CERQ_CAER                   ((uint8_t)1<<6)         // Clear All Enable Requests
+#define DMA_CERQ_NOP                    ((uint8_t)1<<7)         // NOP
+#define DMA_SERQ_SERQ(n)                ((uint8_t)(n & 0x1F))   // Set Enable Request
+#define DMA_SERQ_SAER                   ((uint8_t)1<<6)         // Set All Enable Requests
+#define DMA_SERQ_NOP                    ((uint8_t)1<<7)         // NOP
+#define DMA_CDNE_CDNE(n)                ((uint8_t)(n & 0x1F))   // Clear Done Bit
+#define DMA_CDNE_CADN                   ((uint8_t)1<<6)         // Clear All Done Bits
+#define DMA_CDNE_NOP                    ((uint8_t)1<<7)         // NOP
+#define DMA_SSRT_SSRT(n)                ((uint8_t)(n & 0x1F))   // Set Start Bit
+#define DMA_SSRT_SAST                   ((uint8_t)1<<6)         // Set All Start Bits
+#define DMA_SSRT_NOP                    ((uint8_t)1<<7)         // NOP
+#define DMA_CERR_CERR(n)                ((uint8_t)(n & 0x1F))   // Clear Error Indicator
+#define DMA_CERR_CAEI                   ((uint8_t)1<<6)         // Clear All Error Indicators
+#define DMA_CERR_NOP                    ((uint8_t)1<<7)         // NOP
+#define DMA_CINT_CINT(n)                ((uint8_t)(n & 0x1F))   // Clear Interrupt Request
+#define DMA_CINT_CAIR                   ((uint8_t)1<<6)         // Clear All Interrupt Requests
+#define DMA_CINT_NOP                    ((uint8_t)1<<7)         // NOP
 
 #define IMXRT_DMA_TCD		((IMXRT_DMA_TCD_t *)0x400E9000)
 #define DMA_TCD0_SADDR			(IMXRT_DMA_TCD[0].SADDR)
@@ -2255,6 +2340,49 @@ typedef struct {
 #define DMA_TCD31_BITER			(IMXRT_DMA_TCD[31].BITER)
 #define DMA_TCD31_BITER_ELINKYES	(IMXRT_DMA_TCD[31].BITER_ELINKYES)
 #define DMA_TCD31_BITER_ELINKNO		(IMXRT_DMA_TCD[31].BITER_ELINKNO)
+
+// TODO: double check these defines from Teensy 3.x are still correct for IMXRT
+#define DMA_TCD_ATTR_SMOD(n)            (((n) & 0x1F) << 11)
+#define DMA_TCD_ATTR_SSIZE(n)           (((n) & 0x7) << 8)
+#define DMA_TCD_ATTR_DMOD(n)            (((n) & 0x1F) << 3)
+#define DMA_TCD_ATTR_DSIZE(n)           (((n) & 0x7) << 0)
+#define DMA_TCD_ATTR_SIZE_8BIT          0
+#define DMA_TCD_ATTR_SIZE_16BIT         1
+#define DMA_TCD_ATTR_SIZE_32BIT         2
+#define DMA_TCD_ATTR_SIZE_16BYTE        4
+#define DMA_TCD_ATTR_SIZE_32BYTE        5 // caution: this might not be supported in newer chips?
+#define DMA_TCD_CSR_BWC(n)              (((n) & 0x3) << 14)
+#define DMA_TCD_CSR_BWC_MASK            0xC000
+#define DMA_TCD_CSR_MAJORLINKCH(n)      (((n) & 0xF) << 8)
+#define DMA_TCD_CSR_MAJORLINKCH_MASK    0x0F00
+#define DMA_TCD_CSR_DONE                0x0080
+#define DMA_TCD_CSR_ACTIVE              0x0040
+#define DMA_TCD_CSR_MAJORELINK          0x0020
+#define DMA_TCD_CSR_ESG                 0x0010
+#define DMA_TCD_CSR_DREQ                0x0008
+#define DMA_TCD_CSR_INTHALF             0x0004
+#define DMA_TCD_CSR_INTMAJOR            0x0002
+#define DMA_TCD_CSR_START               0x0001
+#define DMA_TCD_CITER_MASK              ((uint16_t)0x7FFF)         // Loop count mask
+#define DMA_TCD_CITER_ELINK             ((uint16_t)1<<15)          // Enable channel linking on minor-loop complete
+#define DMA_TCD_BITER_MASK              ((uint16_t)0x7FFF)         // Loop count mask
+#define DMA_TCD_BITER_ELINK             ((uint16_t)1<<15)          // Enable channel linking on minor-loop complete
+#define DMA_TCD_BITER_ELINKYES_ELINK            0x8000
+#define DMA_TCD_BITER_ELINKYES_LINKCH(n)        (((n) & 0xF) << 9)
+#define DMA_TCD_BITER_ELINKYES_LINKCH_MASK      0x1E00
+#define DMA_TCD_BITER_ELINKYES_BITER(n)         (((n) & 0x1FF) << 0)
+#define DMA_TCD_BITER_ELINKYES_BITER_MASK       0x01FF
+#define DMA_TCD_CITER_ELINKYES_ELINK            0x8000
+#define DMA_TCD_CITER_ELINKYES_LINKCH(n)        (((n) & 0xF) << 9)
+#define DMA_TCD_CITER_ELINKYES_LINKCH_MASK      0x1E00
+#define DMA_TCD_CITER_ELINKYES_CITER(n)         (((n) & 0x1FF) << 0)
+#define DMA_TCD_CITER_ELINKYES_CITER_MASK       0x01FF
+#define DMA_TCD_NBYTES_SMLOE                ((uint32_t)1<<31)               // Source Minor Loop Offset Enable
+#define DMA_TCD_NBYTES_DMLOE                ((uint32_t)1<<30)               // Destination Minor Loop Offset Enable
+#define DMA_TCD_NBYTES_MLOFFNO_NBYTES(n)    ((uint32_t)((n) & 0x3FFFFFFF))  // NBytes transfer count when minor loop disabled
+#define DMA_TCD_NBYTES_MLOFFYES_NBYTES(n)   ((uint32_t)((n) & 0x3FF))       // NBytes transfer count when minor loop enabled
+#define DMA_TCD_NBYTES_MLOFFYES_MLOFF(n)    ((uint32_t)((n) & 0xFFFFF)<<10) // Minor loop offset
+
 
 // 23.7.1: page 1023
 #define IMXRT_ENC1		(*(IMXRT_REGISTER16_t *)0x403C8000)
@@ -5083,172 +5211,166 @@ typedef struct {
 #define LCDIF_PIGEON_11_2		(IMXRT_LCDIF_b.offset2E0)
 
 // 37.4: page 2371
-#if 0
 typedef struct {
 	const uint32_t VERID;
 	const uint32_t PARAM;
 	const uint32_t unused1;
 	const uint32_t unused2;
-	volatile uint32_t MCR;			(IMXRT_LPI2C1.offset010)
-	volatile uint32_t MSR;			(IMXRT_LPI2C1.offset014)
-	volatile uint32_t MIER;			(IMXRT_LPI2C1.offset018)
-	volatile uint32_t MDER;			(IMXRT_LPI2C1.offset01C)
-	volatile uint32_t MCFGR0;			(IMXRT_LPI2C1.offset020)
-	volatile uint32_t MCFGR1;			(IMXRT_LPI2C1.offset024)
-	volatile uint32_t MCFGR2;			(IMXRT_LPI2C1.offset028)
-	volatile uint32_t MCFGR3;			(IMXRT_LPI2C1.offset02C)
+	volatile uint32_t MCR;			// 010
+	volatile uint32_t MSR;			// 014
+	volatile uint32_t MIER;			// 018
+	volatile uint32_t MDER;			// 01C
+	volatile uint32_t MCFGR0;		// 020
+	volatile uint32_t MCFGR1;		// 024
+	volatile uint32_t MCFGR2;		// 028
+	volatile uint32_t MCFGR3;		// 02C
 	volatile uint32_t unused3[4];
-	volatile uint32_t MDMR;			(IMXRT_LPI2C1.offset040)
+	volatile uint32_t MDMR;			// 040
 	volatile uint32_t unused4;
-	volatile uint32_t MCCR0	;		(IMXRT_LPI2C1.offset048)
-	volatile uint32_t unused4;
-	volatile uint32_t MCCR1;			(IMXRT_LPI2C1.offset050)
-	volatile uint32_t unused4;
-	volatile uint32_t MFCR;			(IMXRT_LPI2C1.offset058)
-	volatile uint32_t MFSR;			(IMXRT_LPI2C1.offset05C)
-	volatile uint32_t MTDR;			(IMXRT_LPI2C1.offset060)
-	volatile uint32_t unused4[3];
-	volatile uint32_t MRDR;			(IMXRT_LPI2C1.offset070)
-	volatile uint32_t unused4[39];
-	volatile uint32_t SCR;			(IMXRT_LPI2C1.offset110)
-	volatile uint32_t SSR;			(IMXRT_LPI2C1.offset114)
-	volatile uint32_t SIER;			(IMXRT_LPI2C1.offset118)
-	volatile uint32_t SDER;			(IMXRT_LPI2C1.offset11C)
-	volatile uint32_t unused4;
-	volatile uint32_t SCFGR1;			(IMXRT_LPI2C1.offset124)
-	volatile uint32_t SCFGR2;			(IMXRT_LPI2C1.offset128)
-	volatile uint32_t unused4[5];
-	volatile uint32_t SAMR;			(IMXRT_LPI2C1.offset140)
-	volatile uint32_t unused4[3];
-	volatile uint32_t SASR;			(IMXRT_LPI2C1.offset150)
-	volatile uint32_t unused4[3];
-	volatile uint32_t STAR;			(IMXRT_LPI2C1.offset154)
-	volatile uint32_t unused4[3];
-	volatile uint32_t STDR;			(IMXRT_LPI2C1.offset160)
-	volatile uint32_t unused4[3];
-	volatile uint32_t SRDR;			(IMXRT_LPI2C1.offset170)
+	volatile uint32_t MCCR0;		// 048
+	volatile uint32_t unused5;
+	volatile uint32_t MCCR1;		// 050
+	volatile uint32_t unused6;
+	volatile uint32_t MFCR;			// 058
+	volatile uint32_t MFSR;			// 05C
+	volatile uint32_t MTDR;			// 060
+	volatile uint32_t unused7[3];
+	volatile uint32_t MRDR;			// 070
+	volatile uint32_t unused8[39];
+	volatile uint32_t SCR;			// 110
+	volatile uint32_t SSR;			// 114
+	volatile uint32_t SIER;			// 118
+	volatile uint32_t SDER;			// 11C
+	volatile uint32_t unused9;
+	volatile uint32_t SCFGR1;		// 124
+	volatile uint32_t SCFGR2;		// 128
+	volatile uint32_t unused10[5];
+	volatile uint32_t SAMR;			// 140
+	volatile uint32_t unused11[3];
+	volatile uint32_t SASR;			// 150
+	volatile uint32_t unused12[3];
+	volatile uint32_t STAR;			// 154
+	volatile uint32_t unused13[3];
+	volatile uint32_t STDR;			// 160
+	volatile uint32_t unused14[3];
+	volatile uint32_t SRDR;			// 170
 } IMXRT_LPI2C_t;
 #define IMXRT_LPI2C1		(*(IMXRT_LPI2C_t *)0x403F0000)
-
-#else
-
-#define IMXRT_LPI2C1		(*(IMXRT_REGISTER32_t *)0x403F0000)
-#define LPI2C1_VERID			(IMXRT_LPI2C1.offset000)
-#define LPI2C1_PARAM			(IMXRT_LPI2C1.offset004)
-#define LPI2C1_MCR			(IMXRT_LPI2C1.offset010)
-#define LPI2C1_MSR			(IMXRT_LPI2C1.offset014)
-#define LPI2C1_MIER			(IMXRT_LPI2C1.offset018)
-#define LPI2C1_MDER			(IMXRT_LPI2C1.offset01C)
-#define LPI2C1_MCFGR0			(IMXRT_LPI2C1.offset020)
-#define LPI2C1_MCFGR1			(IMXRT_LPI2C1.offset024)
-#define LPI2C1_MCFGR2			(IMXRT_LPI2C1.offset028)
-#define LPI2C1_MCFGR3			(IMXRT_LPI2C1.offset02C)
-#define LPI2C1_MDMR			(IMXRT_LPI2C1.offset040)
-#define LPI2C1_MCCR0			(IMXRT_LPI2C1.offset048)
-#define LPI2C1_MCCR1			(IMXRT_LPI2C1.offset050)
-#define LPI2C1_MFCR			(IMXRT_LPI2C1.offset058)
-#define LPI2C1_MFSR			(IMXRT_LPI2C1.offset05C)
-#define LPI2C1_MTDR			(IMXRT_LPI2C1.offset060)
-#define LPI2C1_MRDR			(IMXRT_LPI2C1.offset070)
-#define LPI2C1_SCR			(IMXRT_LPI2C1.offset110)
-#define LPI2C1_SSR			(IMXRT_LPI2C1.offset114)
-#define LPI2C1_SIER			(IMXRT_LPI2C1.offset118)
-#define LPI2C1_SDER			(IMXRT_LPI2C1.offset11C)
-#define LPI2C1_SCFGR1			(IMXRT_LPI2C1.offset124)
-#define LPI2C1_SCFGR2			(IMXRT_LPI2C1.offset128)
-#define LPI2C1_SAMR			(IMXRT_LPI2C1.offset140)
-#define LPI2C1_SASR			(IMXRT_LPI2C1.offset150)
-#define LPI2C1_STAR			(IMXRT_LPI2C1.offset154)
-#define LPI2C1_STDR			(IMXRT_LPI2C1.offset160)
-#define LPI2C1_SRDR			(IMXRT_LPI2C1.offset170)
-#define IMXRT_LPI2C2		(*(IMXRT_REGISTER32_t *)0x403F4000)
-#define LPI2C2_VERID			(IMXRT_LPI2C2.offset000)
-#define LPI2C2_PARAM			(IMXRT_LPI2C2.offset004)
-#define LPI2C2_MCR			(IMXRT_LPI2C2.offset010)
-#define LPI2C2_MSR			(IMXRT_LPI2C2.offset014)
-#define LPI2C2_MIER			(IMXRT_LPI2C2.offset018)
-#define LPI2C2_MDER			(IMXRT_LPI2C2.offset01C)
-#define LPI2C2_MCFGR0			(IMXRT_LPI2C2.offset020)
-#define LPI2C2_MCFGR1			(IMXRT_LPI2C2.offset024)
-#define LPI2C2_MCFGR2			(IMXRT_LPI2C2.offset028)
-#define LPI2C2_MCFGR3			(IMXRT_LPI2C2.offset02C)
-#define LPI2C2_MDMR			(IMXRT_LPI2C2.offset040)
-#define LPI2C2_MCCR0			(IMXRT_LPI2C2.offset048)
-#define LPI2C2_MCCR1			(IMXRT_LPI2C2.offset050)
-#define LPI2C2_MFCR			(IMXRT_LPI2C2.offset058)
-#define LPI2C2_MFSR			(IMXRT_LPI2C2.offset05C)
-#define LPI2C2_MTDR			(IMXRT_LPI2C2.offset060)
-#define LPI2C2_MRDR			(IMXRT_LPI2C2.offset070)
-#define LPI2C2_SCR			(IMXRT_LPI2C2.offset110)
-#define LPI2C2_SSR			(IMXRT_LPI2C2.offset114)
-#define LPI2C2_SIER			(IMXRT_LPI2C2.offset118)
-#define LPI2C2_SDER			(IMXRT_LPI2C2.offset11C)
-#define LPI2C2_SCFGR1			(IMXRT_LPI2C2.offset124)
-#define LPI2C2_SCFGR2			(IMXRT_LPI2C2.offset128)
-#define LPI2C2_SAMR			(IMXRT_LPI2C2.offset140)
-#define LPI2C2_SASR			(IMXRT_LPI2C2.offset150)
-#define LPI2C2_STAR			(IMXRT_LPI2C2.offset154)
-#define LPI2C2_STDR			(IMXRT_LPI2C2.offset160)
-#define LPI2C2_SRDR			(IMXRT_LPI2C2.offset170)
-#define IMXRT_LPI2C3		(*(IMXRT_REGISTER32_t *)0x403F8000)
-#define LPI2C3_VERID			(IMXRT_LPI2C3.offset000)
-#define LPI2C3_PARAM			(IMXRT_LPI2C3.offset004)
-#define LPI2C3_MCR			(IMXRT_LPI2C3.offset010)
-#define LPI2C3_MSR			(IMXRT_LPI2C3.offset014)
-#define LPI2C3_MIER			(IMXRT_LPI2C3.offset018)
-#define LPI2C3_MDER			(IMXRT_LPI2C3.offset01C)
-#define LPI2C3_MCFGR0			(IMXRT_LPI2C3.offset020)
-#define LPI2C3_MCFGR1			(IMXRT_LPI2C3.offset024)
-#define LPI2C3_MCFGR2			(IMXRT_LPI2C3.offset028)
-#define LPI2C3_MCFGR3			(IMXRT_LPI2C3.offset02C)
-#define LPI2C3_MDMR			(IMXRT_LPI2C3.offset040)
-#define LPI2C3_MCCR0			(IMXRT_LPI2C3.offset048)
-#define LPI2C3_MCCR1			(IMXRT_LPI2C3.offset050)
-#define LPI2C3_MFCR			(IMXRT_LPI2C3.offset058)
-#define LPI2C3_MFSR			(IMXRT_LPI2C3.offset05C)
-#define LPI2C3_MTDR			(IMXRT_LPI2C3.offset060)
-#define LPI2C3_MRDR			(IMXRT_LPI2C3.offset070)
-#define LPI2C3_SCR			(IMXRT_LPI2C3.offset110)
-#define LPI2C3_SSR			(IMXRT_LPI2C3.offset114)
-#define LPI2C3_SIER			(IMXRT_LPI2C3.offset118)
-#define LPI2C3_SDER			(IMXRT_LPI2C3.offset11C)
-#define LPI2C3_SCFGR1			(IMXRT_LPI2C3.offset124)
-#define LPI2C3_SCFGR2			(IMXRT_LPI2C3.offset128)
-#define LPI2C3_SAMR			(IMXRT_LPI2C3.offset140)
-#define LPI2C3_SASR			(IMXRT_LPI2C3.offset150)
-#define LPI2C3_STAR			(IMXRT_LPI2C3.offset154)
-#define LPI2C3_STDR			(IMXRT_LPI2C3.offset160)
-#define LPI2C3_SRDR			(IMXRT_LPI2C3.offset170)
-#define IMXRT_LPI2C4		(*(IMXRT_REGISTER32_t *)0x403FC000)
-#define LPI2C4_VERID			(IMXRT_LPI2C4.offset000)
-#define LPI2C4_PARAM			(IMXRT_LPI2C4.offset004)
-#define LPI2C4_MCR			(IMXRT_LPI2C4.offset010)
-#define LPI2C4_MSR			(IMXRT_LPI2C4.offset014)
-#define LPI2C4_MIER			(IMXRT_LPI2C4.offset018)
-#define LPI2C4_MDER			(IMXRT_LPI2C4.offset01C)
-#define LPI2C4_MCFGR0			(IMXRT_LPI2C4.offset020)
-#define LPI2C4_MCFGR1			(IMXRT_LPI2C4.offset024)
-#define LPI2C4_MCFGR2			(IMXRT_LPI2C4.offset028)
-#define LPI2C4_MCFGR3			(IMXRT_LPI2C4.offset02C)
-#define LPI2C4_MDMR			(IMXRT_LPI2C4.offset040)
-#define LPI2C4_MCCR0			(IMXRT_LPI2C4.offset048)
-#define LPI2C4_MCCR1			(IMXRT_LPI2C4.offset050)
-#define LPI2C4_MFCR			(IMXRT_LPI2C4.offset058)
-#define LPI2C4_MFSR			(IMXRT_LPI2C4.offset05C)
-#define LPI2C4_MTDR			(IMXRT_LPI2C4.offset060)
-#define LPI2C4_MRDR			(IMXRT_LPI2C4.offset070)
-#define LPI2C4_SCR			(IMXRT_LPI2C4.offset110)
-#define LPI2C4_SSR			(IMXRT_LPI2C4.offset114)
-#define LPI2C4_SIER			(IMXRT_LPI2C4.offset118)
-#define LPI2C4_SDER			(IMXRT_LPI2C4.offset11C)
-#define LPI2C4_SCFGR1			(IMXRT_LPI2C4.offset124)
-#define LPI2C4_SCFGR2			(IMXRT_LPI2C4.offset128)
-#define LPI2C4_SAMR			(IMXRT_LPI2C4.offset140)
-#define LPI2C4_SASR			(IMXRT_LPI2C4.offset150)
-#define LPI2C4_STAR			(IMXRT_LPI2C4.offset154)
-#define LPI2C4_STDR			(IMXRT_LPI2C4.offset160)
-#define LPI2C4_SRDR			(IMXRT_LPI2C4.offset170)
-#endif
+#define LPI2C1_VERID			(IMXRT_LPI2C1.VERID)
+#define LPI2C1_PARAM			(IMXRT_LPI2C1.PARAM)
+#define LPI2C1_MCR			(IMXRT_LPI2C1.MCR)
+#define LPI2C1_MSR			(IMXRT_LPI2C1.MSR)
+#define LPI2C1_MIER			(IMXRT_LPI2C1.MIER)
+#define LPI2C1_MDER			(IMXRT_LPI2C1.MDER)
+#define LPI2C1_MCFGR0			(IMXRT_LPI2C1.MCFGR0)
+#define LPI2C1_MCFGR1			(IMXRT_LPI2C1.MCFGR1)
+#define LPI2C1_MCFGR2			(IMXRT_LPI2C1.MCFGR2)
+#define LPI2C1_MCFGR3			(IMXRT_LPI2C1.MCFGR3)
+#define LPI2C1_MDMR			(IMXRT_LPI2C1.MDMR)
+#define LPI2C1_MCCR0			(IMXRT_LPI2C1.MCCR0)
+#define LPI2C1_MCCR1			(IMXRT_LPI2C1.MCCR1)
+#define LPI2C1_MFCR			(IMXRT_LPI2C1.MFCR)
+#define LPI2C1_MFSR			(IMXRT_LPI2C1.MFSR)
+#define LPI2C1_MTDR			(IMXRT_LPI2C1.MTDR)
+#define LPI2C1_MRDR			(IMXRT_LPI2C1.MRDR)
+#define LPI2C1_SCR			(IMXRT_LPI2C1.SCR)
+#define LPI2C1_SSR			(IMXRT_LPI2C1.SSR)
+#define LPI2C1_SIER			(IMXRT_LPI2C1.SIER)
+#define LPI2C1_SDER			(IMXRT_LPI2C1.SDER)
+#define LPI2C1_SCFGR1			(IMXRT_LPI2C1.SCFGR1)
+#define LPI2C1_SCFGR2			(IMXRT_LPI2C1.SCFGR2)
+#define LPI2C1_SAMR			(IMXRT_LPI2C1.SAMR)
+#define LPI2C1_SASR			(IMXRT_LPI2C1.SASR)
+#define LPI2C1_STAR			(IMXRT_LPI2C1.STAR)
+#define LPI2C1_STDR			(IMXRT_LPI2C1.STDR)
+#define LPI2C1_SRDR			(IMXRT_LPI2C1.SRDR)
+#define IMXRT_LPI2C2		(*(IMXRT_LPI2C_t *)0x403F4000)
+#define LPI2C2_VERID			(IMXRT_LPI2C2.VERID)
+#define LPI2C2_PARAM			(IMXRT_LPI2C2.PARAM)
+#define LPI2C2_MCR			(IMXRT_LPI2C2.MCR)
+#define LPI2C2_MSR			(IMXRT_LPI2C2.MSR)
+#define LPI2C2_MIER			(IMXRT_LPI2C2.MIER)
+#define LPI2C2_MDER			(IMXRT_LPI2C2.MDER)
+#define LPI2C2_MCFGR0			(IMXRT_LPI2C2.MCFGR0)
+#define LPI2C2_MCFGR1			(IMXRT_LPI2C2.MCFGR1)
+#define LPI2C2_MCFGR2			(IMXRT_LPI2C2.MCFGR2)
+#define LPI2C2_MCFGR3			(IMXRT_LPI2C2.MCFGR3)
+#define LPI2C2_MDMR			(IMXRT_LPI2C2.MDMR)
+#define LPI2C2_MCCR0			(IMXRT_LPI2C2.MCCR0)
+#define LPI2C2_MCCR1			(IMXRT_LPI2C2.MCCR1)
+#define LPI2C2_MFCR			(IMXRT_LPI2C2.MFCR)
+#define LPI2C2_MFSR			(IMXRT_LPI2C2.MFSR)
+#define LPI2C2_MTDR			(IMXRT_LPI2C2.MTDR)
+#define LPI2C2_MRDR			(IMXRT_LPI2C2.MRDR)
+#define LPI2C2_SCR			(IMXRT_LPI2C2.SCR)
+#define LPI2C2_SSR			(IMXRT_LPI2C2.SSR)
+#define LPI2C2_SIER			(IMXRT_LPI2C2.SIER)
+#define LPI2C2_SDER			(IMXRT_LPI2C2.SDER)
+#define LPI2C2_SCFGR1			(IMXRT_LPI2C2.SCFGR1)
+#define LPI2C2_SCFGR2			(IMXRT_LPI2C2.SCFGR2)
+#define LPI2C2_SAMR			(IMXRT_LPI2C2.SAMR)
+#define LPI2C2_SASR			(IMXRT_LPI2C2.SASR)
+#define LPI2C2_STAR			(IMXRT_LPI2C2.STAR)
+#define LPI2C2_STDR			(IMXRT_LPI2C2.STDR)
+#define LPI2C2_SRDR			(IMXRT_LPI2C2.SRDR)
+#define IMXRT_LPI2C3		(*(IMXRT_LPI2C_t *)0x403F8000)
+#define LPI2C3_VERID			(IMXRT_LPI2C3.VERID)
+#define LPI2C3_PARAM			(IMXRT_LPI2C3.PARAM)
+#define LPI2C3_MCR			(IMXRT_LPI2C3.MCR)
+#define LPI2C3_MSR			(IMXRT_LPI2C3.MSR)
+#define LPI2C3_MIER			(IMXRT_LPI2C3.MIER)
+#define LPI2C3_MDER			(IMXRT_LPI2C3.MDER)
+#define LPI2C3_MCFGR0			(IMXRT_LPI2C3.MCFGR0)
+#define LPI2C3_MCFGR1			(IMXRT_LPI2C3.MCFGR1)
+#define LPI2C3_MCFGR2			(IMXRT_LPI2C3.MCFGR2)
+#define LPI2C3_MCFGR3			(IMXRT_LPI2C3.MCFGR3)
+#define LPI2C3_MDMR			(IMXRT_LPI2C3.MDMR)
+#define LPI2C3_MCCR0			(IMXRT_LPI2C3.MCCR0)
+#define LPI2C3_MCCR1			(IMXRT_LPI2C3.MCCR1)
+#define LPI2C3_MFCR			(IMXRT_LPI2C3.MFCR)
+#define LPI2C3_MFSR			(IMXRT_LPI2C3.MFSR)
+#define LPI2C3_MTDR			(IMXRT_LPI2C3.MTDR)
+#define LPI2C3_MRDR			(IMXRT_LPI2C3.MRDR)
+#define LPI2C3_SCR			(IMXRT_LPI2C3.SCR)
+#define LPI2C3_SSR			(IMXRT_LPI2C3.SSR)
+#define LPI2C3_SIER			(IMXRT_LPI2C3.SIER)
+#define LPI2C3_SDER			(IMXRT_LPI2C3.SDER)
+#define LPI2C3_SCFGR1			(IMXRT_LPI2C3.SCFGR1)
+#define LPI2C3_SCFGR2			(IMXRT_LPI2C3.SCFGR2)
+#define LPI2C3_SAMR			(IMXRT_LPI2C3.SAMR)
+#define LPI2C3_SASR			(IMXRT_LPI2C3.SASR)
+#define LPI2C3_STAR			(IMXRT_LPI2C3.STAR)
+#define LPI2C3_STDR			(IMXRT_LPI2C3.STDR)
+#define LPI2C3_SRDR			(IMXRT_LPI2C3.SRDR)
+#define IMXRT_LPI2C4		(*(IMXRT_LPI2C_t *)0x403FC000)
+#define LPI2C4_VERID			(IMXRT_LPI2C4.VERID)
+#define LPI2C4_PARAM			(IMXRT_LPI2C4.PARAM)
+#define LPI2C4_MCR			(IMXRT_LPI2C4.MCR)
+#define LPI2C4_MSR			(IMXRT_LPI2C4.MSR)
+#define LPI2C4_MIER			(IMXRT_LPI2C4.MIER)
+#define LPI2C4_MDER			(IMXRT_LPI2C4.MDER)
+#define LPI2C4_MCFGR0			(IMXRT_LPI2C4.MCFGR0)
+#define LPI2C4_MCFGR1			(IMXRT_LPI2C4.MCFGR1)
+#define LPI2C4_MCFGR2			(IMXRT_LPI2C4.MCFGR2)
+#define LPI2C4_MCFGR3			(IMXRT_LPI2C4.MCFGR3)
+#define LPI2C4_MDMR			(IMXRT_LPI2C4.MDMR)
+#define LPI2C4_MCCR0			(IMXRT_LPI2C4.MCCR0)
+#define LPI2C4_MCCR1			(IMXRT_LPI2C4.MCCR1)
+#define LPI2C4_MFCR			(IMXRT_LPI2C4.MFCR)
+#define LPI2C4_MFSR			(IMXRT_LPI2C4.MFSR)
+#define LPI2C4_MTDR			(IMXRT_LPI2C4.MTDR)
+#define LPI2C4_MRDR			(IMXRT_LPI2C4.MRDR)
+#define LPI2C4_SCR			(IMXRT_LPI2C4.SCR)
+#define LPI2C4_SSR			(IMXRT_LPI2C4.SSR)
+#define LPI2C4_SIER			(IMXRT_LPI2C4.SIER)
+#define LPI2C4_SDER			(IMXRT_LPI2C4.SDER)
+#define LPI2C4_SCFGR1			(IMXRT_LPI2C4.SCFGR1)
+#define LPI2C4_SCFGR2			(IMXRT_LPI2C4.SCFGR2)
+#define LPI2C4_SAMR			(IMXRT_LPI2C4.SAMR)
+#define LPI2C4_SASR			(IMXRT_LPI2C4.SASR)
+#define LPI2C4_STAR			(IMXRT_LPI2C4.STAR)
+#define LPI2C4_STDR			(IMXRT_LPI2C4.STDR)
+#define LPI2C4_SRDR			(IMXRT_LPI2C4.SRDR)
 #define LPI2C_MCR_RRF				((uint32_t)(1<<9))
 #define LPI2C_MCR_RTF				((uint32_t)(1<<8))
 #define LPI2C_MCR_DBGEN				((uint32_t)(1<<3))
@@ -6489,6 +6611,80 @@ typedef struct {
 #define SPDIF_STCSCL			(IMXRT_SPDIF.offset038)
 #define SPDIF_SRFM			(IMXRT_SPDIF.offset044)
 #define SPDIF_STC			(IMXRT_SPDIF.offset050)
+#define SPDIF_SCR_RXFIFO_CTR		((uint32_t)(1 << 23))
+#define SPDIF_SCR_RXFIFO_OFF_ON		((uint32_t)(1 << 22))
+#define SPDIF_SCR_RXFIFO_RST		((uint32_t)(1 << 21))
+#define SPDIF_SCR_RXFIFOFULL_SEL(n)	((uint32_t)(((n) & 0x03) << 19))
+#define SPDIF_SCR_RXAUTOSYNC		((uint32_t)(1 << 18))
+#define SPDIF_SCR_TXAUTOSYNC		((uint32_t)(1 << 17))
+#define SPDIF_SCR_TXFIFOEMPTY_SEL(n)	((uint32_t)(((n) & 0x03) << 15))
+#define SPDIF_SCR_LOW_POWER		((uint32_t)(1 << 13))
+#define SPDIF_SCR_SOFT_RESET		((uint32_t)(1 << 12))
+#define SPDIF_SCR_TXFIFO_CTRL(n)	((uint32_t)(((n) & 0x03) << 10))
+#define SPDIF_SCR_DMA_RX_EN		((uint32_t)(1 << 9))
+#define SPDIF_SCR_DMA_TX_EN		((uint32_t)(1 << 8))
+#define SPDIF_SCR_VALCTRL		((uint32_t)(1 << 5))
+#define SPDIF_SCR_TXSEL(n)		((uint32_t)(((n) & 0x07) << 2))
+#define SPDIF_SCR_USRC_SEL(n)		((uint32_t)(((n) & 0x03) << 0))
+#define SPDIF_SRCD_USYNCMODE		((uint32_t)(1 << 1))
+#define SPDIF_SRPC_CLKSRC_SEL(n)	((uint32_t)(((n) & 0x0f) << 7))
+#define SPDIF_SRPC_LOCK			((uint32_t)(1 << 6))
+#define SPDIF_SRPC_GAINSEL(n)		((uint32_t)(((n) & 0x07) << 3))
+#define SPDIF_SIE_LOCK			((uint32_t)(1 << 20))
+#define SPDIF_SIE_TXUNOV		((uint32_t)(1 << 19))
+#define SPDIF_SIE_TXRESYN		((uint32_t)(1 << 18))
+#define SPDIF_SIE_CNEW			((uint32_t)(1 << 17))
+#define SPDIF_SIE_VALNOGOOD		((uint32_t)(1 << 16))
+#define SPDIF_SIE_SYMERR		((uint32_t)(1 << 15))
+#define SPDIF_SIE_BITERR		((uint32_t)(1 << 14))
+#define SPDIF_SIE_URXFUL		((uint32_t)(1 << 10))
+#define SPDIF_SIE_URXOV			((uint32_t)(1 << 9))
+#define SPDIF_SIE_QRXFUL		((uint32_t)(1 << 8))
+#define SPDIF_SIE_QRXOV			((uint32_t)(1 << 7))
+#define SPDIF_SIE_UQSYNC		((uint32_t)(1 << 6))
+#define SPDIF_SIE_UQERR			((uint32_t)(1 << 5))
+#define SPDIF_SIE_RXFIFOUNOV		((uint32_t)(1 << 4))
+#define SPDIF_SIE_RXFIFORESYN		((uint32_t)(1 << 3))
+#define SPDIF_SIE_LOCKLOSS		((uint32_t)(1 << 2))
+#define SPDIF_SIE_TXEM			((uint32_t)(1 << 1))
+#define SPDIF_SIE_RXFIFOFUL		((uint32_t)(1 << 0))
+#define SPDIF_SIS_LOCK			((uint32_t)(1 << 20))
+#define SPDIF_SIS_TXUNOV		((uint32_t)(1 << 19))
+#define SPDIF_SIS_TXRESYN		((uint32_t)(1 << 18))
+#define SPDIF_SIS_CNEW			((uint32_t)(1 << 17))
+#define SPDIF_SIS_VALNOGOOD		((uint32_t)(1 << 16))
+#define SPDIF_SIS_SYMERR		((uint32_t)(1 << 15))
+#define SPDIF_SIS_BITERR		((uint32_t)(1 << 14))
+#define SPDIF_SIS_URXFUL		((uint32_t)(1 << 10))
+#define SPDIF_SIS_URXOV			((uint32_t)(1 << 9))
+#define SPDIF_SIS_QRXFUL		((uint32_t)(1 << 8))
+#define SPDIF_SIS_QRXOV			((uint32_t)(1 << 7))
+#define SPDIF_SIS_UQSYNC		((uint32_t)(1 << 6))
+#define SPDIF_SIS_UQERR			((uint32_t)(1 << 5))
+#define SPDIF_SIS_RXFIFOUNOV		((uint32_t)(1 << 4))
+#define SPDIF_SIS_RXFIFORESYN		((uint32_t)(1 << 3))
+#define SPDIF_SIS_LOCKLOSS		((uint32_t)(1 << 2))
+#define SPDIF_SIS_TXEM			((uint32_t)(1 << 1))
+#define SPDIF_SIS_RXFIFOFUL		((uint32_t)(1 << 0))
+#define SPDIF_SIC_LOCK			((uint32_t)(1 << 20))
+#define SPDIF_SIC_TXUNOV		((uint32_t)(1 << 19))
+#define SPDIF_SIC_TXRESYN		((uint32_t)(1 << 18))
+#define SPDIF_SIC_CNEW			((uint32_t)(1 << 17))
+#define SPDIF_SIC_VALNOGOOD		((uint32_t)(1 << 16))
+#define SPDIF_SIC_SYMERR		((uint32_t)(1 << 15))
+#define SPDIF_SIC_BITERR		((uint32_t)(1 << 14))
+#define SPDIF_SIC_URXFUL		((uint32_t)(1 << 10))
+#define SPDIF_SIC_URXOV			((uint32_t)(1 << 9))
+#define SPDIF_SIC_QRXOV			((uint32_t)(1 << 7))
+#define SPDIF_SIC_UQSYNC		((uint32_t)(1 << 6))
+#define SPDIF_SIC_UQERR			((uint32_t)(1 << 5))
+#define SPDIF_SIC_RXFIFOUNOV		((uint32_t)(1 << 4))
+#define SPDIF_SIC_RXFIFORESYN		((uint32_t)(1 << 3))
+#define SPDIF_SIC_LOCKLOSS		((uint32_t)(1 << 2))
+#define SPDIF_STC_SYSCLK_DF(n)		((uint32_t)(((n) & 0x1ff) << 11))
+#define SPDIF_STC_TXCLK_SOURCE(n)	((uint32_t)(((n) & 0x07) << 8))
+#define SPDIF_STC_TX_ALL_CLK_EN		((uint32_t)(1 << 7))
+#define SPDIF_STC_TXCLK_DF(n)		((uint32_t)(((n) & 0x7f) << 0))
 
 // 52.7: page 2969
 #define IMXRT_SRC		(*(IMXRT_REGISTER32_t *)0x400F8000)
@@ -6496,7 +6692,9 @@ typedef struct {
 #define SRC_SBMR1			(IMXRT_SRC.offset004)
 #define SRC_SRSR			(IMXRT_SRC.offset008)
 #define SRC_SBMR2			(IMXRT_SRC.offset01C)
-#define SRC_GPR1			(IMXRT_SRC.offset020)
+/* 
+These register are used by the ROM code and should not be used by application software 
+#define SRC_GPR1			(IMXRT_SRC.offset020) 
 #define SRC_GPR2			(IMXRT_SRC.offset024)
 #define SRC_GPR3			(IMXRT_SRC.offset028)
 #define SRC_GPR4			(IMXRT_SRC.offset02C)
@@ -6506,8 +6704,52 @@ typedef struct {
 #define SRC_GPR8			(IMXRT_SRC.offset03C)
 #define SRC_GPR9			(IMXRT_SRC.offset040)
 #define SRC_GPR10			(IMXRT_SRC.offset044)
+*/
+#define SRC_SCR_MASK_WDOG3_RST(n)	((uint32_t)(((n) & 0x0f) << 28))
+#define SRC_SCR_DBG_RST_MSK_PG		((uint32_t)(1 << 25))
+#define SRC_SCR_CORE0_DBG_RST		((uint32_t)(1 << 17))
+#define SRC_SCR_CORE0_RST		((uint32_t)(1 << 13))
+#define SRC_SCR_MASK_WDOG_RST(n)	((uint32_t)(((n) & 0x0f) << 7))
+#define SRC_SBMR1_BOOT_CFG4(n)		((uint32_t)(((n) & 0xff) << 24))
+#define SRC_SBMR1_BOOT_CFG3(n)		((uint32_t)(((n) & 0xff) << 16))
+#define SRC_SBMR1_BOOT_CFG2(n)		((uint32_t)(((n) & 0xff) << 8))
+#define SRC_SBMR1_BOOT_CFG1(n)		((uint32_t)(((n) & 0xff) << 0))
+#define SRC_SRSR_TEMPSENSE_RST_B	((uint32_t)(1 << 8))
+#define SRC_SRSR_WDOG3_RST_B		((uint32_t)(1 << 7))
+#define SRC_SRSR_JTAG_SW_RST		((uint32_t)(1 << 6))
+#define SRC_SRSR_JTAG_RST_B		((uint32_t)(1 << 5))
+#define SRC_SRSR_WDOG_RST_B		((uint32_t)(1 << 4))
+#define SRC_SRSR_IPP_USER_RESET_B	((uint32_t)(1 << 3))
+#define SRC_SRSR_CSU_RESET_B		((uint32_t)(1 << 2))
+#define SRC_SRSR_LOCKUP_SYSRESETREQ	((uint32_t)(1 << 1))
+#define SRC_SRSR_IPP_RESET_B		((uint32_t)(1 << 0))
+#define SRC_SBMR2_BMOD(n)		((uint32_t)(((n) & 0x03) << 24))
+#define SRC_SBMR2_BT_FUSE_SEL		((uint32_t)(1 << 4))
+#define SRC_SBMR2_DIR_BT_DIS		((uint32_t)(1 << 3))
+#define SRC_SBMR2_SEC_CONFIG(n)		((uint32_t)(((n) & 0x03) << 0))
 
-// 53.3: page 2986  TODO...
+// 53.3: page 2986
+#define IMXRT_TEMPMON		(*(IMXRT_REGISTER32_t *)0x400D8180)
+#define TEMPMON_TEMPSENSE0          (IMXRT_TEMPMON.offset000)
+#define TEMPMON_TEMPSENSE0_SET		(IMXRT_TEMPMON.offset004)
+#define TEMPMON_TEMPSENSE0_CLR		(IMXRT_TEMPMON.offset008)
+#define TEMPMON_TEMPSENSE0_TOG		(IMXRT_TEMPMON.offset08c)
+#define TEMPMON_TEMPSENSE1		    (IMXRT_TEMPMON.offset090)
+#define TEMPMON_TEMPSENSE1_SET		(IMXRT_TEMPMON.offset094)
+#define TEMPMON_TEMPSENSE1_CLR		(IMXRT_TEMPMON.offset098)
+#define TEMPMON_TEMPSENSE1_TOG		(IMXRT_TEMPMON.offset09C)
+#define TEMPMON_TEMPSENSE2		    (IMXRT_TEMPMON.offset110)
+#define TEMPMON_TEMPSENSE2_SET		(IMXRT_TEMPMON.offset114)
+#define TEMPMON_TEMPSENSE2_CLR		(IMXRT_TEMPMON.offset118)
+#define TEMPMON_TEMPSENSE2_TOG		(IMXRT_TEMPMON.offset11C)
+#define TEMPMON_CTRL0_ALARM_VALUE(n)	((uint32_t)(((n) & 0x0fff) << 20))
+#define TEMPMON_CTRL0_TEMP_CNT(n)	((uint32_t)(((n) & 0x0fff) << 8))
+#define TEMPMON_CTRL0_FINISHED		((uint32_t)(1 << 2))
+#define TEMPMON_CTRL0_MEASURE_TEMP	((uint32_t)(1 << 1))
+#define TEMPMON_CTRL0_POWER_DOWN	((uint32_t)(1 << 0))
+#define TEMPMON_CTRL1_MEASURE_FREQ(n)	((uint32_t)(((n) & 0xffff) << 0))
+#define TEMPMON_CTRL2_PANIC_ALARM_VALUE(n)	((uint32_t)(((n) & 0x0fff) << 16))
+#define TEMPMON_CTRL2_LOW_ALARM_VALUE(n)	((uint32_t)(((n) & 0x0fff) << 0))
 
 // 54.3: page 2998
 #define IMXRT_TSC		(*(IMXRT_REGISTER32_t *)0x400E0000)
@@ -6992,7 +7234,7 @@ typedef struct {
 #define SCB_SCR_SLEEPDEEP   ((uint8_t)0x04)        // Sleep or Deep Sleep
 #define SCB_SCR_SLEEPONEXIT ((uint8_t)0x02)        // Sleep-on-exit
 #define SCB_CCR                 (*(volatile uint32_t *)0xE000ED14) // Configuration and Control
-#define SCB_CCR_BP			((uint32_t)(1<<18))	// Branch prediction enable 
+#define SCB_CCR_BP			((uint32_t)(1<<18))	// Branch prediction enable
 #define SCB_CCR_IC			((uint32_t)(1<<17))	// Instruction caches enable
 #define SCB_CCR_DC			((uint32_t)(1<<16))
 #define SCB_CCR_STKALIGN		((uint32_t)(1<<9))
@@ -7011,6 +7253,23 @@ typedef struct {
 #define SCB_MMFAR               (*(volatile uint32_t *)0xE000ED34) // MemManage Fault Address
 #define SCB_BFAR                (*(volatile uint32_t *)0xE000ED38) // Bus Fault Address
 #define SCB_AFAR                (*(volatile uint32_t *)0xE000ED3C) // Aux Fault Address
+#define SCB_ID_PFR0		(*(const    uint32_t *)0xE000ED40) // Processor Feature 0
+#define SCB_ID_PFR1		(*(const    uint32_t *)0xE000ED44) // Processor Feature 1
+#define SCB_ID_DFR0		(*(const    uint32_t *)0xE000ED48) // Debug Feature 0
+#define SCB_ID_AFR0		(*(const    uint32_t *)0xE000ED4C) // Auxiliary Feature 0
+#define SCB_ID_MMFR0		(*(const    uint32_t *)0xE000ED50) // Memory Model Feature 0
+#define SCB_ID_MMFR1		(*(const    uint32_t *)0xE000ED54) // Memory Model Feature 1
+#define SCB_ID_MMFR2		(*(const    uint32_t *)0xE000ED58) // Memory Model Feature 2
+#define SCB_ID_MMFR3		(*(const    uint32_t *)0xE000ED5C) // Memory Model Feature 3
+#define SCB_ID_ISAR0		(*(const    uint32_t *)0xE000ED60) // Instruction Set Attribute 0
+#define SCB_ID_ISAR1		(*(const    uint32_t *)0xE000ED64) // Instruction Set Attribute 1
+#define SCB_ID_ISAR2 		(*(const    uint32_t *)0xE000ED68) // Instruction Set Attribute 2
+#define SCB_ID_ISAR3 		(*(const    uint32_t *)0xE000ED6C) // Instruction Set Attribute 3
+#define SCB_ID_ISAR4 		(*(const    uint32_t *)0xE000ED70) // Instruction Set Attribute 4
+#define SCB_ID_CLIDR		(*(const    uint32_t *)0xE000ED78) // Cache Level ID
+#define SCB_ID_CTR		(*(const    uint32_t *)0xE000ED7C) // Cache Type
+#define SCB_ID_CCSIDR		(*(const    uint32_t *)0xE000ED80) // Cache Size ID
+#define SCB_ID_CSSELR		(*(const    uint32_t *)0xE000ED84) // Cache Size Selection
 #define SCB_CPACR               (*(volatile uint32_t *)0xE000ED88) // Coprocessor Access Control
 #define SCB_FPCCR               (*(volatile uint32_t *)0xE000EF34) // FP Context Control
 #define SCB_FPCAR               (*(volatile uint32_t *)0xE000EF38) // FP Context Address
@@ -7033,10 +7292,12 @@ typedef struct {
 #define NVIC_ISER1              (*(volatile uint32_t *)0xE000E104)
 #define NVIC_ISER2              (*(volatile uint32_t *)0xE000E108)
 #define NVIC_ISER3              (*(volatile uint32_t *)0xE000E10C)
+#define NVIC_ISER4              (*(volatile uint32_t *)0xE000E110)
 #define NVIC_ICER0              (*(volatile uint32_t *)0xE000E180)
 #define NVIC_ICER1              (*(volatile uint32_t *)0xE000E184)
 #define NVIC_ICER2              (*(volatile uint32_t *)0xE000E188)
 #define NVIC_ICER3              (*(volatile uint32_t *)0xE000E18C)
+#define NVIC_ICER4              (*(volatile uint32_t *)0xE000E190)
 #define NVIC_STIR		(*(volatile uint32_t *)0xE000EF00)
 #define NVIC_ENABLE_IRQ(n)      (*(&NVIC_ISER0 + ((n) >> 5)) = (1 << ((n) & 31)))
 #define NVIC_DISABLE_IRQ(n)     (*(&NVIC_ICER0 + ((n) >> 5)) = (1 << ((n) & 31)))
@@ -7090,5 +7351,66 @@ typedef struct {
 #define SCB_CACHE_DCCIMVAC	(*(volatile uint32_t *)0xE000EF70)
 #define SCB_CACHE_DCCISW	(*(volatile uint32_t *)0xE000EF74)
 #define SCB_CACHE_BPIALL	(*(volatile uint32_t *)0xE000EF78)
+
+// Flush data from cache to memory
+//
+// Normally arm_dcache_flush() is used when metadata written to memory
+// will be used by a DMA or a bus-master peripheral.  Any data in the
+// cache is written to memory.  A copy remains in the cache, so this is
+// typically used with special fields you will want to quickly access
+// in the future.  For data transmission, use arm_dcache_flush_delete().
+__attribute__((always_inline, unused))
+static inline void arm_dcache_flush(void *addr, uint32_t size)
+{
+	uint32_t location = (uint32_t)addr & 0xFFFFFFE0;
+	uint32_t end_addr = (uint32_t)addr + size;
+	asm("dsb");
+	do {
+		SCB_CACHE_DCCMVAC = location;
+		location += 32;
+	} while (location < end_addr);
+	asm("dsb");
+	asm("isb");
+}
+
+// Delete data from the cache, without touching memory
+//
+// Normally arm_dcache_delete() is used before receiving data via
+// DMA or from bus-master peripherals which write to memory.  You
+// want to delete anything the cache may have stored, so your next
+// read is certain to access the physical memory.
+__attribute__((always_inline, unused))
+static inline void arm_dcache_delete(void *addr, uint32_t size)
+{
+	uint32_t location = (uint32_t)addr & 0xFFFFFFE0;
+	uint32_t end_addr = (uint32_t)addr + size;
+	asm("dsb");
+	do {
+		SCB_CACHE_DCIMVAC = location;
+		location += 32;
+	} while (location < end_addr);
+	asm("dsb");
+	asm("isb");
+}
+
+// Flush data from cache to memory, and delete it from the cache
+//
+// Normally arm_dcache_flush_delete() is used when transmitting data
+// via DMA or bus-master peripherals which read from memory.  You want
+// any cached data written to memory, and then removed from the cache,
+// because you no longer need to access the data after transmission.
+__attribute__((always_inline, unused))
+static inline void arm_dcache_flush_delete(void *addr, uint32_t size)
+{
+	uint32_t location = (uint32_t)addr & 0xFFFFFFE0;
+	uint32_t end_addr = (uint32_t)addr + size;
+	asm("dsb");
+	do {
+		SCB_CACHE_DCCIMVAC = location;
+		location += 32;
+	} while (location < end_addr);
+	asm("dsb");
+	asm("isb");
+}
 
 
