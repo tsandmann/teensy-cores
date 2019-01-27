@@ -335,8 +335,8 @@
 #define CORE_PIN33_CONFIG	IOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_08
 
 // pad config registers control pullup/pulldown/keeper, drive strength, etc
-#define CORE_PIN0_PADCONFIG	IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_02
-#define CORE_PIN1_PADCONFIG	IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_03
+#define CORE_PIN0_PADCONFIG	IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_03
+#define CORE_PIN1_PADCONFIG	IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_02
 #define CORE_PIN2_PADCONFIG	IOMUXC_SW_PAD_CTL_PAD_GPIO_EMC_04
 #define CORE_PIN3_PADCONFIG	IOMUXC_SW_PAD_CTL_PAD_GPIO_EMC_05
 #define CORE_PIN4_PADCONFIG	IOMUXC_SW_PAD_CTL_PAD_GPIO_EMC_06
@@ -589,7 +589,8 @@ static inline void digitalWriteFast(uint8_t pin, uint8_t val)
 			}
 		}
 	} else {
-		*portClearRegister(pin) = digitalPinToBitMask(pin);
+		if(val) *portSetRegister(pin) = digitalPinToBitMask(pin);
+		else *portClearRegister(pin) = digitalPinToBitMask(pin);
 	}
 }
 
@@ -768,6 +769,12 @@ static inline void delayNanoseconds(uint32_t nsec)
 unsigned long rtc_get(void);
 void rtc_set(unsigned long t);
 void rtc_compensate(int adjust);
+
+void tempmon_init(void);
+float tempmonGetTemp(void);
+void tempmon_Start();
+void tempmon_Stop();
+void tempmon_PwrDwn();
 
 #ifdef __cplusplus
 }

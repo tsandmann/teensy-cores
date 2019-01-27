@@ -2945,35 +2945,35 @@ typedef struct {
 #define FLEXIO3_SHIFTBUFNIS1		(IMXRT_FLEXIO3_b.offset384)
 #define FLEXIO3_SHIFTBUFNIS2		(IMXRT_FLEXIO3_b.offset388)
 #define FLEXIO3_SHIFTBUFNIS3		(IMXRT_FLEXIO3_b.offset38C)
-#define FLEXIO_CTRL_DOZEN			((uint16_t)(1<<31))
-#define FLEXIO_CTRL_DBGE			((uint16_t)(1<<30))
-#define FLEXIO_CTRL_FASTACC			((uint16_t)(1<<2))
-#define FLEXIO_CTRL_SWRST			((uint16_t)(1<<1))
-#define FLEXIO_CTRL_FLEXEN			((uint16_t)(1<<0))
-#define FLEXIO_SHIFTCTL_TIMSEL(n)		((uint16_t)(((n) & 0x03) << 24))
-#define FLEXIO_SHIFTCTL_TIMPOL			((uint16_t)(1<<23))
-#define FLEXIO_SHIFTCTL_PINCFG(n)		((uint16_t)(((n) & 0x03) << 16))
-#define FLEXIO_SHIFTCTL_PINSEL(n)		((uint16_t)(((n) & 0x1F) << 8))
-#define FLEXIO_SHIFTCTL_PINPOL			((uint16_t)(1<<7))
-#define FLEXIO_SHIFTCTL_SMOD(n)			((uint16_t)(((n) & 0x07) << 0))
-#define FLEXIO_SHIFTCFG_PWIDTH(n)		((uint16_t)(((n) & 0x1F) << 16))
-#define FLEXIO_SHIFTCFG_INSRC			((uint16_t)(1<<8))
-#define FLEXIO_SHIFTCFG_SSTOP(n)		((uint16_t)(((n) & 0x03) << 4))
-#define FLEXIO_SHIFTCFG_SSTART(n)		((uint16_t)(((n) & 0x03) << 0))
-#define FLEXIO_TIMCTL_TRGSEL(n)			((uint16_t)(((n) & 0x3F) << 24))
-#define FLEXIO_TIMCTL_TRGPOL			((uint16_t)(1<<23))
-#define FLEXIO_TIMCTL_TRGSRC			((uint16_t)(1<<22))
-#define FLEXIO_TIMCTL_PINCFG(n)			((uint16_t)(((n) & 0x03) << 16))
-#define FLEXIO_TIMCTL_PINSEL(n)			((uint16_t)(((n) & 0x1F) << 8))
-#define FLEXIO_TIMCTL_PINPOL			((uint16_t)(1<<7))
-#define FLEXIO_TIMCTL_TIMOD(n)			((uint16_t)(((n) & 0x03) << 0))
-#define FLEXIO_TIMCFG_TIMOUT(n)			((uint16_t)(((n) & 0x03) << 24))
-#define FLEXIO_TIMCFG_TIMDEC(n)			((uint16_t)(((n) & 0x03) << 20))
-#define FLEXIO_TIMCFG_TIMRST(n)			((uint16_t)(((n) & 0x07) << 16))
-#define FLEXIO_TIMCFG_TIMDIS(n)			((uint16_t)(((n) & 0x07) << 12))
-#define FLEXIO_TIMCFG_TIMENA(n)			((uint16_t)(((n) & 0x07) << 8))
-#define FLEXIO_TIMCFG_TSTOP(n)			((uint16_t)(((n) & 0x03) << 4))
-#define FLEXIO_TIMCFG_TSTART			((uint16_t)(1<<1))
+#define FLEXIO_CTRL_DOZEN			((uint32_t)(1<<31))
+#define FLEXIO_CTRL_DBGE			((uint32_t)(1<<30))
+#define FLEXIO_CTRL_FASTACC			((uint32_t)(1<<2))
+#define FLEXIO_CTRL_SWRST			((uint32_t)(1<<1))
+#define FLEXIO_CTRL_FLEXEN			((uint32_t)(1<<0))
+#define FLEXIO_SHIFTCTL_TIMSEL(n)		((uint32_t)(((n) & 0x03) << 24))
+#define FLEXIO_SHIFTCTL_TIMPOL			((uint32_t)(1<<23))
+#define FLEXIO_SHIFTCTL_PINCFG(n)		((uint32_t)(((n) & 0x03) << 16))
+#define FLEXIO_SHIFTCTL_PINSEL(n)		((uint32_t)(((n) & 0x1F) << 8))
+#define FLEXIO_SHIFTCTL_PINPOL			((uint32_t)(1<<7))
+#define FLEXIO_SHIFTCTL_SMOD(n)			((uint32_t)(((n) & 0x07) << 0))
+#define FLEXIO_SHIFTCFG_PWIDTH(n)		((uint32_t)(((n) & 0x1F) << 16))
+#define FLEXIO_SHIFTCFG_INSRC			((uint32_t)(1<<8))
+#define FLEXIO_SHIFTCFG_SSTOP(n)		((uint32_t)(((n) & 0x03) << 4))
+#define FLEXIO_SHIFTCFG_SSTART(n)		((uint32_t)(((n) & 0x03) << 0))
+#define FLEXIO_TIMCTL_TRGSEL(n)			((uint32_t)(((n) & 0x3F) << 24))
+#define FLEXIO_TIMCTL_TRGPOL			((uint32_t)(1<<23))
+#define FLEXIO_TIMCTL_TRGSRC			((uint32_t)(1<<22))
+#define FLEXIO_TIMCTL_PINCFG(n)			((uint32_t)(((n) & 0x03) << 16))
+#define FLEXIO_TIMCTL_PINSEL(n)			((uint32_t)(((n) & 0x1F) << 8))
+#define FLEXIO_TIMCTL_PINPOL			((uint32_t)(1<<7))
+#define FLEXIO_TIMCTL_TIMOD(n)			((uint32_t)(((n) & 0x03) << 0))
+#define FLEXIO_TIMCFG_TIMOUT(n)			((uint32_t)(((n) & 0x03) << 24))
+#define FLEXIO_TIMCFG_TIMDEC(n)			((uint32_t)(((n) & 0x03) << 20))
+#define FLEXIO_TIMCFG_TIMRST(n)			((uint32_t)(((n) & 0x07) << 16))
+#define FLEXIO_TIMCFG_TIMDIS(n)			((uint32_t)(((n) & 0x07) << 12))
+#define FLEXIO_TIMCFG_TIMENA(n)			((uint32_t)(((n) & 0x07) << 8))
+#define FLEXIO_TIMCFG_TSTOP(n)			((uint32_t)(((n) & 0x03) << 4))
+#define FLEXIO_TIMCFG_TSTART			((uint32_t)(1<<1))
 
 // 28.4.1: page 1354
 typedef struct {
@@ -5501,7 +5501,41 @@ typedef struct {
 #define LPI2C_SRDR_DATA(n)			((uint32_t)(((n) & 0xFF) << 0))
 
 // 38.3.5.2: page 2422
+typedef struct {
+        const uint32_t VERID;           // 0
+        const uint32_t PARAM;           // 0x04
+        const uint32_t UNUSED0;         // 0x08
+        const uint32_t UNUSED1;         // 0x0c
+        volatile uint32_t CR;           // 0x10
+        volatile uint32_t SR;           // 0x14
+        volatile uint32_t IER;          // 0x18
+        volatile uint32_t DER;          // 0x1c
+        volatile uint32_t CFGR0;        // 0x20
+        volatile uint32_t CFGR1;        // 0x24
+        const uint32_t UNUSED3;         // 0x28
+        const uint32_t UNUSED4;         // 0x2c
+        volatile uint32_t DMR0;         // 0x30
+        volatile uint32_t DMR1;         // 0x34
+        const uint32_t UNUSED5;         // 0x38
+        const uint32_t UNUSED6;         // 0x3c
+        volatile uint32_t CCR;          // 0x40
+        const uint32_t UNUSED7;         // 0x44
+        const uint32_t UNUSED8;         // 0x48
+        const uint32_t UNUSED9;         // 0x4c
+        const uint32_t UNUSED10;        // 0x50
+        const uint32_t UNUSED11;        // 0x54
+        volatile uint32_t FCR;          // 0x58
+        volatile uint32_t FSR;          // 0x5C
+        volatile uint32_t TCR;          // 0x60
+        volatile uint32_t TDR;          // 0x64
+        const uint32_t UNUSED12;        // 0x68
+        const uint32_t UNUSED13;        // 0x6c
+        volatile uint32_t RSR;          // 0x70
+        volatile uint32_t RDR;          // 0x74
+} IMXRT_LPSPI_t;
+
 #define IMXRT_LPSPI1		(*(IMXRT_REGISTER32_t *)0x40394000)
+#define IMXRT_LPSPI1_S          (*(IMXRT_LPSPI_t *)0x40394000)
 #define LPSPI1_VERID			(IMXRT_LPSPI1.offset000)
 #define LPSPI1_PARAM			(IMXRT_LPSPI1.offset004)
 #define LPSPI1_CR			(IMXRT_LPSPI1.offset010)
@@ -5520,6 +5554,7 @@ typedef struct {
 #define LPSPI1_RSR			(IMXRT_LPSPI1.offset070)
 #define LPSPI1_RDR			(IMXRT_LPSPI1.offset074)
 #define IMXRT_LPSPI2		(*(IMXRT_REGISTER32_t *)0x40398000)
+#define IMXRT_LPSPI2_S          (*(IMXRT_LPSPI_t *)0x40398000)
 #define LPSPI2_VERID			(IMXRT_LPSPI2.offset000)
 #define LPSPI2_PARAM			(IMXRT_LPSPI2.offset004)
 #define LPSPI2_CR			(IMXRT_LPSPI2.offset010)
@@ -5538,6 +5573,7 @@ typedef struct {
 #define LPSPI2_RSR			(IMXRT_LPSPI2.offset070)
 #define LPSPI2_RDR			(IMXRT_LPSPI2.offset074)
 #define IMXRT_LPSPI3		(*(IMXRT_REGISTER32_t *)0x4039C000)
+#define IMXRT_LPSPI3_S          (*(IMXRT_LPSPI_t *)0x4039C000)
 #define LPSPI3_VERID			(IMXRT_LPSPI3.offset000)
 #define LPSPI3_PARAM			(IMXRT_LPSPI3.offset004)
 #define LPSPI3_CR			(IMXRT_LPSPI3.offset010)
@@ -5556,6 +5592,7 @@ typedef struct {
 #define LPSPI3_RSR			(IMXRT_LPSPI3.offset070)
 #define LPSPI3_RDR			(IMXRT_LPSPI3.offset074)
 #define IMXRT_LPSPI4		(*(IMXRT_REGISTER32_t *)0x403A0000)
+#define IMXRT_LPSPI4_S          (*(IMXRT_LPSPI_t *)0x403A0000)
 #define LPSPI4_VERID			(IMXRT_LPSPI4.offset000)
 #define LPSPI4_PARAM			(IMXRT_LPSPI4.offset004)
 #define LPSPI4_CR			(IMXRT_LPSPI4.offset010)
@@ -7122,6 +7159,18 @@ These register are used by the ROM code and should not be used by application so
 #define WDOG2_WRSR			(IMXRT_WDOG2.offset004)
 #define WDOG2_WICR			(IMXRT_WDOG2.offset006)
 #define WDOG2_WMCR			(IMXRT_WDOG2.offset008)
+#define WDOG_WCR_WDZST				((uint16_t)(1<<0))
+#define WDOG_WCR_WDBG				((uint16_t)(1<<1))
+#define WDOG_WCR_WDE				((uint16_t)(1<<2))
+#define WDOG_WCR_WDT				((uint16_t)(1<<3))
+#define WDOG_WCR_SRS				((uint16_t)(1<<4))
+#define WDOG_WCR_WDA				((uint16_t)(1<<5))
+#define WDOG_WCR_SRE				((uint16_t)(1<<6))
+#define WDOG_WCR_WDW				((uint16_t)(1<<7))
+#define WDOG_WCR_WT(n)				((uint16_t)(((n) & 0xFF) << 8))
+#define WDOG_WRSR_SFTW				((uint16_t)(1<<0))
+#define WDOG_WRSR_TOUT				((uint16_t)(1<<1))
+#define WDOG_WRSR_POR				((uint16_t)(1<<4))
 
 // 59.3.1.1: page 3471
 #define IMXRT_WDOG3		(*(IMXRT_REGISTER32_t *)0x400BC000)
@@ -7129,6 +7178,20 @@ These register are used by the ROM code and should not be used by application so
 #define WDOG3_CNT			(IMXRT_WDOG3.offset004)
 #define WDOG3_TOVAL			(IMXRT_WDOG3.offset008)
 #define WDOG3_WIN			(IMXRT_WDOG3.offset00C)
+#define WDOG_CS_STOP				((uint16_t)(1<<0))
+#define WDOG_CS_WAIT				((uint16_t)(1<<1))
+#define WDOG_CS_DBG				((uint16_t)(1<<2))
+#define WDOG_CS_TST(n)				((uint16_t)(((n) & 0x03) << 3))
+#define WDOG_CS_UPDATE				((uint16_t)(1<<5))
+#define WDOG_CS_INT				((uint16_t)(1<<6))
+#define WDOG_CS_EN				((uint16_t)(1<<7))
+#define WDOG_CS_CLK(n)				((uint16_t)(((n) & 0x03) << 8))
+#define WDOG_CS_RCS				((uint16_t)(1<<10))
+#define WDOG_CS_ULK				((uint16_t)(1<<11))
+#define WDOG_CS_PRES				((uint16_t)(1<<12))
+#define WDOG_CS_CMD32EN				((uint16_t)(1<<13))
+#define WDOG_CS_FLG				((uint16_t)(1<<14))
+#define WDOG_CS_WIN				((uint16_t)(1<<15))
 
 // 60.4: page 3491
 #define IMXRT_XBARA1		(*(IMXRT_REGISTER16_t *)0x403BC000)
