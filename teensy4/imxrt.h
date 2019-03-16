@@ -173,11 +173,11 @@ enum IRQ_NUMBER_t {
 #ifdef __cplusplus
 extern "C" void (* _VectorsRam[NVIC_NUM_INTERRUPTS+16])(void);
 static inline void attachInterruptVector(IRQ_NUMBER_t irq, void (*function)(void)) __attribute__((always_inline, unused));
-static inline void attachInterruptVector(IRQ_NUMBER_t irq, void (*function)(void)) { _VectorsRam[irq + 16] = function; }
+static inline void attachInterruptVector(IRQ_NUMBER_t irq, void (*function)(void)) { _VectorsRam[irq + 16] = function; asm volatile("": : :"memory"); }
 #else
 extern void (* _VectorsRam[NVIC_NUM_INTERRUPTS+16])(void);
 static inline void attachInterruptVector(enum IRQ_NUMBER_t irq, void (*function)(void)) __attribute__((always_inline, unused));
-static inline void attachInterruptVector(enum IRQ_NUMBER_t irq, void (*function)(void)) { _VectorsRam[irq + 16] = function; }
+static inline void attachInterruptVector(enum IRQ_NUMBER_t irq, void (*function)(void)) { _VectorsRam[irq + 16] = function; asm volatile("": : :"memory"); }
 #endif
 
 
@@ -1373,6 +1373,19 @@ typedef struct {
 #define CCM_CMEOR_MOD_EN_OV_PIT			((uint32_t)(1<<6))
 #define CCM_CMEOR_MOD_EN_OV_GPT			((uint32_t)(1<<5))
 
+#define CCM_CSCMR1_SAI1_CLK_SEL_MASK		(CCM_CSCMR1_SAI1_CLK_SEL(0x03))
+#define CCM_CS1CDR_SAI1_CLK_PRED_MASK		(CCM_CS1CDR_SAI1_CLK_PRED(0x07))
+#define CCM_CS1CDR_SAI1_CLK_PODF_MASK		(CCM_CS1CDR_SAI1_CLK_PODF(0x3f))
+#define CCM_CSCMR1_SAI2_CLK_SEL_MASK		(CCM_CSCMR1_SAI2_CLK_SEL(0x03))
+#define CCM_CS2CDR_SAI2_CLK_PRED_MASK		(CCM_CS2CDR_SAI2_CLK_PRED(0x07))
+#define CCM_CS2CDR_SAI2_CLK_PODF_MASK		(CCM_CS2CDR_SAI2_CLK_PODF(0x3f))
+#define CCM_CSCMR1_SAI3_CLK_SEL_MASK		(CCM_CSCMR1_SAI3_CLK_SEL(0x03))
+#define CCM_CS1CDR_SAI3_CLK_PRED_MASK		(CCM_CS1CDR_SAI3_CLK_PRED(0x07))
+#define CCM_CS1CDR_SAI3_CLK_PODF_MASK		(CCM_CS1CDR_SAI3_CLK_PODF(0x3f))
+#define CCM_CDCDR_SPDIF0_CLK_SEL_MASK		(CCM_CDCDR_SPDIF0_CLK_SEL(0x03))
+#define CCM_CDCDR_SPDIF0_CLK_PRED_MASK		(CCM_CDCDR_SPDIF0_CLK_PRED(0x07))
+#define CCM_CDCDR_SPDIF0_CLK_PODF_MASK		(CCM_CDCDR_SPDIF0_CLK_PODF(0x07))
+
 // 18.8: page 752
 #define IMXRT_CCM_ANALOG	(*(IMXRT_REGISTER32_t *)0x400D8000)
 #define CCM_ANALOG_PLL_ARM		(IMXRT_CCM_ANALOG.offset000)
@@ -1442,11 +1455,31 @@ typedef struct {
 #define CCM_ANALOG_PLL_USB1_POWER		((uint32_t)(1<<12))
 #define CCM_ANALOG_PLL_USB1_EN_USB_CLKS		((uint32_t)(1<<6))
 #define CCM_ANALOG_PLL_USB1_DIV_SELECT		((uint32_t)(1<<1))
+#define CCM_ANALOG_PLL_USB2_LOCK		((uint32_t)(1<<31))
+#define CCM_ANALOG_PLL_USB2_BYPASS		((uint32_t)(1<<16))
+#define CCM_ANALOG_PLL_USB2_ENABLE		((uint32_t)(1<<13))
+#define CCM_ANALOG_PLL_USB2_POWER		((uint32_t)(1<<12))
+#define CCM_ANALOG_PLL_USB2_EN_USB_CLKS		((uint32_t)(1<<6))
+#define CCM_ANALOG_PLL_USB2_DIV_SELECT		((uint32_t)(1<<1))
 #define CCM_ANALOG_PLL_SYS_LOCK			((uint32_t)(1<<31))
 #define CCM_ANALOG_PLL_SYS_BYPASS		((uint32_t)(1<<16))
 #define CCM_ANALOG_PLL_SYS_ENABLE		((uint32_t)(1<<13))
 #define CCM_ANALOG_PLL_SYS_POWERDOWN		((uint32_t)(1<<12))
 #define CCM_ANALOG_PLL_SYS_DIV_SELECT		((uint32_t)(1<<1))
+#define CCM_ANALOG_PLL_AUDIO_POST_DIV_SELECT(n)	((uint32_t)(((n) & 0x03) <<19)) 
+#define CCM_ANALOG_PLL_AUDIO_BYPASS		((uint32_t)(1<<16)) 
+#define CCM_ANALOG_PLL_AUDIO_BYPASS_CLK_SRC(n)	((uint32_t)(((n) & 0x03) <<14)) 
+#define CCM_ANALOG_PLL_AUDIO_ENABLE		((uint32_t)(1<<13)) 
+#define CCM_ANALOG_PLL_AUDIO_POWERDOWN		((uint32_t)(1<<12)) 
+#define CCM_ANALOG_PLL_AUDIO_DIV_SELECT(n)	((uint32_t)((n) & ((1<<6)-1)))
+
+#define CCM_ANALOG_MISC2_DIV_MSB		((uint32_t)(1<<23))
+#define CCM_ANALOG_MISC2_DIV_LSB		((uint32_t)(1<<15))
+
+#define CCM_ANALOG_PLL_AUDIO_NUM_MASK		(((1<<29)-1))
+#define CCM_ANALOG_PLL_AUDIO_DENOM_MASK		(((1<<29)-1))
+#define CCM_ANALOG_PLL_AUDIO_LOCK		((uint32_t)(1<<31))
+
 
 // 19.7: page 810
 #define IMXRT_CSI		(*(IMXRT_REGISTER32_t *)0x402BC000)
@@ -2758,6 +2791,51 @@ typedef struct {
 #define FLEXCAN2_GFWR			(IMXRT_FLEXCAN2_MASK.offset1E0)
 
 // 27.3.1.1: page 1292
+typedef struct {
+        const   uint32_t VERID;                         // 0x00 (IMXRT_FLEXIO1.offset000)
+        volatile uint32_t PARAM;                        // 0x04 // (IMXRT_FLEXIO1.offset004)
+        volatile uint32_t CTRL;                         // 0x08(IMXRT_FLEXIO1.offset008)
+        volatile uint32_t PIN;                          // 0x0c (IMXRT_FLEXIO1.offset00C)
+        volatile uint32_t SHIFTSTAT;            // 0x10 (IMXRT_FLEXIO1.offset010)
+        volatile uint32_t SHIFTERR;                     // 0x14(IMXRT_FLEXIO1.offset014)
+        volatile uint32_t TIMSTAT;                      // 0x18 (IMXRT_FLEXIO1.offset018)
+        const   uint32_t UNUSED0;                       // 0x1c
+        volatile uint32_t SHIFTSIEN;            // 0x20 (IMXRT_FLEXIO1.offset020)
+        volatile uint32_t SHIFTEIEN;            // 0x24 (IMXRT_FLEXIO1.offset024)
+        volatile uint32_t TIMIEN;                       // 0x28 (IMXRT_FLEXIO1.offset028)
+        const   uint32_t UNUSED1;                       // 0x2c
+        volatile uint32_t SHIFTSDEN;            // 0x30 (IMXRT_FLEXIO1.offset030)
+        const   uint32_t UNUSED2[3];            // 0x34 38 3C
+        volatile uint32_t SHIFTSTATE;           // 0x40 (IMXRT_FLEXIO1.offset040)
+        const   uint32_t UNUSED3[15];           // 0x44..  50... 60... 70...
+        volatile uint32_t SHIFTCTL[4];          // 0x80 84 88 8C
+        const   uint32_t UNUSED4[28];           // 0x90 - 0xfc
+        volatile uint32_t SHIFTCFG[4];          // 0x100 104 108 10C (IMXRT_FLEXIO1.offset100)
+        const   uint32_t UNUSED5[60];           // 0x110 - 0x1FC
+        volatile uint32_t SHIFTBUF[4];          // 0x200 204 208 20c (IMXRT_FLEXIO1.offset200)
+        const   uint32_t UNUSED6[28];           // 
+        volatile uint32_t SHIFTBUFBIS[4];       // 0x280        // (IMXRT_FLEXIO1.offset280)
+        const   uint32_t UNUSED7[28];           // 
+        volatile uint32_t SHIFTBUFBYS[4];       // 0x300 (IMXRT_FLEXIO1.offset300)
+        const   uint32_t UNUSED8[28];           // 
+        volatile uint32_t SHIFTBUFBBS[4];       // 0x380 (IMXRT_FLEXIO1.offset380)
+        const   uint32_t UNUSED9[28];           // 
+        volatile uint32_t TIMCTL[4];            // 0x400 
+        const   uint32_t UNUSED10[28];          // 
+        volatile uint32_t TIMCFG[4];            // 0x480
+        const   uint32_t UNUSED11[28];          // 
+        volatile uint32_t TIMCMP[4];            // 0x500
+        const   uint32_t UNUSED12[28+64];       // 
+        volatile uint32_t SHIFTBUFNBS[4];       // 0x680
+        const   uint32_t UNUSED13[28];          // 
+        volatile uint32_t SHIFTBUFHWS[4];       // 0x700
+        const   uint32_t UNUSED14[28];          // 
+        volatile uint32_t SHIFTBUFNIS[4];       // 0x780
+} IMXRT_FLEXIO_t;
+
+#define IMXRT_FLEXIO1_S         (*(IMXRT_FLEXIO_t *)0x401AC000)
+#define IMXRT_FLEXIO2_S         (*(IMXRT_FLEXIO_t *)0x401B0000)
+
 #define IMXRT_FLEXIO1		(*(IMXRT_REGISTER32_t *)0x401AC000)
 #define IMXRT_FLEXIO1_b		(*(IMXRT_REGISTER32_t *)0x401AC400)
 #define FLEXIO1_VERID			(IMXRT_FLEXIO1.offset000)
@@ -6550,6 +6628,53 @@ typedef struct {
 #define I2S3_RFR3			(IMXRT_I2S3.offset0CC)
 #define I2S3_RMR			(IMXRT_I2S3.offset0E0)
 
+#define I2S_RCR1_RFW(n)			((uint32_t)n & 0x1f)	// Receive FIFO watermark
+#define I2S_RCR2_DIV(n)			((uint32_t)n & 0xff)	// Bit clock divide by (DIV+1)*2
+#define I2S_RCR2_BCD			((uint32_t)1<<24)	// Bit clock direction
+#define I2S_RCR2_MSEL(n)		((uint32_t)(n & 3)<<26)	// MCLK select, 0=bus clock, 1=I2S0_MCLK
+#define I2S_RCR2_SYNC(n)		((uint32_t)(n & 3)<<30)	// 0=async 1=sync with trasmitter
+#define I2S_RCR3_RCE			((uint32_t)0x10000)	// receive channel enable
+#define I2S_RCR4_FSD			((uint32_t)1)		// Frame Sync Direction
+#define I2S_RCR4_FSP			((uint32_t)1<<1)
+#define I2S_RCR4_FSE			((uint32_t)8)		// Frame Sync Early
+#define I2S_RCR4_MF			((uint32_t)0x10)	// MSB First
+#define I2S_RCR4_SYWD(n)		((uint32_t)(n & 0x1f)<<8)	// Sync Width
+#define I2S_RCR4_FRSZ(n)		((uint32_t)(n & 0x0f)<<16)	// Frame Size
+#define I2S_RCR4_FCONT			((uint32_t)1<<28)	// FIFO Continue on Error
+#define I2S_RCR5_FBT(n)			((uint32_t)(n & 0x1f)<<8)	// First Bit Shifted
+#define I2S_RCR5_W0W(n)			((uint32_t)(n & 0x1f)<<16)	// Word 0 Width
+#define I2S_RCR5_WNW(n)			((uint32_t)(n & 0x1f)<<24)	// Word N Width
+#define I2S_RCR2_BCP			((uint32_t)1<<25)
+#define I2S_RCSR_RE			((uint32_t)0x80000000)	// Receiver Enable
+#define I2S_RCSR_FR			((uint32_t)0x02000000)	// FIFO Reset
+#define I2S_RCSR_FRDE			((uint32_t)0x00000001)	// FIFO Request DMA Enable
+#define I2S_RCSR_BCE			((uint32_t)0x10000000)	// Bit Clock Enable
+#define I2S_TCR1_RFW(n)			((uint32_t)n & 0x1f)	// Receive FIFO watermark
+#define I2S_TCR2_DIV(n)			((uint32_t)n & 0xff)	// Bit clock divide by (DIV+1)*2
+#define I2S_TCR2_BCD			((uint32_t)1<<24)	// Bit clock direction
+#define I2S_TCR2_MSEL(n)		((uint32_t)(n & 3)<<26)	// MCLK select, 0=bus clock, 1=I2S0_MCLK
+#define I2S_TCR2_SYNC(n)		((uint32_t)(n & 3)<<30)	// 0=async 1=sync with receiver
+#define I2S_TCR3_TCE			((uint32_t)0x10000)	// receive channel enable
+#define I2S_TCR4_FSD			((uint32_t)1)		// Frame Sync Direction
+#define I2S_TCR4_FSP			((uint32_t)1<<1)
+#define I2S_TCR4_FSE			((uint32_t)8)		// Frame Sync Early
+#define I2S_TCR4_MF			((uint32_t)0x10)	// MSB First
+#define I2S_TCR4_SYWD(n)		((uint32_t)(n & 0x1f)<<8)	// Sync Width
+#define I2S_TCR4_FRSZ(n)		((uint32_t)(n & 0x0f)<<16)	// Frame Size
+#define I2S_TCR4_FCONT			((uint32_t)1<<28)	// FIFO Continue on Error
+#define I2S_TCR5_FBT(n)			((uint32_t)(n & 0x1f)<<8) 	// First Bit Shifted
+#define I2S_TCR5_W0W(n)			((uint32_t)(n & 0x1f)<<16)	// Word 0 Width
+#define I2S_TCR5_WNW(n)			((uint32_t)(n & 0x1f)<<24)	// Word N Width
+#define I2S_TCR2_BCP			((uint32_t)1<<25)
+#define I2S_TCSR_TE			((uint32_t)0x80000000)		// Receiver Enable
+#define I2S_TCSR_BCE			((uint32_t)0x10000000)	// Bit Clock Enable
+#define I2S_TCSR_FR			((uint32_t)0x02000000)	// FIFO Reset
+#define I2S_TCSR_FRDE			((uint32_t)0x00000001)	// FIFO Request DMA Enable
+
+
+
+
+
 // 49.3.1.1: page 2784
 #define IMXRT_SEMC		(*(IMXRT_REGISTER32_t *)0x402F0000)
 #define SEMC_MCR			(IMXRT_SEMC.offset000)
@@ -6629,7 +6754,7 @@ typedef struct {
 #define SNVS_HPVIDR2			(IMXRT_SNVS_b.offset3FC)
 
 // 51.5: page 2938
-#define IMXRT_SPDIF		(*(IMXRT_REGISTER32_t *)0x400D4000)
+#define IMXRT_SPDIF		(*(IMXRT_REGISTER32_t *)0x40380000)
 #define SPDIF_SCR			(IMXRT_SPDIF.offset000)
 #define SPDIF_SRCD			(IMXRT_SPDIF.offset004)
 #define SPDIF_SRPC			(IMXRT_SPDIF.offset008)
@@ -6847,7 +6972,7 @@ These register are used by the ROM code and should not be used by application so
 #define USB1_ENDPTCTRL5			(IMXRT_USB1.offset1D4)
 #define USB1_ENDPTCTRL6			(IMXRT_USB1.offset1D8)
 #define USB1_ENDPTCTRL7			(IMXRT_USB1.offset1DC)
-#define IMXRT_USB2		(*(IMXRT_REGISTER32_t *)0x402DC000)
+#define IMXRT_USB2		(*(IMXRT_REGISTER32_t *)0x402E0200)
 #define USB2_ID				(IMXRT_USB2.offset000)
 #define USB2_HWGENERAL			(IMXRT_USB2.offset004)
 #define USB2_HWHOST			(IMXRT_USB2.offset008)
@@ -6981,6 +7106,10 @@ These register are used by the ROM code and should not be used by application so
 #define USB_ENDPTCTRL_RXT(n)			((uint32_t)(((n) & 0x03) << 2))
 #define USB_ENDPTCTRL_RXD			((uint32_t)(1<<0))
 #define USB_ENDPTCTRL_RXS			((uint32_t)(1<<1))
+#define USB_GPTIMERCTRL_GPTRUN			((uint32_t)(1<<31))
+#define USB_GPTIMERCTRL_GPTRST			((uint32_t)(1<<30))
+#define USB_GPTIMERCTRL_GPTMODE			((uint32_t)(1<<24))
+#define USB_GPTIMERCTRL_GPTCNT(n)		((uint32_t)(((n) & 0xFFFFFF) << 0))
 
 // 56.3: page 3283
 #define IMXRT_USBPHY1		(*(IMXRT_REGISTER32_t *)0x400D9000)
@@ -7475,5 +7604,3 @@ static inline void arm_dcache_flush_delete(void *addr, uint32_t size)
 	asm("dsb");
 	asm("isb");
 }
-
-
