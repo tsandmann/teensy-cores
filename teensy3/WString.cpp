@@ -129,7 +129,7 @@ inline void String::init(void)
 
 unsigned char String::reserve(unsigned int size)
 {
-	if (capacity >= size) return 1;
+	if (buffer && capacity >= size) return 1;
 	if (changeBuffer(size)) {
 		if (len == 0) buffer[0] = 0;
 		return 1;
@@ -154,11 +154,6 @@ unsigned char String::changeBuffer(unsigned int maxStrLen)
 
 String & String::copy(const char *cstr, unsigned int length)
 {
-	if (length == 0) {
-		if (buffer) buffer[0] = 0;
-		len = 0;
-		return *this;
-	}
 	if (!reserve(length)) {
 		if (buffer) {
 			free(buffer);
