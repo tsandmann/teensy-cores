@@ -8,7 +8,9 @@ extern unsigned long _flashimagelen;
 
 __attribute__ ((section(".vectors"), used))
 const uint32_t vector_table[2] = {
-	(uint32_t)&_estack,
+#if defined(__IMXRT1062__)
+	0x20010000, // 64K DTCM for boot, ResetHandler configures stack after ITCM/DTCM setup
+#endif
 	(uint32_t)&ResetHandler
 };
 
@@ -62,7 +64,13 @@ uint32_t FlexSPI_NOR_Config[128] = {
 	0,			// reserved
 	0,			// reserved
 
+#if defined(ARDUINO_TEENSY40)
 	0x00200000,		// sflashA1Size			0x50
+#elif defined(ARDUINO_TEENSY41)
+	0x00800000,		// sflashA1Size			0x50
+#else
+#error "Unknow flash chip size";
+#endif
 	0,			// sflashA2Size
 	0,			// sflashB1Size
 	0,			// sflashB2Size
