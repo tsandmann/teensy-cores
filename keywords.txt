@@ -30,6 +30,7 @@ transmitterEnable	KEYWORD2
 attachRts	KEYWORD2
 attachCts	KEYWORD2
 PROGMEM	LITERAL1
+FLASHMEM	LITERAL1
 DMAMEM	LITERAL1
 FASTRUN	LITERAL1
 Serial4	KEYWORD1
@@ -37,6 +38,8 @@ Serial5	KEYWORD1
 Serial6	KEYWORD1
 Serial7	KEYWORD1
 Serial8	KEYWORD1
+SerialUSB1	KEYWORD1
+SerialUSB2	KEYWORD1
 setRX	KEYWORD2
 setTX	KEYWORD2
 write9bit	KEYWORD2
@@ -53,6 +56,7 @@ getContext	KEYWORD2
 waitForEvent	KEYWORD2
 MillisTimer	LITERAL1
 beginRepeating	KEYWORD2
+delayNanoseconds	KEYWORD2
 
 # removed by Arduino 1.0, now also removed from Teensyduino
 #BYTE	LITERAL1
@@ -505,6 +509,8 @@ FlightSimCommand	KEYWORD2
 FlightSimInteger	KEYWORD2
 FlightSimFloat	KEYWORD2
 FlightSimElapsedFrames	KEYWORD2
+FlightSimData	KEYWORD2
+FlightSimEvent	KEYWORD2
 onChange	KEYWORD2
 update	KEYWORD2
 isEnabled	KEYWORD2

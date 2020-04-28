@@ -57,14 +57,17 @@ static BUFTYPE rx_buffer5[SERIAL5_RX_BUFFER_SIZE];
 static HardwareSerial::hardware_t UART8_Hardware = {
 	4, IRQ_LPUART8, &IRQHandler_Serial5, &serial_event_check_serial5,
 	CCM_CCGR6, CCM_CCGR6_LPUART8(CCM_CCGR_ON),
-	21, //IOMUXC_SW_MUX_CTL_PAD_GPIO_AD_B1_11, // pin 21
-	20, //IOMUXC_SW_MUX_CTL_PAD_GPIO_AD_B1_10, // pin 20
-	0xff, // No CTS pin
-	IOMUXC_LPUART8_RX_SELECT_INPUT,
-	2, // page 499
-	2, // page 498
-	0, // No CTS
-	1, // Page 864-5
+	#if defined(ARDUINO_TEENSY41)
+	{{21,2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 1}, {46, 2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 0}},
+	{{20,2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 1}, {47, 2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 0}},
+	43, //  CTS pin
+	2, //  CTS
+	#else
+	{{21,2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 1}, {38, 2, &IOMUXC_LPUART8_RX_SELECT_INPUT, 0}},
+	{{20,2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 1}, {39, 2, &IOMUXC_LPUART8_TX_SELECT_INPUT, 0}},
+	35, //  CTS pin
+	2, //  CTS
+	#endif
 	IRQ_PRIORITY, 38, 24, // IRQ, rts_low_watermark, rts_high_watermark
 };
 HardwareSerial Serial5(&IMXRT_LPUART8, &UART8_Hardware, tx_buffer5, SERIAL5_TX_BUFFER_SIZE,

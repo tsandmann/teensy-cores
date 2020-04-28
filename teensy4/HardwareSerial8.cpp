@@ -30,6 +30,7 @@
 
 #include <Arduino.h>
 #include "HardwareSerial.h"
+#if defined(__IMXRT1062__) && defined(ARDUINO_TEENSY41)
 
 #ifndef SERIAL8_TX_BUFFER_SIZE
 #define SERIAL8_TX_BUFFER_SIZE     40 // number of outgoing bytes to buffer
@@ -58,14 +59,11 @@ static BUFTYPE rx_buffer8[SERIAL8_RX_BUFFER_SIZE];
 static HardwareSerial::hardware_t UART5_Hardware = {
 	7, IRQ_LPUART5, &IRQHandler_Serial8, &serial_event_check_serial8,
 	CCM_CCGR3, CCM_CCGR3_LPUART5(CCM_CCGR_ON),
-	30, //IOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_24, // pin 30
-	31, // IOMUXC_SW_MUX_CTL_PAD_GPIO_EMC_23, // pin 31
-	0xff, // No CTS pin
-	IOMUXC_LPUART5_RX_SELECT_INPUT,
-	2, // page 450
-	2, // page 449
-	0, // No CTS
-	0,
+    {{34,1, &IOMUXC_LPUART5_RX_SELECT_INPUT, 1}, {48, 2, &IOMUXC_LPUART5_RX_SELECT_INPUT, 0}},
+    {{35,1, &IOMUXC_LPUART5_TX_SELECT_INPUT, 1}, {0xff, 0xff, nullptr, 0}},
+
+	50, // CTS pin
+	2, //  CTS
 	IRQ_PRIORITY, 38, 24, // IRQ, rts_low_watermark, rts_high_watermark
 };
 HardwareSerial Serial8(&IMXRT_LPUART5, &UART5_Hardware, tx_buffer8, SERIAL8_TX_BUFFER_SIZE,
@@ -73,3 +71,4 @@ HardwareSerial Serial8(&IMXRT_LPUART5, &UART5_Hardware, tx_buffer8, SERIAL8_TX_B
 
 void serialEvent8() __attribute__((weak));
 void serialEvent8() {Serial8.disableSerialEvents(); }		// No use calling this so disable if called...
+#endif

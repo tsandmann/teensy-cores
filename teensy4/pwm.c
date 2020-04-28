@@ -14,16 +14,18 @@ uint8_t analog_write_res = 8;
 
 #define M(a, b) ((((a) - 1) << 4) | (b))
 
+#if defined(__IMXRT1062__)
+
 const struct pwm_pin_info_struct pwm_pin_info[] = {
 	{1, M(1, 1), 0, 4},  // FlexPWM1_1_X   0  // AD_B0_03
 	{1, M(1, 0), 0, 4},  // FlexPWM1_0_X   1  // AD_B0_02
 	{1, M(4, 2), 1, 1},  // FlexPWM4_2_A   2  // EMC_04
 	{1, M(4, 2), 2, 1},  // FlexPWM4_2_B   3  // EMC_05
 	{1, M(2, 0), 1, 1},  // FlexPWM2_0_A   4  // EMC_06
-	{1, M(2, 0), 2, 1},  // FlexPWM2_0_B   5  // EMC_07
-	{1, M(1, 3), 2, 6},  // FlexPWM1_3_B   6  // B1_01
-	{1, M(1, 3), 1, 6},  // FlexPWM1_3_A   7  // B1_00
-	{1, M(2, 2), 1, 2},  // FlexPWM2_2_A   8  // B0_10
+	{1, M(2, 1), 1, 1},  // FlexPWM2_1_A   5  // EMC_08
+	{1, M(2, 2), 1, 2},  // FlexPWM2_2_A   6  // B0_10
+	{1, M(1, 3), 2, 6},  // FlexPWM1_3_B   7  // B1_01
+	{1, M(1, 3), 1, 6},  // FlexPWM1_3_A   8  // B1_00
 	{1, M(2, 2), 2, 2},  // FlexPWM2_2_B   9  // B0_11
 	{2, M(1, 0), 0, 1},  // QuadTimer1_0  10  // B0_00
 	{2, M(1, 2), 0, 1},  // QuadTimer1_2  11  // B0_02
@@ -45,11 +47,44 @@ const struct pwm_pin_info_struct pwm_pin_info[] = {
 	{0, M(1, 0), 0, 0},
 	{1, M(3, 1), 2, 1},  // FlexPWM3_1_B  28  // EMC_32
 	{1, M(3, 1), 1, 1},  // FlexPWM3_1_A  29  // EMC_31
-	{1, M(1, 0), 2, 1},  // FlexPWM1_0_B  30  // EMC_24
-	{1, M(1, 0), 1, 1},  // FlexPWM1_0_A  31  // EMC_23
 	{0, M(1, 0), 0, 0},
-	{1, M(2, 1), 1, 1},  // FlexPWM2_1_A  33  // EMC_08
+	{0, M(1, 0), 0, 0},
+	{0, M(1, 0), 0, 0},
+	{1, M(2, 0), 2, 1},  // FlexPWM2_0_B  33  // EMC_07
+#ifdef ARDUINO_TEENSY40
+	{1, M(1, 1), 2, 1},  // FlexPWM1_1_B  34  // SD_B0_03
+	{1, M(1, 1), 1, 1},  // FlexPWM1_1_A  35  // SD_B0_02
+	{1, M(1, 0), 2, 1},  // FlexPWM1_0_B  36  // SD_B0_01
+	{1, M(1, 0), 1, 1},  // FlexPWM1_0_A  37  // SD_B0_00
+	{1, M(1, 2), 2, 1},  // FlexPWM1_2_B  38  // SD_B0_05
+	{1, M(1, 2), 1, 1},  // FlexPWM1_2_A  39  // SD_B0_04
+#endif
+#ifdef ARDUINO_TEENSY41
+	{0, M(1, 0), 0, 0},
+	{0, M(1, 0), 0, 0},
+	{1, M(2, 3), 1, 6},  // FlexPWM2_3_A  36  // B1_00
+	{1, M(2, 3), 2, 6},  // FlexPWM2_3_B  37  // B1_01
+	{0, M(1, 0), 0, 0},
+	{0, M(1, 0), 0, 0},
+	{0, M(1, 0), 0, 0},
+	{0, M(1, 0), 0, 0},
+	{1, M(1, 1), 2, 1},  // FlexPWM1_1_B  42  // SD_B0_03
+	{1, M(1, 1), 1, 1},  // FlexPWM1_1_A  43  // SD_B0_02
+	{1, M(1, 0), 2, 1},  // FlexPWM1_0_B  44  // SD_B0_01
+	{1, M(1, 0), 1, 1},  // FlexPWM1_0_A  45  // SD_B0_00
+	{1, M(1, 2), 2, 1},  // FlexPWM1_2_B  46  // SD_B0_05
+	{1, M(1, 2), 1, 1},  // FlexPWM1_2_A  47  // SD_B0_04
+	{0, M(1, 0), 0, 0},  // duplicate FlexPWM1_0_B
+	{0, M(1, 0), 0, 0},  // duplicate FlexPWM1_2_A
+	{0, M(1, 0), 0, 0},  // duplicate FlexPWM1_2_B
+	{1, M(3, 3), 2, 1},  // FlexPWM3_3_B  51  // EMC_22
+	{0, M(1, 0), 0, 0},  // duplicate FlexPWM1_1_B
+	{0, M(1, 0), 0, 0},  // duplicate FlexPWM1_1_A
+	{1, M(3, 0), 1, 1},  // FlexPWM3_0_A  53  // EMC_29
+#endif
 };
+
+#endif // __IMXRT1062__
 
 void flexpwmWrite(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channel, uint16_t val)
 {
@@ -84,7 +119,7 @@ void flexpwmFrequency(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channe
 {
 	uint16_t mask = 1 << submodule;
 	uint32_t olddiv = p->SM[submodule].VAL1;
-	uint32_t newdiv = (uint32_t)((float)F_BUS_ACTUAL / frequency + 0.5);
+	uint32_t newdiv = (uint32_t)((float)F_BUS_ACTUAL / frequency + 0.5f);
 	uint32_t prescale = 0;
 	//printf(" div=%lu\n", newdiv);
 	while (newdiv > 65535 && prescale < 7) {
@@ -110,11 +145,11 @@ void quadtimerWrite(IMXRT_TMR_t *p, unsigned int submodule, uint16_t val)
 {
 	uint32_t modulo = 65537 - p->CH[submodule].LOAD + p->CH[submodule].CMPLD1;
 	uint32_t high = ((uint32_t)val * (modulo - 1)) >> analog_write_res;
-	if (high >= modulo) high = modulo - 1; // TODO: is this check correct?
+	if (high >= modulo - 1) high = modulo - 2;
 
 	//printf(" modulo=%lu\n", modulo);
 	//printf(" high=%lu\n", high);
-	uint32_t low = modulo - high; // TODO: low must never be 0 or 1 - can it be??
+	uint32_t low = modulo - high; // low must 2 or higher
 	//printf(" low=%lu\n", low);
 
 	p->CH[submodule].LOAD = 65537 - low;
@@ -123,7 +158,7 @@ void quadtimerWrite(IMXRT_TMR_t *p, unsigned int submodule, uint16_t val)
 
 void quadtimerFrequency(IMXRT_TMR_t *p, unsigned int submodule, float frequency)
 {
-	uint32_t newdiv = (uint32_t)((float)F_BUS_ACTUAL / frequency + 0.5);
+	uint32_t newdiv = (uint32_t)((float)F_BUS_ACTUAL / frequency + 0.5f);
 	uint32_t prescale = 0;
 	//printf(" div=%lu\n", newdiv);
 	while (newdiv > 65534 && prescale < 7) {

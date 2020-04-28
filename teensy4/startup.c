@@ -1,6 +1,7 @@
 #include "imxrt.h"
 #include "wiring.h"
 #include "usb_dev.h"
+#include "avr/pgmspace.h"
 
 #include "debug/printf.h"
 
@@ -13,7 +14,8 @@ extern unsigned long _sdata;
 extern unsigned long _edata;
 extern unsigned long _sbss;
 extern unsigned long _ebss;
-
+extern unsigned long _flexram_bank_config;
+extern unsigned long _estack;
 
 __attribute__ ((used, aligned(1024)))
 void (* _VectorsRam[NVIC_NUM_INTERRUPTS+16])(void);
@@ -34,19 +36,28 @@ uint32_t set_arm_clock(uint32_t frequency); // clockspeed.c
 extern void __libc_init_array(void); // C++ standard library
 
 
-__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns")))
+extern int main (void);
+void startup_default_early_hook(void) {}
+void startup_early_hook(void)		__attribute__ ((weak, alias("startup_default_early_hook")));
+void startup_default_late_hook(void) {}
+void startup_late_hook(void)		__attribute__ ((weak, alias("startup_default_late_hook")));
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), naked))
 void ResetHandler(void)
 {
 	unsigned int i;
 
-	//force the stack to begin at some arbitrary location
-	//__asm__ volatile("mov sp, %0" : : "r" (0x20010000) : );
-
+#if defined(__IMXRT1062__)
+	IOMUXC_GPR_GPR17 = (uint32_t)&_flexram_bank_config;
+	IOMUXC_GPR_GPR16 = 0x00200007;
+	IOMUXC_GPR_GPR14 = 0x00AA0000;
+	__asm__ volatile("mov sp, %0" : : "r" ((uint32_t)&_estack) : );
+#endif
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
 	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
 	//IOMUXC_SW_PAD_CTL_PAD_GPIO_B0_03 = IOMUXC_PAD_DSE(7);
-	//GPIO2_GDIR |= (1<<3);
-	//GPIO2_DR_SET = (1<<3); // digitalWrite(13, HIGH);
+	//IOMUXC_GPR_GPR27 = 0xFFFFFFFF;
+	//GPIO7_GDIR |= (1<<3);
+	//GPIO7_DR_SET = (1<<3); // digitalWrite(13, HIGH);
 
 	// Initialize memory
 	memory_copy(&_stext, &_stextload, &_etext);
@@ -70,6 +81,14 @@ void ResetHandler(void)
 	// UARTs run from 24 MHz clock (works if PLL3 off or bypassed)
 	CCM_CSCDR1 = (CCM_CSCDR1 & ~CCM_CSCDR1_UART_CLK_PODF(0x3F)) | CCM_CSCDR1_UART_CLK_SEL;
 
+#if defined(__IMXRT1062__)
+	// Use fast GPIO6, GPIO7, GPIO8, GPIO9
+	IOMUXC_GPR_GPR26 = 0xFFFFFFFF;
+	IOMUXC_GPR_GPR27 = 0xFFFFFFFF;
+	IOMUXC_GPR_GPR28 = 0xFFFFFFFF;
+	IOMUXC_GPR_GPR29 = 0xFFFFFFFF;
+#endif
+
 	// must enable PRINT_DEBUG_STUFF in debug/print.h
 	printf_debug_init();
 	printf("\n***********IMXRT Startup**********\n");
@@ -79,27 +98,45 @@ void ResetHandler(void)
 	configure_systick();
 	usb_pll_start();	
 	reset_PFD(); //TODO: is this really needed?
-	
-	set_arm_clock(600000000);
-	//set_arm_clock(984000000); Ludicrous Speed
+#ifdef F_CPU
+	set_arm_clock(F_CPU);
+#endif
 
+	asm volatile("nop\n nop\n nop\n nop": : :"memory"); // why oh why?
+
+	// Undo PIT timer usage by ROM startup
+	CCM_CCGR1 |= CCM_CCGR1_PIT(CCM_CCGR_ON);
+	PIT_MCR = 0;
+	PIT_TCTRL0 = 0;
+	PIT_TCTRL1 = 0;
+	PIT_TCTRL2 = 0;
+	PIT_TCTRL3 = 0;
+
+	// initialize RTC
+	if (!(SNVS_LPCR & SNVS_LPCR_SRTC_ENV)) {
+		// if SRTC isn't running, start it with default Jan 1, 2019
+		SNVS_LPSRTCLR = 1546300800u << 15;
+		SNVS_LPSRTCMR = 1546300800u >> 17;
+		SNVS_LPCR |= SNVS_LPCR_SRTC_ENV;
+	}
+	SNVS_HPCR |= SNVS_HPCR_RTC_EN | SNVS_HPCR_HP_TS;
+
+	startup_early_hook();
 	while (millis() < 20) ; // wait at least 20ms before starting USB
 	usb_init();
 	analog_init();
 	pwm_init();
 	tempmon_init();
 
+	startup_late_hook();
 	while (millis() < 300) ; // wait at least 300ms before calling user code
-	printf("before C++ constructors\n");
+	//printf("before C++ constructors\n");
 	__libc_init_array();
-	printf("after C++ constructors\n");
-	printf("before setup\n");
-	setup();
-	printf("after setup\n");
-	while (1) {
-		//printf("loop\n");
-		loop();
-	}
+	//printf("after C++ constructors\n");
+	//printf("before setup\n");
+	main();
+	
+	while (1) ;
 }
 
 
@@ -140,6 +177,18 @@ static void configure_systick(void)
 #define MEM_CACHE_WBWA	SCB_MPU_RASR_TEX(1) | SCB_MPU_RASR_C | SCB_MPU_RASR_B
 #define MEM_NOCACHE	SCB_MPU_RASR_TEX(1)
 #define DEV_NOCACHE	SCB_MPU_RASR_TEX(2)
+#define SIZE_32B	(SCB_MPU_RASR_SIZE(4) | SCB_MPU_RASR_ENABLE)
+#define SIZE_64B	(SCB_MPU_RASR_SIZE(5) | SCB_MPU_RASR_ENABLE)
+#define SIZE_128B	(SCB_MPU_RASR_SIZE(6) | SCB_MPU_RASR_ENABLE)
+#define SIZE_256B	(SCB_MPU_RASR_SIZE(7) | SCB_MPU_RASR_ENABLE)
+#define SIZE_512B	(SCB_MPU_RASR_SIZE(8) | SCB_MPU_RASR_ENABLE)
+#define SIZE_1K		(SCB_MPU_RASR_SIZE(9) | SCB_MPU_RASR_ENABLE)
+#define SIZE_2K		(SCB_MPU_RASR_SIZE(10) | SCB_MPU_RASR_ENABLE)
+#define SIZE_4K		(SCB_MPU_RASR_SIZE(11) | SCB_MPU_RASR_ENABLE)
+#define SIZE_8K		(SCB_MPU_RASR_SIZE(12) | SCB_MPU_RASR_ENABLE)
+#define SIZE_16K	(SCB_MPU_RASR_SIZE(13) | SCB_MPU_RASR_ENABLE)
+#define SIZE_32K	(SCB_MPU_RASR_SIZE(14) | SCB_MPU_RASR_ENABLE)
+#define SIZE_64K	(SCB_MPU_RASR_SIZE(15) | SCB_MPU_RASR_ENABLE)
 #define SIZE_128K	(SCB_MPU_RASR_SIZE(16) | SCB_MPU_RASR_ENABLE)
 #define SIZE_256K	(SCB_MPU_RASR_SIZE(17) | SCB_MPU_RASR_ENABLE)
 #define SIZE_512K	(SCB_MPU_RASR_SIZE(18) | SCB_MPU_RASR_ENABLE)
@@ -150,10 +199,15 @@ static void configure_systick(void)
 #define SIZE_16M	(SCB_MPU_RASR_SIZE(23) | SCB_MPU_RASR_ENABLE)
 #define SIZE_32M	(SCB_MPU_RASR_SIZE(24) | SCB_MPU_RASR_ENABLE)
 #define SIZE_64M	(SCB_MPU_RASR_SIZE(25) | SCB_MPU_RASR_ENABLE)
+#define SIZE_128M	(SCB_MPU_RASR_SIZE(26) | SCB_MPU_RASR_ENABLE)
+#define SIZE_256M	(SCB_MPU_RASR_SIZE(27) | SCB_MPU_RASR_ENABLE)
+#define SIZE_512M	(SCB_MPU_RASR_SIZE(28) | SCB_MPU_RASR_ENABLE)
+#define SIZE_1G		(SCB_MPU_RASR_SIZE(29) | SCB_MPU_RASR_ENABLE)
+#define SIZE_2G		(SCB_MPU_RASR_SIZE(30) | SCB_MPU_RASR_ENABLE)
+#define SIZE_4G		(SCB_MPU_RASR_SIZE(31) | SCB_MPU_RASR_ENABLE)
 #define REGION(n)	(SCB_MPU_RBAR_REGION(n) | SCB_MPU_RBAR_VALID)
 
-__attribute__((section(".progmem")))
-void configure_cache(void)
+FLASHMEM void configure_cache(void)
 {
 	//printf("MPU_TYPE = %08lX\n", SCB_MPU_TYPE);
 	//printf("CCR = %08lX\n", SCB_CCR);
@@ -162,27 +216,43 @@ void configure_cache(void)
 
 	SCB_MPU_CTRL = 0; // turn off MPU
 
-	SCB_MPU_RBAR = 0x00000000 | REGION(0); // ITCM
+	uint32_t i = 0;
+	SCB_MPU_RBAR = 0x00000000 | REGION(i++); //https://developer.arm.com/docs/146793866/10/why-does-the-cortex-m7-initiate-axim-read-accesses-to-memory-addresses-that-do-not-fall-under-a-defined-mpu-region
+	SCB_MPU_RASR = SCB_MPU_RASR_TEX(0) | NOACCESS | NOEXEC | SIZE_4G;
+	
+	SCB_MPU_RBAR = 0x00000000 | REGION(i++); // ITCM
 	SCB_MPU_RASR = MEM_NOCACHE | READWRITE | SIZE_512K;
 
-	SCB_MPU_RBAR = 0x00200000 | REGION(1); // Boot ROM
+	// TODO: trap regions should be created last, because the hardware gives
+	//  priority to the higher number ones.
+	SCB_MPU_RBAR = 0x00000000 | REGION(i++); // trap NULL pointer deref
+	SCB_MPU_RASR =  DEV_NOCACHE | NOACCESS | SIZE_32B;
+
+	SCB_MPU_RBAR = 0x00200000 | REGION(i++); // Boot ROM
 	SCB_MPU_RASR = MEM_CACHE_WT | READONLY | SIZE_128K;
 
-	SCB_MPU_RBAR = 0x20000000 | REGION(2); // DTCM
+	SCB_MPU_RBAR = 0x20000000 | REGION(i++); // DTCM
 	SCB_MPU_RASR = MEM_NOCACHE | READWRITE | NOEXEC | SIZE_512K;
+	
+	SCB_MPU_RBAR = ((uint32_t)&_ebss) | REGION(i++); // trap stack overflow
+	SCB_MPU_RASR = SCB_MPU_RASR_TEX(0) | NOACCESS | NOEXEC | SIZE_32B;
 
-	SCB_MPU_RBAR = 0x20200000 | REGION(3); // RAM (AXI bus)
+	SCB_MPU_RBAR = 0x20200000 | REGION(i++); // RAM (AXI bus)
 	SCB_MPU_RASR = MEM_CACHE_WBWA | READWRITE | NOEXEC | SIZE_1M;
 
-	SCB_MPU_RBAR = 0x40000000 | REGION(4); // Peripherals
+	SCB_MPU_RBAR = 0x40000000 | REGION(i++); // Peripherals
 	SCB_MPU_RASR = DEV_NOCACHE | READWRITE | NOEXEC | SIZE_64M;
 
-	SCB_MPU_RBAR = 0x60000000 | REGION(5); // QSPI Flash
+	SCB_MPU_RBAR = 0x60000000 | REGION(i++); // QSPI Flash
 	SCB_MPU_RASR = MEM_CACHE_WBWA | READONLY | SIZE_16M;
 
-	// TODO: 32 byte sub-region at 0x00000000 with NOACCESS, to trap NULL pointer deref
+	SCB_MPU_RBAR = 0x70000000 | REGION(i++); // FlexSPI2
+	SCB_MPU_RASR = MEM_CACHE_WBWA | READONLY | SIZE_256M;
+
+	SCB_MPU_RBAR = 0x70000000 | REGION(i++); // FlexSPI2
+	SCB_MPU_RASR = MEM_CACHE_WBWA | READWRITE | SIZE_16M;
+
 	// TODO: protect access to power supply config
-	// TODO: 32 byte sub-region at end of .bss section with NOACCESS, to trap stack overflow
 
 	SCB_MPU_CTRL = SCB_MPU_CTRL_ENABLE;
 
@@ -196,9 +266,7 @@ void configure_cache(void)
 	SCB_CCR |= (SCB_CCR_IC | SCB_CCR_DC);
 }
 
-
-__attribute__((section(".progmem")))
-void usb_pll_start()
+FLASHMEM void usb_pll_start()
 {
 	while (1) {
 		uint32_t n = CCM_ANALOG_PLL_USB1; // pg 759
@@ -242,8 +310,7 @@ void usb_pll_start()
 	}
 }
 
-__attribute__((section(".progmem")))
-void reset_PFD()
+FLASHMEM void reset_PFD()
 {	
 	//Reset PLL2 PFDs, set default frequencies:
 	CCM_ANALOG_PFD_528_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);
@@ -280,7 +347,10 @@ void unused_interrupt_vector(void)
 }
 
 __attribute__((weak))
-void HardFault_HandlerC(unsigned int *hardfault_args) {
+void HardFault_HandlerC(unsigned int *hardfault_args)
+{
+  volatile unsigned int nn ;
+#ifdef PRINT_DEBUG_STUFF
   volatile unsigned int stacked_r0 ;
   volatile unsigned int stacked_r1 ;
   volatile unsigned int stacked_r2 ;
@@ -296,7 +366,6 @@ void HardFault_HandlerC(unsigned int *hardfault_args) {
   volatile unsigned int _BFAR ;
   volatile unsigned int _MMAR ;
   volatile unsigned int addr ;
-  volatile unsigned int nn ;
 
   stacked_r0 = ((unsigned int)hardfault_args[0]) ;
   stacked_r1 = ((unsigned int)hardfault_args[1]) ;
@@ -308,7 +377,8 @@ void HardFault_HandlerC(unsigned int *hardfault_args) {
   stacked_psr = ((unsigned int)hardfault_args[7]) ;
   // Configurable Fault Status Register
   // Consists of MMSR, BFSR and UFSR
-  _CFSR = (*((volatile unsigned int *)(0xE000ED28))) ;
+  //(n & ( 1 << k )) >> k
+  _CFSR = (*((volatile unsigned int *)(0xE000ED28))) ;  
   // Hard Fault Status Register
   _HFSR = (*((volatile unsigned int *)(0xE000ED2C))) ;
   // Debug Fault Status Register
@@ -324,21 +394,81 @@ void HardFault_HandlerC(unsigned int *hardfault_args) {
   //__asm("BKPT #0\n") ; // Break into the debugger // NO Debugger here.
 
   asm volatile("mrs %0, ipsr\n" : "=r" (addr)::);
-  printf_debug("\nFault irq %d\n", addr & 0x1FF);
-  printf_debug(" stacked_r0 ::  %x\n", stacked_r0);
-  printf_debug(" stacked_r1 ::  %x\n", stacked_r1);
-  printf_debug(" stacked_r2 ::  %x\n", stacked_r2);
-  printf_debug(" stacked_r3 ::  %x\n", stacked_r3);
-  printf_debug(" stacked_r12 ::  %x\n", stacked_r12);
-  printf_debug(" stacked_lr ::  %x\n", stacked_lr);
-  printf_debug(" stacked_pc ::  %x\n", stacked_pc);
-  printf_debug(" stacked_psr ::  %x\n", stacked_psr);
-  printf_debug(" _CFSR ::  %x\n", _CFSR);
-  printf_debug(" _HFSR ::  %x\n", _HFSR);
-  printf_debug(" _DFSR ::  %x\n", _DFSR);
-  printf_debug(" _AFSR ::  %x\n", _AFSR);
-  printf_debug(" _BFAR ::  %x\n", _BFAR);
-  printf_debug(" _MMAR ::  %x\n", _MMAR);
+  printf("\nFault irq %d\n", addr & 0x1FF);
+  printf(" stacked_r0 ::  %x\n", stacked_r0);
+  printf(" stacked_r1 ::  %x\n", stacked_r1);
+  printf(" stacked_r2 ::  %x\n", stacked_r2);
+  printf(" stacked_r3 ::  %x\n", stacked_r3);
+  printf(" stacked_r12 ::  %x\n", stacked_r12);
+  printf(" stacked_lr ::  %x\n", stacked_lr);
+  printf(" stacked_pc ::  %x\n", stacked_pc);
+  printf(" stacked_psr ::  %x\n", stacked_psr);
+  printf(" _CFSR ::  %x\n", _CFSR);
+ 
+  if(_CFSR > 0){
+	  //Memory Management Faults
+	  if((_CFSR & 1) == 1){
+		printf("      (IACCVIOL) Instruction Access Violation\n");
+	  } else  if(((_CFSR & (0x02))>>1) == 1){
+		printf("      (DACCVIOL) Data Access Violation\n");
+	  } else if(((_CFSR & (0x08))>>3) == 1){
+		printf("      (MUNSTKERR) MemMange Fault on Unstacking\n");
+	  } else if(((_CFSR & (0x10))>>4) == 1){
+		printf("      (MSTKERR) MemMange Fault on stacking\n");
+	  } else if(((_CFSR & (0x20))>>5) == 1){
+		printf("      (MLSPERR) MemMange Fault on FP Lazy State\n");
+	  }
+	  if(((_CFSR & (0x80))>>7) == 1){
+		printf("      (MMARVALID) MemMange Fault Address Valid\n");
+	  }
+	  //Bus Fault Status Register
+	  if(((_CFSR & 0x100)>>8) == 1){
+		printf("      (IBUSERR) Instruction Bus Error\n");
+	  } else  if(((_CFSR & (0x200))>>9) == 1){
+		printf("      (PRECISERR) Data bus error(address in BFAR)\n");
+	  } else if(((_CFSR & (0x400))>>10) == 1){
+		printf("      (IMPRECISERR) Data bus error but address not related to instruction\n");
+	  } else if(((_CFSR & (0x800))>>11) == 1){
+		printf("      (UNSTKERR) Bus Fault on unstacking for a return from exception \n");
+	  } else if(((_CFSR & (0x1000))>>12) == 1){
+		printf("      (STKERR) Bus Fault on stacking for exception entry\n");
+	  } else if(((_CFSR & (0x2000))>>13) == 1){
+		printf("      (LSPERR) Bus Fault on FP lazy state preservation\n");
+	  }
+	  if(((_CFSR & (0x8000))>>15) == 1){
+		printf("      (BFARVALID) Bus Fault Address Valid\n");
+	  }  
+	  //Usuage Fault Status Register
+	  if(((_CFSR & 0x10000)>>16) == 1){
+		printf("      (UNDEFINSTR) Undefined instruction\n");
+	  } else  if(((_CFSR & (0x20000))>>17) == 1){
+		printf("      (INVSTATE) Instruction makes illegal use of EPSR)\n");
+	  } else if(((_CFSR & (0x40000))>>18) == 1){
+		printf("      (INVPC) Usage fault: invalid EXC_RETURN\n");
+	  } else if(((_CFSR & (0x80000))>>19) == 1){
+		printf("      (NOCP) No Coprocessor \n");
+	  } else if(((_CFSR & (0x1000000))>>24) == 1){
+		printf("      (UNALIGNED) Unaligned access UsageFault\n");
+	  } else if(((_CFSR & (0x2000000))>>25) == 1){
+		printf("      (DIVBYZERO) Divide by zero\n");
+	  }
+  }
+  printf(" _HFSR ::  %x\n", _HFSR);
+  if(_HFSR > 0){
+	  //Memory Management Faults
+	  if(((_HFSR & (0x02))>>1) == 1){
+		printf("      (VECTTBL) Bus Fault on Vec Table Read\n");
+	  } else if(((_HFSR & (0x40000000))>>30) == 1){
+		printf("      (FORCED) Forced Hard Fault\n");
+	  } else if(((_HFSR & (0x80000000))>>31) == 31){
+		printf("      (DEBUGEVT) Reserved for Debug\n");
+	  } 
+  }
+  printf(" _DFSR ::  %x\n", _DFSR);
+  printf(" _AFSR ::  %x\n", _AFSR);
+  printf(" _BFAR ::  %x\n", _BFAR);
+  printf(" _MMAR ::  %x\n", _MMAR);
+#endif
 
   IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5; // pin 13
   IOMUXC_SW_PAD_CTL_PAD_GPIO_B0_03 = IOMUXC_PAD_DSE(7);
@@ -363,7 +493,7 @@ void HardFault_HandlerC(unsigned int *hardfault_args) {
 __attribute__((weak))
 void userDebugDump(){
 	volatile unsigned int nn;
-	printf_debug("\nuserDebugDump() in startup.c ___ \n");
+	printf("\nuserDebugDump() in startup.c ___ \n");
 
   while (1)
   {
@@ -438,8 +568,7 @@ void PJRCunused_interrupt_vector(void)
 #else
 	if ( F_CPU_ACTUAL >= 600000000 )
 		set_arm_clock(100000000);
-	while (1) {
-	}
+	while (1) asm ("WFI");
 #endif
 }
 
@@ -522,13 +651,13 @@ int _lseek(int fd, long long offset, int whence)
 __attribute__((weak))
 void _exit(int status)
 {
-	while (1);
+	while (1) asm ("WFI");
 }
 
 __attribute__((weak))
 void __cxa_pure_virtual()
 {
-	while (1);
+	while (1) asm ("WFI");
 }
 
 __attribute__((weak))
@@ -546,5 +675,5 @@ void __cxa_guard_release(char *g)
 __attribute__((weak))
 void abort(void)
 {
-	while (1) ;
+	while (1) asm ("WFI");
 }

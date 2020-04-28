@@ -31,6 +31,8 @@
 #include <Arduino.h>
 #include "EventResponder.h"
 
+extern uint8_t usb_enable_serial_event_processing; // from usb_inst.cpp
+
 void yield(void) __attribute__ ((weak));
 void yield(void)
 {
@@ -39,9 +41,14 @@ void yield(void)
 	if (running) return; // TODO: does this need to be atomic?
 	running = 1;
 
+
+	// USB Serail - Add hack to minimize impact...
+	if (usb_enable_serial_event_processing && Serial.available()) serialEvent();
+
 	// Current workaround until integrate with EventResponder.
-	HardwareSerial::processSerialEvents();
+	if (HardwareSerial::serial_event_handlers_active) HardwareSerial::processSerialEvents();
 
 	running = 0;
 	EventResponder::runFromYield();
+	
 };
