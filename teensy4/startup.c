@@ -346,7 +346,7 @@ void unused_interrupt_vector(void)
          ".syntax divided\n") ;
 }
 
-__attribute__((weak))
+__attribute__((weak, used))
 void HardFault_HandlerC(unsigned int *hardfault_args)
 {
   volatile unsigned int nn ;
