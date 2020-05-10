@@ -406,6 +406,7 @@ public:
 		copy_tcd(TCD, rhs.TCD);
 		return *this;
 	}
+	constexpr DMASetting & operator = (const DMASetting & rhs) = default;
 private:
 	TCD_t tcddata __attribute__((aligned(32)));
 };

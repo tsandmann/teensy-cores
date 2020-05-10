@@ -137,6 +137,7 @@ public:
 		//serial_phex32(SPI0_CTAR0);
 		//serial_print("\n");
 */
+		(void) val;
 		return *this;
 	}
 	inline SPCRemulation & operator |= (int val) __attribute__((always_inline)) {
@@ -194,6 +195,7 @@ public:
 		//serial_phex32(SPI0_CTAR0);
 		//serial_print("\n");
 */
+		(void) val;
 		return *this;
 	}
 	inline SPCRemulation & operator &= (int val) __attribute__((always_inline)) {
@@ -240,6 +242,7 @@ public:
 		}
 		if (!(val & (1<<MSTR))) SPI0_MCR &= ~SPI_MCR_MSTR;
 */
+		(void) val;
 		return *this;
 	}
 	inline int operator & (int val) const __attribute__((always_inline)) {
@@ -272,6 +275,7 @@ public:
 		//serial_phex(ret);
 		//serial_print("\n");
 */
+		(void) val;
 		return ret;
 	}
 	operator int () const __attribute__((always_inline)) {
@@ -298,13 +302,13 @@ public:
 */
 		return ret;
 	}
-	inline void setMOSI(uint8_t pin) __attribute__((always_inline)) {
+	inline void setMOSI(uint8_t) __attribute__((always_inline)) {
 	}
-	inline void setMOSI_soft(uint8_t pin) __attribute__((always_inline)) {
+	inline void setMOSI_soft(uint8_t) __attribute__((always_inline)) {
 	}
-	inline void setMISO(uint8_t pin) __attribute__((always_inline)) {
+	inline void setMISO(uint8_t) __attribute__((always_inline)) {
 	}
-	inline void setSCK(uint8_t pin) __attribute__((always_inline)) {
+	inline void setSCK(uint8_t) __attribute__((always_inline)) {
 	}
 	friend class SPSRemulation;
 	friend class SPIFIFOclass;
@@ -341,6 +345,7 @@ public:
 		//serial_phex32(SPI0_CTAR0);
 		//serial_print("\n");
 */		
+		(void) val;
 		return *this;
 	}
 	inline SPSRemulation & operator |= (int val) __attribute__((always_inline)) {
@@ -350,6 +355,7 @@ public:
 		//serial_print("\n");
 		if (val & (1<<SPI2X)) SPCRemulation::update_ctar(SPI0_CTAR0 |= SPI_CTAR_DBR);
 */
+		(void) val;
 		return *this;
 	}
 	inline SPSRemulation & operator &= (int val) __attribute__((always_inline)) {
@@ -359,6 +365,7 @@ public:
 		//serial_print("\n");
 		if (!(val & (1<<SPI2X))) SPCRemulation::update_ctar(SPI0_CTAR0 &= ~SPI_CTAR_DBR);
 */
+		(void) val;
 		return *this;
 	}
 	inline int operator & (int val) const __attribute__((always_inline)) {
