@@ -1,3 +1,5 @@
+#pragma GCC optimize ("-Os")
+
 #include "debug/printf.h"
 
 #ifdef PRINT_DEBUG_STUFF
