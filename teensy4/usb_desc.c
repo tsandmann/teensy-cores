@@ -28,6 +28,8 @@
  * SOFTWARE.
  */
 
+#pragma GCC optimize ("-Os")
+
 //#if F_CPU >= 20000000
 
 #define USB_DESC_LIST_DEFINE
@@ -2652,8 +2654,6 @@ PROGMEM const struct usb_string_descriptor_struct usb_string_mtp = {
 };
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("-fno-lto")
 void usb_init_serialnumber(void)
 {
 	char buf[11];
@@ -2670,7 +2670,6 @@ void usb_init_serialnumber(void)
 	}
 	usb_string_serial_number_default.bLength = i * 2 + 2;
 }
-#pragma GCC pop_options
 
 // **************************************************************
 //   Descriptors List

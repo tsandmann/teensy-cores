@@ -1,3 +1,5 @@
+#pragma GCC optimize ("-Os")
+
 #include "usb_dev.h"
 #define USB_DESC_LIST_DEFINE
 #include "usb_desc.h"

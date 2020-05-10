@@ -1,3 +1,5 @@
+#pragma GCC optimize ("-Os")
+
 #include "imxrt.h"
 #include "wiring.h"
 #include "usb_dev.h"

@@ -1,3 +1,5 @@
+#pragma GCC optimize ("-Os")
+
 #include <stdint.h>
 #include "imxrt.h"
 #include "wiring.h"
