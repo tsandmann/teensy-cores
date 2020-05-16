@@ -27,7 +27,9 @@ static void reset_PFD();
 extern void systick_isr(void);
 extern void pendablesrvreq_isr(void);
 static void configure_cache(void);
+#ifdef ARDUINO_TEENSY41
 static void configure_external_ram(void);
+#endif
 static void unused_interrupt_vector(void);
 static void usb_pll_start();
 extern void analog_init(void); // analog.c
