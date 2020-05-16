@@ -42,6 +42,12 @@ SECTIONS
 		. = ALIGN(32768);
 	} > ITCM
 
+	.data.func (NOLOAD) : {
+		*(.*__func__*)
+		*(.*__PRETTY_FUNCTION__*)
+		. = ALIGN(4);
+	} > FLASH
+
 	.data : {
 		*(.rodata*)
 		*(.data*)
@@ -76,7 +82,7 @@ SECTIONS
 
 	_itcm_block_count = (SIZEOF(.text.itcm) + 0x7FFF) >> 15;
 	_flexram_bank_config = 0xAAAAAAAA | ((1 << (_itcm_block_count * 2)) - 1);
-	_estack = ORIGIN(DTCM) + ((16 - _itcm_block_count) << 15);
+	_estack = ORIGIN(DTCM) + ((16 - _itcm_block_count) << 15) - 128;
 
 	_flashimagelen = SIZEOF(.text.progmem) + SIZEOF(.text.itcm) + SIZEOF(.data);
 	_teensy_model_identifier = 0x24;
