@@ -12,7 +12,7 @@ static uint32_t panicAlarmTemp  = 90U;
 static uint32_t s_hotTemp, s_hotCount, s_roomC_hotC;
 static float s_hot_ROOM;
 
-void Panic_Temp_isr(void) {
+FLASHMEM void Panic_Temp_isr(void) {
   __disable_irq();
   IOMUXC_GPR_GPR16 = 0x00000007;
   SNVS_LPCR |= SNVS_LPCR_TOP; //Switch off now
@@ -66,7 +66,7 @@ FLASHMEM void tempmon_init(void)
 }
 
 
-float tempmonGetTemp(void)
+FLASHMEM float tempmonGetTemp(void)
 {
     uint32_t nmeas;
     float tmeas;
@@ -83,17 +83,17 @@ float tempmonGetTemp(void)
     return tmeas;
 }
 
-void tempmon_Start()
+FLASHMEM void tempmon_Start()
 {
     TEMPMON_TEMPSENSE0 |= 0x2U;
 }
 
-void tempmon_Stop()
+FLASHMEM void tempmon_Stop()
 {
     TEMPMON_TEMPSENSE0 &= ~0x2U;
 }
 
-void tempmon_PwrDwn()
+FLASHMEM void tempmon_PwrDwn()
 {
     TEMPMON_TEMPSENSE0 |= 0x1U;
 }

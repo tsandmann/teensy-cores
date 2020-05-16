@@ -57,7 +57,8 @@ void ResetHandler(void)
 	__asm__ volatile("mov sp, %0" : : "r" ((uint32_t)&_estack) : "memory");
 #endif
 	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
 	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
 	//IOMUXC_SW_PAD_CTL_PAD_GPIO_B0_03 = IOMUXC_PAD_DSE(7);
@@ -70,7 +71,8 @@ void ResetHandler(void)
 	memory_copy(&_sdata, &_sdataload, &_edata);
 	memory_clear(&_sbss, &_ebss);
 	
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 
 	// enable FPU
 	SCB_CPACR = 0x00F00000;
@@ -79,9 +81,11 @@ void ResetHandler(void)
 	_VectorsRam[0] = (void*)&_estack;
 	for (i=1; i < NVIC_NUM_INTERRUPTS + 16; i++) _VectorsRam[i] = &unused_interrupt_vector;
 	for (i=0; i < NVIC_NUM_INTERRUPTS; i++) NVIC_SET_PRIORITY(i, 128);
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 	SCB_VTOR = (uint32_t)_VectorsRam;
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 
 	reset_PFD();
 	
@@ -109,13 +113,15 @@ void ResetHandler(void)
 	configure_systick();
 	usb_pll_start();	
 	reset_PFD(); //TODO: is this really needed?
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 #ifdef F_CPU
 	set_arm_clock(F_CPU);
 #endif
 
 	//asm volatile("nop\n nop\n nop\n nop": : :"memory"); // why oh why?
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 
 	// Undo PIT timer usage by ROM startup
 	CCM_CCGR1 |= CCM_CCGR1_PIT(CCM_CCGR_ON);
@@ -173,7 +179,8 @@ static FLASHMEM void configure_systick(void)
 {
 	_VectorsRam[14] = pendablesrvreq_isr;
 	_VectorsRam[15] = systick_isr;
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 	SYST_RVR = (SYSTICK_EXT_FREQ / 1000) - 1;
 	SYST_CVR = 0;
 	SYST_CSR = SYST_CSR_TICKINT | SYST_CSR_ENABLE;
@@ -274,15 +281,16 @@ static FLASHMEM void configure_cache(void)
 	SCB_MPU_CTRL = SCB_MPU_CTRL_ENABLE;
 
 	// cache enable, ARM DDI0403E, pg 628
-	asm("dsb");
-	asm("isb");
+	__dsb();
+	__isb();
 	SCB_CACHE_ICIALLU = 0;
 
-	asm("dsb");
-	asm("isb");
+	__dsb();
+	__isb();
 	SCB_CCR |= (SCB_CCR_IC | SCB_CCR_DC);
 	
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 }
 
 #ifdef ARDUINO_TEENSY41
@@ -505,7 +513,8 @@ static FLASHMEM void reset_PFD()
 	CCM_ANALOG_PFD_480_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);	
 	CCM_ANALOG_PFD_480 = 0x13110D0C; // PFD0:720, PFD1:664, PFD2:508, PFD3:454 MHz
 	
-	__asm volatile("dsb \n isb");
+	__dsb();
+	__isb();
 }
 
 // Stack frame
