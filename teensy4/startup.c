@@ -1,5 +1,3 @@
-#pragma GCC optimize ("-Os")
-
 #include "imxrt.h"
 #include "wiring.h"
 #include "usb_dev.h"
@@ -28,23 +26,23 @@ static void configure_systick(void);
 static void reset_PFD();
 extern void systick_isr(void);
 extern void pendablesrvreq_isr(void);
-void configure_cache(void);
-void configure_external_ram(void);
-void unused_interrupt_vector(void);
-void usb_pll_start();
+static void configure_cache(void);
+static void configure_external_ram(void);
+static void unused_interrupt_vector(void);
+static void usb_pll_start();
 extern void analog_init(void); // analog.c
 extern void pwm_init(void); // pwm.c
 extern void tempmon_init(void);  //tempmon.c
-uint32_t set_arm_clock(uint32_t frequency); // clockspeed.c
+extern uint32_t set_arm_clock(uint32_t frequency); // clockspeed.c
 extern void __libc_init_array(void); // C++ standard library
 
-uint8_t external_psram_size = 0;
 
 extern int main (void);
-void startup_default_early_hook(void) {}
-void startup_early_hook(void)		__attribute__ ((weak, alias("startup_default_early_hook")));
-void startup_default_late_hook(void) {}
-void startup_late_hook(void)		__attribute__ ((weak, alias("startup_default_late_hook")));
+FLASHMEM void startup_default_early_hook(void) {}
+void startup_early_hook(void) __attribute__ ((weak, alias("startup_default_early_hook"), section(".flashmem")));
+FLASHMEM void startup_default_late_hook(void) {}
+void startup_late_hook(void) __attribute__ ((weak, alias("startup_default_late_hook"), section(".flashmem")));
+
 __attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), naked))
 void ResetHandler(void)
 {
@@ -54,9 +52,10 @@ void ResetHandler(void)
 	IOMUXC_GPR_GPR17 = (uint32_t)&_flexram_bank_config;
 	IOMUXC_GPR_GPR16 = 0x00200007;
 	IOMUXC_GPR_GPR14 = 0x00AA0000;
-	__asm__ volatile("mov sp, %0" : : "r" ((uint32_t)&_estack) : );
+	__asm__ volatile("mov sp, %0" : : "r" ((uint32_t)&_estack) : "memory");
 #endif
 	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
+	__asm volatile("dsb \n isb");
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
 	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
 	//IOMUXC_SW_PAD_CTL_PAD_GPIO_B0_03 = IOMUXC_PAD_DSE(7);
@@ -68,14 +67,19 @@ void ResetHandler(void)
 	memory_copy(&_stext, &_stextload, &_etext);
 	memory_copy(&_sdata, &_sdataload, &_edata);
 	memory_clear(&_sbss, &_ebss);
+	
+	__asm volatile("dsb \n isb");
 
 	// enable FPU
 	SCB_CPACR = 0x00F00000;
 
 	// set up blank interrupt & exception vector table
-	for (i=0; i < NVIC_NUM_INTERRUPTS + 16; i++) _VectorsRam[i] = &unused_interrupt_vector;
+	_VectorsRam[0] = (void*)&_estack;
+	for (i=1; i < NVIC_NUM_INTERRUPTS + 16; i++) _VectorsRam[i] = &unused_interrupt_vector;
 	for (i=0; i < NVIC_NUM_INTERRUPTS; i++) NVIC_SET_PRIORITY(i, 128);
+	__asm volatile("dsb \n isb");
 	SCB_VTOR = (uint32_t)_VectorsRam;
+	__asm volatile("dsb \n isb");
 
 	reset_PFD();
 	
@@ -97,17 +101,19 @@ void ResetHandler(void)
 	// must enable PRINT_DEBUG_STUFF in debug/print.h
 	printf_debug_init();
 	printf("\n***********IMXRT Startup**********\n");
-	printf("test %d %d %d\n", 1, -1234567, 3);
+//	printf("test %d %d %d\n", 1, -1234567, 3);
 
 	configure_cache();
 	configure_systick();
 	usb_pll_start();	
 	reset_PFD(); //TODO: is this really needed?
+	__asm volatile("dsb \n isb");
 #ifdef F_CPU
 	set_arm_clock(F_CPU);
 #endif
 
-	asm volatile("nop\n nop\n nop\n nop": : :"memory"); // why oh why?
+	//asm volatile("nop\n nop\n nop\n nop": : :"memory"); // why oh why?
+	__asm volatile("dsb \n isb");
 
 	// Undo PIT timer usage by ROM startup
 	CCM_CCGR1 |= CCM_CCGR1_PIT(CCM_CCGR_ON);
@@ -161,10 +167,11 @@ void ResetHandler(void)
 #define SYSTICK_EXT_FREQ 100000
 
 extern volatile uint32_t systick_cycle_count;
-static void configure_systick(void)
+static FLASHMEM void configure_systick(void)
 {
 	_VectorsRam[14] = pendablesrvreq_isr;
 	_VectorsRam[15] = systick_isr;
+	__asm volatile("dsb \n isb");
 	SYST_RVR = (SYSTICK_EXT_FREQ / 1000) - 1;
 	SYST_CVR = 0;
 	SYST_CSR = SYST_CSR_TICKINT | SYST_CSR_ENABLE;
@@ -215,7 +222,7 @@ static void configure_systick(void)
 #define SIZE_4G		(SCB_MPU_RASR_SIZE(31) | SCB_MPU_RASR_ENABLE)
 #define REGION(n)	(SCB_MPU_RBAR_REGION(n) | SCB_MPU_RBAR_VALID)
 
-FLASHMEM void configure_cache(void)
+static FLASHMEM void configure_cache(void)
 {
 	//printf("MPU_TYPE = %08lX\n", SCB_MPU_TYPE);
 	//printf("CCR = %08lX\n", SCB_CCR);
@@ -242,7 +249,7 @@ FLASHMEM void configure_cache(void)
 	SCB_MPU_RBAR = 0x20000000 | REGION(i++); // DTCM
 	SCB_MPU_RASR = MEM_NOCACHE | READWRITE | NOEXEC | SIZE_512K;
 	
-	SCB_MPU_RBAR = ((uint32_t)&_ebss) | REGION(i++); // trap stack overflow
+	SCB_MPU_RBAR = ((uint32_t)&_estack - 8192) | REGION(i++); // trap stack overflow
 	SCB_MPU_RASR = SCB_MPU_RASR_TEX(0) | NOACCESS | NOEXEC | SIZE_32B;
 
 	SCB_MPU_RBAR = 0x20200000 | REGION(i++); // RAM (AXI bus)
@@ -272,6 +279,8 @@ FLASHMEM void configure_cache(void)
 	asm("dsb");
 	asm("isb");
 	SCB_CCR |= (SCB_CCR_IC | SCB_CCR_DC);
+	
+	__asm volatile("dsb \n isb");
 }
 
 #ifdef ARDUINO_TEENSY41
@@ -306,7 +315,7 @@ FLASHMEM static uint32_t flexspi2_psram_id(uint32_t addr)
 	return id & 0xFFFF;
 }
 
-FLASHMEM void configure_external_ram()
+static FLASHMEM void configure_external_ram()
 {
 	// initialize pins
 	IOMUXC_SW_PAD_CTL_PAD_GPIO_EMC_22 = 0x1B0F9; // 100K pullup, strong drive, max speed, hyst
@@ -441,7 +450,7 @@ FLASHMEM void configure_external_ram()
 #endif // ARDUINO_TEENSY41
 
 
-FLASHMEM void usb_pll_start()
+static FLASHMEM void usb_pll_start()
 {
 	while (1) {
 		uint32_t n = CCM_ANALOG_PLL_USB1; // pg 759
@@ -485,7 +494,7 @@ FLASHMEM void usb_pll_start()
 	}
 }
 
-FLASHMEM void reset_PFD()
+static FLASHMEM void reset_PFD()
 {	
 	//Reset PLL2 PFDs, set default frequencies:
 	CCM_ANALOG_PFD_528_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);
@@ -493,6 +502,8 @@ FLASHMEM void reset_PFD()
 	//PLL3:
 	CCM_ANALOG_PFD_480_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);	
 	CCM_ANALOG_PFD_480 = 0x13110D0C; // PFD0:720, PFD1:664, PFD2:508, PFD3:454 MHz
+	
+	__asm volatile("dsb \n isb");
 }
 
 // Stack frame
@@ -505,8 +516,8 @@ FLASHMEM void reset_PFD()
 //  R1
 //  R0
 // Code from :: https://community.nxp.com/thread/389002
-__attribute__((naked))
-void unused_interrupt_vector(void)
+__attribute__((section(".flashmem"), naked))
+static void unused_interrupt_vector(void)
 {
   __asm( ".syntax unified\n"
          "MOVS R0, #4 \n"
@@ -521,11 +532,12 @@ void unused_interrupt_vector(void)
          ".syntax divided\n") ;
 }
 
-__attribute__((weak, used))
+__attribute__((section(".flashmem"), weak, used))
 void HardFault_HandlerC(unsigned int *hardfault_args)
 {
   volatile unsigned int nn ;
 #ifdef PRINT_DEBUG_STUFF
+  volatile unsigned int sp = 0;
   volatile unsigned int stacked_r0 ;
   volatile unsigned int stacked_r1 ;
   volatile unsigned int stacked_r2 ;
@@ -542,6 +554,7 @@ void HardFault_HandlerC(unsigned int *hardfault_args)
   volatile unsigned int _MMAR ;
   volatile unsigned int addr ;
 
+  __asm__ volatile("mov %0, sp" : "=r" (sp) : : "memory");
   stacked_r0 = ((unsigned int)hardfault_args[0]) ;
   stacked_r1 = ((unsigned int)hardfault_args[1]) ;
   stacked_r2 = ((unsigned int)hardfault_args[2]) ;
@@ -570,14 +583,15 @@ void HardFault_HandlerC(unsigned int *hardfault_args)
 
   asm volatile("mrs %0, ipsr\n" : "=r" (addr)::);
   printf("\nFault irq %d\n", addr & 0x1FF);
+  printf(" sp ::          %x\n", sp);
   printf(" stacked_r0 ::  %x\n", stacked_r0);
   printf(" stacked_r1 ::  %x\n", stacked_r1);
   printf(" stacked_r2 ::  %x\n", stacked_r2);
   printf(" stacked_r3 ::  %x\n", stacked_r3);
-  printf(" stacked_r12 ::  %x\n", stacked_r12);
+  printf(" stacked_r12 :: %x\n", stacked_r12);
   printf(" stacked_lr ::  %x\n", stacked_lr);
   printf(" stacked_pc ::  %x\n", stacked_pc);
-  printf(" stacked_psr ::  %x\n", stacked_psr);
+  printf(" stacked_psr :: %x\n", stacked_psr);
   printf(" _CFSR ::  %x\n", _CFSR);
  
   if(_CFSR > 0){
@@ -667,7 +681,7 @@ void HardFault_HandlerC(unsigned int *hardfault_args)
   }
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 void userDebugDump(){
 	volatile unsigned int nn;
 	printf("\nuserDebugDump() in startup.c ___ \n");
@@ -689,7 +703,7 @@ void userDebugDump(){
   }
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 void PJRCunused_interrupt_vector(void)
 {
 	// TODO: polling Serial to complete buffered transmits
@@ -779,6 +793,7 @@ extern unsigned long _heap_end;
 
 char *__brkval = (char *)&_heap_start;
 
+__attribute__((weak))
 void * _sbrk(int incr)
 {
         char *prev = __brkval;
@@ -792,7 +807,7 @@ void * _sbrk(int incr)
         return prev;
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 int _read(int file, char *ptr, int len)
 {
 	(void) file; 
@@ -801,7 +816,7 @@ int _read(int file, char *ptr, int len)
 	return 0;
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 int _close(int fd)
 {
 	(void) fd;
@@ -810,7 +825,7 @@ int _close(int fd)
 
 #include <sys/stat.h>
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 int _fstat(int fd, struct stat *st)
 {
 	(void) fd;
@@ -818,14 +833,14 @@ int _fstat(int fd, struct stat *st)
 	return 0;
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 int _isatty(int fd)
 {
 	(void) fd;
 	return 1;
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 int _lseek(int fd, long long offset, int whence)
 {
 	(void) fd;
@@ -834,14 +849,14 @@ int _lseek(int fd, long long offset, int whence)
 	return -1;
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 void _exit(int status)
 {
 	(void) status;
 	while (1) asm ("WFI");
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 void __cxa_pure_virtual()
 {
 	while (1) asm ("WFI");
@@ -859,8 +874,13 @@ void __cxa_guard_release(char *g)
 	*g = 1;
 }
 
-__attribute__((weak))
+__attribute__((section(".flashmem"), weak))
 void abort(void)
 {
 	while (1) asm ("WFI");
+}
+
+__attribute__((section(".startup"), weak))
+void _init() {
+	
 }

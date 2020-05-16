@@ -1,5 +1,3 @@
-#pragma GCC optimize ("-Os")
-
 #include "imxrt.h"
 #include "core_pins.h"
 #include "debug/printf.h"

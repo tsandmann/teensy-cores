@@ -1,5 +1,3 @@
-#pragma GCC optimize ("-Os")
-
 //#include "imxrt.h"
 
 #include <stdint.h>

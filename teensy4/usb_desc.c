@@ -28,8 +28,6 @@
  * SOFTWARE.
  */
 
-#pragma GCC optimize ("-Os")
-
 //#if F_CPU >= 20000000
 
 #define USB_DESC_LIST_DEFINE
@@ -2685,7 +2683,7 @@ void usb_init_serialnumber(void)
 
 // This table provides access to all the descriptor data above.
 
-const usb_descriptor_list_t usb_descriptor_list[] = {
+PROGMEM const usb_descriptor_list_t usb_descriptor_list[] = {
 	//wValue, wIndex, address,          length
 	{0x0100, 0x0000, device_descriptor, sizeof(device_descriptor)},
 	{0x0600, 0x0000, qualifier_descriptor, sizeof(qualifier_descriptor)},

@@ -57,7 +57,7 @@ FLASHMEM void printf_debug(const char *format, ...)
 	va_end(args);
 }
 
-static void puint_debug(unsigned int num)
+FLASHMEM static void puint_debug(unsigned int num)
 {
 	char buf[12];
 	unsigned int i = sizeof(buf)-2;
