@@ -31,6 +31,12 @@ SECTIONS
 		. = ALIGN(16);
 	} > FLASH
 
+	.data.func (NOLOAD) : {
+		*(.*__func__*)
+		*(.*__PRETTY_FUNCTION__*)
+		. = ALIGN(4);
+	} > FLASH
+
 	.text.itcm : {
 		. = . + 32; /* MPU to trap NULL pointer deref */
 		*(.fastrun)
@@ -41,12 +47,6 @@ SECTIONS
 	.text.itcm.padding (NOLOAD) : {
 		. = ALIGN(32768);
 	} > ITCM
-
-	.data.func (NOLOAD) : {
-		*(.*__func__*)
-		*(.*__PRETTY_FUNCTION__*)
-		. = ALIGN(4);
-	} > FLASH
 
 	.data : {
 		*(.rodata*)

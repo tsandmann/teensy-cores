@@ -896,5 +896,5 @@ void _init() {
 	
 }
 
-__attribute__((section(".startup"), weak))
+__attribute__((weak))
 void* __dso_handle = 0;
