@@ -1157,7 +1157,7 @@ static void init_systick(void)
 	SCB_SHPR3 = 0x20200000;  // Systick = priority 32
 }
 
-__attribute__((section(".startup"), noinline))
+__attribute__((noinline))
 static void init_rtc(void)
 {
 	#if defined(KINETISK)
