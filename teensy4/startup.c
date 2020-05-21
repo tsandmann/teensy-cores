@@ -155,7 +155,7 @@ void ResetHandler(void)
 	//printf("before C++ constructors\n");
 	__libc_init_array();
 	//printf("after C++ constructors\n");
-	//printf("before setup\n");
+	//printf("before main\n");
 	main();
 	
 	while (1) ;

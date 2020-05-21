@@ -2090,7 +2090,7 @@ static inline void delayMicroseconds(uint32_t usec)
 extern "C" {
 #endif
 unsigned long rtc_get(void);
-void rtc_set(unsigned long t);
+void rtc_set(unsigned long t) __attribute__((noinline));
 void rtc_compensate(int adjust);
 #ifdef __cplusplus
 }
