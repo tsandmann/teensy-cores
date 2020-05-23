@@ -31,7 +31,7 @@ SECTIONS
 		. = ALIGN(16);
 	} > FLASH
 
-	.data.func (NOLOAD) : {
+	.data.func : {
 		*(.*__func__*)
 		*(.*__PRETTY_FUNCTION__*)
 		. = ALIGN(4);
@@ -84,7 +84,7 @@ SECTIONS
 	_flexram_bank_config = 0xAAAAAAAA | ((1 << (_itcm_block_count * 2)) - 1);
 	_estack = ORIGIN(DTCM) + ((16 - _itcm_block_count) << 15) - 128;
 
-	_flashimagelen = SIZEOF(.text.progmem) + SIZEOF(.text.itcm) + SIZEOF(.data);
+	_flashimagelen = SIZEOF(.text.progmem) + SIZEOF(.text.itcm) + SIZEOF(.data) + SIZEOF(.data.func);
 	_teensy_model_identifier = 0x24;
 
 	.debug_info     0 : { *(.debug_info) }
