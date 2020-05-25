@@ -70,6 +70,11 @@ SECTIONS
 	.bss.extram (NOLOAD) : {
 		*(.externalram)
 	} > ERAM
+	
+	/* remove stack unwinding information */
+	/DISCARD/ : {
+		*(.ARM.exidx*)
+	}
 
 	_stext = ADDR(.text.itcm);
 	_etext = ADDR(.text.itcm) + SIZEOF(.text.itcm);
