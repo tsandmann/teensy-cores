@@ -38,6 +38,7 @@ extern void tempmon_init(void);  //tempmon.c
 extern uint32_t set_arm_clock(uint32_t frequency); // clockspeed.c
 extern void __libc_init_array(void); // C++ standard library
 
+static uint8_t external_psram_size = 0;
 
 extern int main (void);
 FLASHMEM void startup_default_early_hook(void) {}
