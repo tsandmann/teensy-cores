@@ -48,7 +48,7 @@ void IRQHandler_Serial4()
 // Serial4
 static BUFTYPE tx_buffer4[SERIAL4_TX_BUFFER_SIZE];
 static BUFTYPE rx_buffer4[SERIAL4_RX_BUFFER_SIZE];
-uint8_t _serialEvent4_default __attribute__((weak)) PROGMEM = 0 ;
+extern const uint8_t _serialEvent4_default __attribute__((weak)) PROGMEM = 0 ;
 
 static HardwareSerial::hardware_t UART3_Hardware = {
 	3, IRQ_LPUART3, &IRQHandler_Serial4, 

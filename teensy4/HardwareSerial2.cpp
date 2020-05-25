@@ -50,7 +50,7 @@ void IRQHandler_Serial2()
 static BUFTYPE tx_buffer2[SERIAL2_TX_BUFFER_SIZE];
 static BUFTYPE rx_buffer2[SERIAL2_RX_BUFFER_SIZE];
 
-uint8_t _serialEvent2_default __attribute__((weak)) PROGMEM = 0 ;
+extern const uint8_t _serialEvent2_default __attribute__((weak)) PROGMEM = 0 ;
 
 static HardwareSerial::hardware_t UART4_Hardware = {
 	1, IRQ_LPUART4, &IRQHandler_Serial2, 

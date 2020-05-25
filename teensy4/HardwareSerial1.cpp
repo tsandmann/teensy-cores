@@ -49,7 +49,7 @@ void IRQHandler_Serial1()
 // Serial1
 static BUFTYPE tx_buffer1[SERIAL1_TX_BUFFER_SIZE];
 static BUFTYPE rx_buffer1[SERIAL1_RX_BUFFER_SIZE];
-uint8_t _serialEvent1_default __attribute__((weak)) PROGMEM = 0 ;
+extern const uint8_t _serialEvent1_default __attribute__((weak)) PROGMEM = 0 ;
 
 const HardwareSerial::hardware_t UART6_Hardware = {
 	0, IRQ_LPUART6, &IRQHandler_Serial1, 

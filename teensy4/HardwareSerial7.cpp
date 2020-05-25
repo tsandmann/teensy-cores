@@ -47,7 +47,7 @@ void IRQHandler_Serial7()
 // Serial7
 static BUFTYPE tx_buffer7[SERIAL7_TX_BUFFER_SIZE];
 static BUFTYPE rx_buffer7[SERIAL7_RX_BUFFER_SIZE];
-uint8_t _serialEvent7_default __attribute__((weak)) PROGMEM = 0 ;
+extern const uint8_t _serialEvent7_default __attribute__((weak)) PROGMEM = 0 ;
 
 static HardwareSerial::hardware_t UART7_Hardware = {
 	6, IRQ_LPUART7, &IRQHandler_Serial7, 

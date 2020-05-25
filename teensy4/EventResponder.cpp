@@ -42,7 +42,7 @@ bool EventResponder::runningFromYield = false;
 
 // TODO: interrupt disable/enable needed in many places!!!
 // BUGBUG: See if file name order makes difference?
-uint8_t _serialEvent_default __attribute__((weak)) PROGMEM = 0 ;	
+extern const uint8_t _serialEvent_default __attribute__((weak)) PROGMEM = 0 ;	
 
 void EventResponder::triggerEventNotImmediate()
 {

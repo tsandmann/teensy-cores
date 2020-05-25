@@ -38,7 +38,7 @@ uint8_t yield_active_check_flags = YIELD_CHECK_USB_SERIAL | YIELD_CHECK_USB_SERI
 #else
 uint8_t yield_active_check_flags = YIELD_CHECK_USB_SERIAL; // default to check USB.
 #endif
-extern const uint8_t _serialEvent_default;	
+extern const uint8_t _serialEvent_default PROGMEM;	
 
 void yield(void) __attribute__ ((weak));
 void yield(void)
