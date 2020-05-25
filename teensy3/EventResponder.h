@@ -59,6 +59,7 @@
  * your function is called only one time, based on the last trigger
  * event.
  */
+extern "C" void systick_isr_with_timer_events(void);
 
 class EventResponder;
 typedef EventResponder& EventResponderRef;
@@ -88,6 +89,7 @@ public:
 		detachNoInterrupts();
 		_function = function;
 		_type = EventTypeYield;
+		yield_active_check_flags |= YIELD_CHECK_EVENT_RESPONDER; // user setup a yield type...
 		enableInterrupts(irq);
 	}
 
@@ -114,6 +116,8 @@ public:
 		_function = function;
 		_type = EventTypeInterrupt;
 		SCB_SHPR3 |= 0x00FF0000; // configure PendSV, lowest priority
+		// Make sure we are using the systic ISR that process this
+		_VectorsRam[15] = systick_isr_with_timer_events;
 		enableInterrupts(irq);
 	}
 
@@ -173,6 +177,7 @@ public:
 	EventResponder * waitForEvent(EventResponder *list, int listsize, int timeout);
 
 	static void runFromYield() {
+		if (!firstYield) return;  
 		// First, check if yield was called from an interrupt
 		// never call normal handler functions from any interrupt context
 		uint32_t ipsr;
