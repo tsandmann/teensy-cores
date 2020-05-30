@@ -75,7 +75,8 @@ void EventResponder::triggerEventNotImmediate()
 				_prev->_next = this;
 				lastInterrupt = this;
 			}
-			SCB_ICSR = SCB_ICSR_PENDSVSET; // set PendSV interrupt
+			// SCB_ICSR = SCB_ICSR_PENDSVSET; // set PendSV interrupt
+			event_responder_set_pend_sv();
 		} else {
 			// detached, easy :-)
 		}
@@ -312,15 +313,17 @@ void MillisTimer::runFromTimer()
 			timer = listActive;
 		}
 	}
-	bool irq = disableTimerInterrupt();
-	MillisTimer *waiting = listWaiting;
-	listWaiting = nullptr; // TODO: use STREX to avoid interrupt disable
-	enableTimerInterrupt(irq);
-	while (waiting) {
-		MillisTimer *next = waiting->_next;
-		waiting->addToActiveList();
-		waiting = next;
-	}
+	if (listWaiting) {
+	  bool irq = disableTimerInterrupt();
+	  MillisTimer *waiting = listWaiting;
+	  listWaiting = nullptr; // TODO: use STREX to avoid interrupt disable
+	  enableTimerInterrupt(irq);
+	  while (waiting) {
+		  MillisTimer *next = waiting->_next;
+		  waiting->addToActiveList();
+		  waiting = next;
+	  }
+  }
 }
 
 // Long ago you could install your own systick interrupt handler by just

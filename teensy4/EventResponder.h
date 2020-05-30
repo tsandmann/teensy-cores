@@ -67,6 +67,10 @@ extern "C" __attribute__((weak)) void setup_systick_with_timer_events(void) {
 	_VectorsRam[15] = systick_isr_with_timer_events;
 }
 
+extern "C" __attribute__((weak)) void event_responder_set_pend_sv(void) {
+	SCB_ICSR = SCB_ICSR_PENDSVSET; // set PendSV interrupt
+}
+
 class EventResponder;
 typedef EventResponder& EventResponderRef;
 typedef void (*EventResponderFunction)(EventResponderRef);
