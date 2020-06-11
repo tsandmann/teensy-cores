@@ -21,16 +21,16 @@ SECTIONS
 		KEEP(*(.startup))
 		*(.flashmem*)
 		*(.progmem*)
-                . = ALIGN(4);
-                KEEP(*(.init))
-                __preinit_array_start = .;
-                KEEP (*(.preinit_array))
-                __preinit_array_end = .;
-                __init_array_start = .;
-                KEEP (*(.init_array))
-                __init_array_end = .;
-		. = ALIGN(16);
-	} > FLASH
+        . = ALIGN(4);
+        KEEP(*(.init))
+        __preinit_array_start = .;
+        KEEP (*(.preinit_array))
+        __preinit_array_end = .;
+        __init_array_start = .;
+        KEEP (*(.init_array))
+        __init_array_end = .;
+        . = ALIGN(16);
+    } > FLASH
 
 	.data.func : {
 		*(.*__func__*)
@@ -43,7 +43,19 @@ SECTIONS
 		*(.fastrun)
 		*(.text*)
 		. = ALIGN(16);
-	} > ITCM  AT> FLASH
+    } > ITCM AT> FLASH
+
+    .ARM.exidx : {
+        __exidx_start = .;
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+        __exidx_end = .;
+        . = ALIGN(4);
+    } > ITCM AT> FLASH
+
+    .ARM.extab : {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+        . = ALIGN(4);
+    } > ITCM AT> FLASH
 
 	.text.itcm.padding (NOLOAD) : {
 		. = ALIGN(32768);
@@ -70,11 +82,6 @@ SECTIONS
 	.bss.extram (NOLOAD) : {
 		*(.externalram)
 	} > ERAM
-	
-	/* remove stack unwinding information */
-	/DISCARD/ : {
-		*(.ARM.exidx*)
-	}
 
 	_stext = ADDR(.text.itcm);
 	_etext = ADDR(.text.itcm) + SIZEOF(.text.itcm);

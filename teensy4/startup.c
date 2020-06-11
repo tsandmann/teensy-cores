@@ -151,10 +151,14 @@ void ResetHandler(void)
 	pwm_init();
 	tempmon_init();
 
+	__dsb();
+	__isb();
 	startup_late_hook();
 	while (millis() < 300) ; // wait at least 300ms before calling user code
 	//printf("before C++ constructors\n");
 	__libc_init_array();
+	__dsb();
+	__isb();
 	//printf("after C++ constructors\n");
 	//printf("before main\n");
 	main();
