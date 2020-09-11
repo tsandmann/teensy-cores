@@ -346,13 +346,13 @@ extern "C" uint32_t systick_safe_read; // micros() synchronization
 extern "C" void systick_isr(void)
 {
 	systick_cycle_count = ARM_DWT_CYCCNT;
-	systick_millis_count++;
+	systick_millis_count = systick_millis_count + 1;
 }
 
 extern "C" void systick_isr_with_timer_events(void)
 {
 	systick_cycle_count = ARM_DWT_CYCCNT;
-	systick_millis_count++;
+	systick_millis_count = systick_millis_count + 1;
 	MillisTimer::runFromTimer();
 }
 
