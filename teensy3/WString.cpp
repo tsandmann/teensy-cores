@@ -154,6 +154,11 @@ unsigned char String::changeBuffer(unsigned int maxStrLen)
 
 String & String::copy(const char *cstr, unsigned int length)
 {
+	if (length == 0) {
+		if (buffer) buffer[0] = 0;
+		len = 0;
+		return *this;
+	}
 	if (!reserve(length)) {
 		if (buffer) {
 			free(buffer);
