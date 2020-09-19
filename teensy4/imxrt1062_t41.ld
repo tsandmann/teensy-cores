@@ -1,26 +1,26 @@
 MEMORY
 {
-	ITCM (rwx):  ORIGIN = 0x00000000, LENGTH = 512K
-	DTCM (rwx):  ORIGIN = 0x20000000, LENGTH = 512K
-	RAM (rwx):   ORIGIN = 0x20200000, LENGTH = 512K
-	FLASH (rwx): ORIGIN = 0x60000000, LENGTH = 7936K
-	ERAM (rwx):  ORIGIN = 0x70000000, LENGTH = 16384K
+    ITCM (rwx):  ORIGIN = 0x00000000, LENGTH = 512K
+    DTCM (rwx):  ORIGIN = 0x20000000, LENGTH = 512K
+    RAM (rwx):   ORIGIN = 0x20200000, LENGTH = 512K
+    FLASH (rwx): ORIGIN = 0x60000000, LENGTH = 7936K
+    ERAM (rwx):  ORIGIN = 0x70000000, LENGTH = 16384K
 }
 
 ENTRY(ImageVectorTable)
 
 SECTIONS
 {
-	.text.progmem : {
-		KEEP(*(.flashconfig))
-		FILL(0xFF)
-		. = ORIGIN(FLASH) + 0x1000;
-		KEEP(*(.ivt))
-		KEEP(*(.bootdata))
-		KEEP(*(.vectors))
-		KEEP(*(.startup))
-		*(.flashmem*)
-		*(.progmem*)
+    .text.progmem : {
+        KEEP(*(.flashconfig))
+        FILL(0xFF)
+        . = ORIGIN(FLASH) + 0x1000;
+        KEEP(*(.ivt))
+        KEEP(*(.bootdata))
+        KEEP(*(.vectors))
+        KEEP(*(.startup))
+        *(.flashmem*)
+        *(.progmem*)
         . = ALIGN(4);
         KEEP(*(.init))
         __preinit_array_start = .;
@@ -32,85 +32,85 @@ SECTIONS
         . = ALIGN(16);
     } > FLASH
 
-	.data.func : {
-		*(.*__func__*)
-		*(.*__PRETTY_FUNCTION__*)
-		. = ALIGN(4);
-	} > FLASH
+    .data.func : {
+        *(.*__func__*)
+        *(.*__PRETTY_FUNCTION__*)
+        . = ALIGN(4);
+    } > FLASH
 
-	.text.itcm : {
-		. = . + 32; /* MPU to trap NULL pointer deref */
-		*(.fastrun)
-		*(.text*)
-		. = ALIGN(16);
-	  } > ITCM AT> FLASH
+    .text.itcm : {
+        . = . + 32; /* MPU to trap NULL pointer deref */
+        *(.fastrun)
+        *(.text*)
+        . = ALIGN(16);
+    } > ITCM AT> FLASH
 
-	.ARM.exidx : {
-		. = ALIGN(4);
-		__exidx_start = .;
-		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-		__exidx_end = .;
-		. = ALIGN(4);
- 	} > ITCM AT> FLASH
-  
- 	.ARM.extab : {
- 		. = ALIGN(4);
-		*(.ARM.extab* .gnu.linkonce.armextab.*)
-		. = ALIGN(4);
-	} > ITCM AT> FLASH
+    .ARM.exidx : {
+        . = ALIGN(4);
+        __exidx_start = .;
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+        __exidx_end = .;
+        . = ALIGN(4);
+    } > ITCM AT> FLASH
 
-	.text.itcm.padding (NOLOAD) : {
-		. = ALIGN(32768);
- 	} > ITCM
+    .ARM.extab : {
+        . = ALIGN(4);
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+        . = ALIGN(4);
+    } > ITCM AT> FLASH
 
-	.data : {
-		*(.rodata*)
-		*(.data*)
-		. = ALIGN(16);
-	} > DTCM  AT> FLASH
+    .text.itcm.padding (NOLOAD) : {
+        . = ALIGN(32768);
+    } > ITCM
 
-	.bss ALIGN(4) : {
-		*(.bss*)
-		*(COMMON)
-		. = ALIGN(32);
-		. = . + 32; /* MPU to trap stack overflow */
-	} > DTCM
+    .data : {
+        *(.rodata*)
+        *(.data*)
+        . = ALIGN(16);
+    } > DTCM  AT> FLASH
 
-	.bss.dma (NOLOAD) : {
-		*(.dmabuffers)
-		. = ALIGN(32);
-	} > RAM
+    .bss ALIGN(4) : {
+        *(.bss*)
+        *(COMMON)
+        . = ALIGN(32);
+        . = . + 32; /* MPU to trap stack overflow */
+    } > DTCM
 
-	.bss.extram (NOLOAD) : {
-		*(.externalram)
-	} > ERAM
+    .bss.dma (NOLOAD) : {
+        *(.dmabuffers)
+        . = ALIGN(32);
+    } > RAM
 
-	_stext = ADDR(.text.itcm);
-	_etext = ADDR(.text.itcm) + SIZEOF(.text.itcm) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab);
-	_stextload = LOADADDR(.text.itcm);
+    .bss.extram (NOLOAD) : {
+        *(.externalram)
+    } > ERAM
 
-	_sdata = ADDR(.data);
-	_edata = ADDR(.data) + SIZEOF(.data);
-	_sdataload = LOADADDR(.data);
+    _stext = ADDR(.text.itcm);
+    _etext = ADDR(.text.itcm) + SIZEOF(.text.itcm) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab);
+    _stextload = LOADADDR(.text.itcm);
 
-	_sbss = ADDR(.bss);
-	_ebss = ADDR(.bss) + SIZEOF(.bss);
+    _sdata = ADDR(.data);
+    _edata = ADDR(.data) + SIZEOF(.data);
+    _sdataload = LOADADDR(.data);
 
-	_heap_start = ADDR(.bss.dma) + SIZEOF(.bss.dma);
-	_heap_end = ORIGIN(RAM) + LENGTH(RAM);
+    _sbss = ADDR(.bss);
+    _ebss = ADDR(.bss) + SIZEOF(.bss);
 
-	_itcm_block_count = (SIZEOF(.text.itcm) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab) + 0x7FFF) >> 15;
-	_flexram_bank_config = 0xAAAAAAAA | ((1 << (_itcm_block_count * 2)) - 1);
-	_estack = ORIGIN(DTCM) + ((16 - _itcm_block_count) << 15) - 128;
+    _heap_start = ADDR(.bss.dma) + SIZEOF(.bss.dma);
+    _heap_end = ORIGIN(RAM) + LENGTH(RAM);
 
-	_flashimagelen = SIZEOF(.text.progmem) + SIZEOF(.text.itcm) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab) + SIZEOF(.data) + SIZEOF(.data.func);
-	_teensy_model_identifier = 0x25;
+    _itcm_block_count = (SIZEOF(.text.itcm) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab) + 0x7FFF) >> 15;
+    _flexram_bank_config = 0xAAAAAAAA | ((1 << (_itcm_block_count * 2)) - 1);
+    _estack = ORIGIN(DTCM) + ((16 - _itcm_block_count) << 15) - 128;
 
-	.debug_info     0 : { *(.debug_info) }
-	.debug_abbrev   0 : { *(.debug_abbrev) }
-	.debug_line     0 : { *(.debug_line) }
-	.debug_frame    0 : { *(.debug_frame) }
-	.debug_str      0 : { *(.debug_str) }
-	.debug_loc      0 : { *(.debug_loc) }
+    _flashimagelen = SIZEOF(.text.progmem) + SIZEOF(.text.itcm) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab) + SIZEOF(.data) + SIZEOF(.data.func);
+    _teensy_model_identifier = 0x25;
+
+    .debug_info     0 : { *(.debug_info) }
+    .debug_abbrev   0 : { *(.debug_abbrev) }
+    .debug_line     0 : { *(.debug_line) }
+    .debug_frame    0 : { *(.debug_frame) }
+    .debug_str      0 : { *(.debug_str) }
+    .debug_loc      0 : { *(.debug_loc) }
 
 }
