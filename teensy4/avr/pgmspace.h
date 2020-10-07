@@ -33,6 +33,7 @@
 
 #define PGM_P  const char *
 #define PSTR(str) ({static const char data[] PROGMEM = (str); &data[0];})
+#define PSTR_T(str) ({static const char data[] __attribute__((section(".progmem.template"))) = (str); &data[0];})
 
 #define _SFR_BYTE(n) (n)
 
