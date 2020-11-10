@@ -539,6 +539,12 @@ public:
 		NVIC_ENABLE_IRQ(IRQ_DMA_CH0 + channel);
 	}
 
+	void attachInterrupt(void (*isr)(void), uint8_t prio) {
+		_VectorsRam[channel + IRQ_DMA_CH0 + 16] = isr;
+		NVIC_ENABLE_IRQ(IRQ_DMA_CH0 + channel);
+		NVIC_SET_PRIORITY(IRQ_DMA_CH0 + channel, prio);
+	}
+	
 	void detachInterrupt(void) {
 		NVIC_DISABLE_IRQ(IRQ_DMA_CH0 + channel);
 	}
@@ -1039,7 +1045,13 @@ public:
 		_VectorsRam[channel + IRQ_DMA_CH0 + 16] = isr;
 		NVIC_ENABLE_IRQ(IRQ_DMA_CH0 + channel);
 	}
-
+	
+	void attachInterrupt(void (*isr)(void), uint8_t prio) {
+		_VectorsRam[channel + IRQ_DMA_CH0 + 16] = isr;
+		NVIC_ENABLE_IRQ(IRQ_DMA_CH0 + channel);
+		NVIC_SET_PRIORITY(IRQ_DMA_CH0 + channel, prio);
+	}
+	
 	void detachInterrupt(void) {
 		NVIC_DISABLE_IRQ(IRQ_DMA_CH0 + channel);
 	}
