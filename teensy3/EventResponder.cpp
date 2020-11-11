@@ -354,5 +354,14 @@ extern "C" void systick_isr_with_timer_events(void)
 	MillisTimer::runFromTimer();
 }
 
+extern "C" __attribute__((weak)) void setup_systick_with_timer_events(void) 
+{
+	SCB_SHPR3 = SCB_SHPR3 | 0x00FF0000; // configure PendSV, lowest priority
+	// Make sure we are using the systic ISR that process this
+	_VectorsRam[15] = systick_isr_with_timer_events;
+}
 
-
+extern "C" __attribute__((weak)) void event_responder_set_pend_sv(void) 
+{
+	SCB_ICSR = SCB_ICSR_PENDSVSET; // set PendSV interrupt
+}
