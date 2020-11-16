@@ -460,6 +460,8 @@ static FLASHMEM void configure_external_ram()
 			// One PSRAM chip is present, 8 MByte
 			external_psram_size = 8;
 		}
+		__dsb();
+		__isb();
 		// TODO: zero uninitialized EXTMEM variables
 		// TODO: copy from flash to initialize EXTMEM variables
 		sm_set_pool(&extmem_smalloc_pool, &_extram_end,
