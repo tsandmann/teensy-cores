@@ -169,7 +169,7 @@ void ResetHandler(void)
 	//printf("before main\n");
 	main();
 	
-	while (1) ;
+	while (1) asm("WFI");
 }
 
 
