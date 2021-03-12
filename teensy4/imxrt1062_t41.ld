@@ -37,6 +37,18 @@ SECTIONS
 		*(.progmem*)
 		. = ALIGN(4);
 	} > FLASH
+	
+	.ARM.exidx.flashmem : {
+		*(.ARM.exidx.startup* .gnu.linkonce.armexidx.*)
+		*(.ARM.exidx.flashmem* .gnu.linkonce.armexidx.*)
+		. = ALIGN(4);
+	} > FLASH
+
+	.ARM.extab.flashmem : {
+		*(.ARM.extab.startup* .gnu.linkonce.armextab.*)
+		*(.ARM.extab.flashmem* .gnu.linkonce.armextab.*)
+		. = ALIGN(4);
+	} > FLASH
   
 	.data.func : {
 		*(.*__func__*)
@@ -113,7 +125,7 @@ SECTIONS
 	_flexram_bank_config = 0xAAAAAAAA | ((1 << (_itcm_block_count * 2)) - 1);
 	_estack = ORIGIN(DTCM) + ((16 - _itcm_block_count) << 15) - 128;
 
-	_flashimagelen = SIZEOF(.text.headers) + SIZEOF(.text.code) + SIZEOF(.text.progmem) + SIZEOF(.text.itcm) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab) + SIZEOF(.data) + SIZEOF(.data.func) + SIZEOF(.text.csf);
+	_flashimagelen = SIZEOF(.text.headers) + SIZEOF(.text.code) + SIZEOF(.text.progmem) + SIZEOF(.ARM.exidx.flashmem) + SIZEOF(.ARM.extab.flashmem) + SIZEOF(.data.func) + SIZEOF(.text.itcm) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab) + SIZEOF(.data) + SIZEOF(.text.csf);
 	_teensy_model_identifier = 0x25;
 
 	.debug_info     0 : { *(.debug_info) }
