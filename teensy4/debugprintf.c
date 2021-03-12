@@ -7,6 +7,7 @@
 #include "avr/pgmspace.h"
 #include <stdarg.h>
 #include "imxrt.h"
+ #include "usb_desc.h"
 
 void putchar_debug(char c);
 static void puint_debug(unsigned int num);
@@ -72,6 +73,28 @@ __attribute__((section(".startup"))) static void puint_debug(unsigned int num)
 	printf_debug(buf + i);
 }
 
+// first is this normal Serial?
+#if defined(PRINT_DEBUG_USING_USB) && defined(CDC_STATUS_INTERFACE) && defined(CDC_DATA_INTERFACE)
+#include "usb_dev.h"
+#include "usb_serial.h"
+__attribute__((section(".startup"))) void putchar_debug(char c)
+{
+	usb_serial_putchar(c);
+}	
+
+__attribute__((section(".startup"))) void printf_debug_init(void) {}
+
+#elif defined(PRINT_DEBUG_USING_USB) && defined(SEREMU_INTERFACE) && !defined(CDC_STATUS_INTERFACE) && !defined(CDC_DATA_INTERFACE)
+#include "usb_dev.h"
+#include "usb_seremu.h"
+__attribute__((section(".startup"))) void putchar_debug(char c)
+{
+	usb_seremu_putchar(c);
+}	
+
+__attribute__((section(".startup"))) void printf_debug_init(void) {}
+
+#else
 __attribute__((section(".startup"))) void putchar_debug(char c)
 {
 	while (!(LPUART3_STAT & LPUART_STAT_TDRE)) ; // wait
@@ -89,5 +112,9 @@ __attribute__((section(".startup"))) void printf_debug_init(void)
 #endif
         LPUART3_CTRL = LPUART_CTRL_TE;
 }
+#endif
+
+
+
 
 #endif // PRINT_DEBUG_STUFF
