@@ -38,6 +38,9 @@
 #include "debug/printf.h"
 #include "core_pins.h"
 
+#undef printf
+#define printf(...)
+
 // defined by usb_dev.h -> usb_desc.h
 #if defined(CDC3_STATUS_INTERFACE) && defined(CDC3_DATA_INTERFACE)
 

@@ -17,6 +17,9 @@
 #include <string.h>
 #include "debug/printf.h"
 
+#undef printf
+#define printf(...)
+
 //#define LOG_SIZE  20
 //uint32_t transfer_log_head=0;
 //uint32_t transfer_log_count=0;

@@ -1,3 +1,5 @@
+#pragma once
+
 // #define PRINT_DEBUG_STUFF
 
 #ifdef PRINT_DEBUG_STUFF

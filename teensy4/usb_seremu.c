@@ -36,6 +36,9 @@
 #include "debug/printf.h"
 #include "core_pins.h"
 
+#undef printf
+#define printf(...)
+
 #if defined(SEREMU_INTERFACE) && !defined(CDC_STATUS_INTERFACE) && !defined(CDC_DATA_INTERFACE)
 
 static volatile uint8_t tx_noautoflush=0;

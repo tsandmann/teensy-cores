@@ -119,8 +119,10 @@ void ResetHandler(void)
 
 	configure_cache();
 	configure_systick();
-	usb_pll_start();	
+	usb_pll_start();
+	printf("before reset_PFD()\r\n");
 	reset_PFD(); //TODO: is this really needed?
+	printf("reset_PFD() done.\r\n");
 	__dsb();
 	__isb();
 #ifdef F_CPU
@@ -147,7 +149,8 @@ void ResetHandler(void)
 	}
 	SNVS_HPCR |= SNVS_HPCR_RTC_EN | SNVS_HPCR_HP_TS;
 
-#ifdef ARDUINO_TEENSY41
+#if defined ARDUINO_TEENSY41 && !defined TEENSY_NO_EXTRAM
+	printf("before configure_external_ram()\r\n");
 	configure_external_ram();
 #endif
 	startup_early_hook();
@@ -186,7 +189,7 @@ void ResetHandler(void)
 #define SYSTICK_EXT_FREQ 100000
 
 extern volatile uint32_t systick_cycle_count;
-static FLASHMEM void configure_systick(void)
+__attribute__((section(".startup"))) static void configure_systick(void)
 {
 	_VectorsRam[14] = pendablesrvreq_isr;
 	_VectorsRam[15] = systick_isr;
@@ -242,7 +245,7 @@ static FLASHMEM void configure_systick(void)
 #define SIZE_4G		(SCB_MPU_RASR_SIZE(31) | SCB_MPU_RASR_ENABLE)
 #define REGION(n)	(SCB_MPU_RBAR_REGION(n) | SCB_MPU_RBAR_VALID)
 
-static FLASHMEM void configure_cache(void)
+__attribute__((section(".startup"))) static void configure_cache(void)
 {
 	//printf("MPU_TYPE = %08lX\n", SCB_MPU_TYPE);
 	//printf("CCR = %08lX\n", SCB_CCR);
@@ -316,7 +319,7 @@ static FLASHMEM void configure_cache(void)
 #define PINS1           FLEXSPI_LUT_NUM_PADS_1
 #define PINS4           FLEXSPI_LUT_NUM_PADS_4
 
-FLASHMEM static void flexspi2_command(uint32_t index, uint32_t addr)
+__attribute__((section(".startup"))) static void flexspi2_command(uint32_t index, uint32_t addr)
 {
 	FLEXSPI2_IPCR0 = addr;
 	FLEXSPI2_IPCR1 = FLEXSPI_IPCR1_ISEQID(index);
@@ -325,7 +328,7 @@ FLASHMEM static void flexspi2_command(uint32_t index, uint32_t addr)
 	FLEXSPI2_INTR = FLEXSPI_INTR_IPCMDDONE;
 }
 
-FLASHMEM static uint32_t flexspi2_psram_id(uint32_t addr)
+__attribute__((section(".startup"))) static uint32_t flexspi2_psram_id(uint32_t addr)
 {
 	FLEXSPI2_IPCR0 = addr;
 	FLEXSPI2_IPCR1 = FLEXSPI_IPCR1_ISEQID(3) | FLEXSPI_IPCR1_IDATSZ(4);
@@ -336,7 +339,7 @@ FLASHMEM static uint32_t flexspi2_psram_id(uint32_t addr)
 	return id & 0xFFFF;
 }
 
-static FLASHMEM void configure_external_ram()
+__attribute__((section(".startup"))) static void configure_external_ram()
 {
 	// initialize pins
 	IOMUXC_SW_PAD_CTL_PAD_GPIO_EMC_22 = 0x1B0F9; // 100K pullup, strong drive, max speed, hyst
@@ -477,10 +480,12 @@ static FLASHMEM void configure_external_ram()
 #endif // ARDUINO_TEENSY41
 
 
-static FLASHMEM void usb_pll_start()
+__attribute__((section(".startup"))) static void usb_pll_start()
 {
 	while (1) {
 		uint32_t n = CCM_ANALOG_PLL_USB1; // pg 759
+		__dsb();
+		__isb();
 		printf("CCM_ANALOG_PLL_USB1=%08lX\n", n);
 		if (n & CCM_ANALOG_PLL_USB1_DIV_SELECT) {
 			printf("  ERROR, 528 MHz mode!\n"); // never supposed to use this mode!
@@ -517,17 +522,21 @@ static FLASHMEM void usb_pll_start()
 			CCM_ANALOG_PLL_USB1_SET = CCM_ANALOG_PLL_USB1_EN_USB_CLKS;
 			continue;
 		}
+		printf("  usb_pll_start() done.\r\n");
 		return; // everything is as it should be  :-)
 	}
 }
 
-static FLASHMEM void reset_PFD()
+__attribute__((section(".startup"))) static void reset_PFD()
 {	
 	//Reset PLL2 PFDs, set default frequencies:
 	CCM_ANALOG_PFD_528_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);
-	CCM_ANALOG_PFD_528 = 0x2018101B; // PFD0:352, PFD1:594, PFD2:396, PFD3:297 MHz 	
+	__isb();
+	CCM_ANALOG_PFD_528 = 0x2018101B; // PFD0:352, PFD1:594, PFD2:396, PFD3:297 MHz
+	__isb();
 	//PLL3:
-	CCM_ANALOG_PFD_480_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);	
+	CCM_ANALOG_PFD_480_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);
+	__isb();
 	CCM_ANALOG_PFD_480 = 0x13110D0C; // PFD0:720, PFD1:664, PFD2:508, PFD3:454 MHz
 	
 	__dsb();
@@ -582,7 +591,7 @@ void HardFault_HandlerC(unsigned int *hardfault_args)
   volatile unsigned int _MMAR ;
   volatile unsigned int addr ;
 
-  __asm__ volatile("mov %0, sp" : "=r" (sp) : : "memory");
+  __asm__ volatile("mov %0, r0" : "=r" (sp) : : "memory");
   stacked_r0 = ((unsigned int)hardfault_args[0]) ;
   stacked_r1 = ((unsigned int)hardfault_args[1]) ;
   stacked_r2 = ((unsigned int)hardfault_args[2]) ;

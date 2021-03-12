@@ -12,7 +12,7 @@ void putchar_debug(char c);
 static void puint_debug(unsigned int num);
 
 
-FLASHMEM void printf_debug(const char *format, ...)
+__attribute__((section(".startup"))) void printf_debug(const char *format, ...)
 {
 	va_list args;
 	unsigned int val;
@@ -57,7 +57,7 @@ FLASHMEM void printf_debug(const char *format, ...)
 	va_end(args);
 }
 
-FLASHMEM static void puint_debug(unsigned int num)
+__attribute__((section(".startup"))) static void puint_debug(unsigned int num)
 {
 	char buf[12];
 	unsigned int i = sizeof(buf)-2;
@@ -72,22 +72,22 @@ FLASHMEM static void puint_debug(unsigned int num)
 	printf_debug(buf + i);
 }
 
-FLASHMEM void putchar_debug(char c)
+__attribute__((section(".startup"))) void putchar_debug(char c)
 {
 	while (!(LPUART3_STAT & LPUART_STAT_TDRE)) ; // wait
 	LPUART3_DATA = c;
 }
 
-FLASHMEM void printf_debug_init(void)
+__attribute__((section(".startup"))) void printf_debug_init(void)
 {
         CCM_CCGR0 |= CCM_CCGR0_LPUART3(CCM_CCGR_ON); // turn on Serial4
         IOMUXC_SW_MUX_CTL_PAD_GPIO_AD_B1_06 = 2; // Arduino pin 17
+#if PRINT_DEBUG_STUFF == 2
+        LPUART3_BAUD = LPUART_BAUD_OSR(11) | LPUART_BAUD_SBR(1); // 2 MBaud
+#else
         LPUART3_BAUD = LPUART_BAUD_OSR(25) | LPUART_BAUD_SBR(8); // ~115200 baud
+#endif
         LPUART3_CTRL = LPUART_CTRL_TE;
 }
-
-
-
-
 
 #endif // PRINT_DEBUG_STUFF
