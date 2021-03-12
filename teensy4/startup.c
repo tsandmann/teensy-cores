@@ -31,7 +31,7 @@ static void reset_PFD();
 extern void systick_isr(void);
 extern void pendablesrvreq_isr(void);
 static void configure_cache(void);
-#ifdef ARDUINO_TEENSY41
+#if defined ARDUINO_TEENSY41 && !defined TEENSY_NO_EXTRAM
 static void configure_external_ram(void);
 #endif
 static void unused_interrupt_vector(void);
@@ -307,7 +307,7 @@ __attribute__((section(".startup"))) static void configure_cache(void)
 	__isb();
 }
 
-#ifdef ARDUINO_TEENSY41
+#if defined ARDUINO_TEENSY41 && !defined TEENSY_NO_EXTRAM
 
 #define LUT0(opcode, pads, operand) (FLEXSPI_LUT_INSTRUCTION((opcode), (pads), (operand)))
 #define LUT1(opcode, pads, operand) (FLEXSPI_LUT_INSTRUCTION((opcode), (pads), (operand)) << 16)
