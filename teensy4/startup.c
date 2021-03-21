@@ -14,6 +14,9 @@ extern unsigned long _etext;
 extern unsigned long _sdataload;
 extern unsigned long _sdata;
 extern unsigned long _edata;
+extern unsigned long _sexidxload;
+extern unsigned long _sexidx;
+extern unsigned long _eexidx;
 extern unsigned long _sbss;
 extern unsigned long _ebss;
 extern unsigned long _flexram_bank_config;
@@ -284,9 +287,6 @@ __attribute__((section(".startup"))) static void configure_cache(void)
 
 	SCB_MPU_RBAR = 0x60000000 | REGION(i++); // QSPI Flash
 	SCB_MPU_RASR = MEM_CACHE_WBWA | READONLY | SIZE_16M;
-
-	SCB_MPU_RBAR = 0x70000000 | REGION(i++); // FlexSPI2
-	SCB_MPU_RASR = MEM_CACHE_WBWA | READONLY | NOEXEC | SIZE_256M;
 
 	SCB_MPU_RBAR = 0x70000000 | REGION(i++); // FlexSPI2
 	SCB_MPU_RASR = MEM_CACHE_WBWA | READWRITE | NOEXEC | SIZE_16M;
