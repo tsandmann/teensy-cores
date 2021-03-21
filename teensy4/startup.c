@@ -77,6 +77,7 @@ void ResetHandler(void)
 	// Initialize memory
 	memory_copy(&_stext, &_stextload, &_etext);
 	memory_copy(&_sdata, &_sdataload, &_edata);
+	memory_copy(&_sexidx, &_sexidxload, &_eexidx);
 	memory_clear(&_sbss, &_ebss);
 	
 	__dsb();
@@ -900,13 +901,13 @@ void __cxa_pure_virtual()
 }
 
 __attribute__((weak))
-int __cxa_guard_acquire (char *g)
+int __cxa_guard_acquire (int32_t *g)
 {
 	return !(*g);
 }
 
 __attribute__((weak))
-void __cxa_guard_release(char *g)
+void __cxa_guard_release(int32_t *g)
 {
 	*g = 1;
 }
