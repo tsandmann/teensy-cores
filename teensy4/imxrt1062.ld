@@ -16,6 +16,7 @@ SECTIONS
 		. = ORIGIN(FLASH) + 0x1000;
 		KEEP(*(.ivt))
 		KEEP(*(.bootdata))
+		. = ALIGN(1024);
 	} > FLASH
 
 	.text.itcm : {
@@ -82,7 +83,7 @@ SECTIONS
 
 	.text.csf : {
 		FILL(0xFF)
-		. = ALIGN(4);
+		. = ALIGN(1024);
 		KEEP(*(.csf))
 	} > FLASH
 

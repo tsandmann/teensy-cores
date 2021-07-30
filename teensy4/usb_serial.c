@@ -326,6 +326,7 @@ int usb_serial_write(const void *buffer, uint32_t size)
 
 	if (!usb_configuration) return 0;
 	while (size > 0) {
+		tx_noautoflush = 1;
 		transfer_t *xfer = tx_transfer + tx_head;
 		int waiting=0;
 		uint32_t wait_begin_at=0;
@@ -342,6 +343,8 @@ int usb_serial_write(const void *buffer, uint32_t size)
 				transmit_previous_timeout = 0;
 				break;
 			}
+			asm("dsb" ::: "memory");
+			tx_noautoflush = 0;
 			if (!waiting) {
 				wait_begin_at = systick_millis_count;
 				waiting = 1;
@@ -360,6 +363,7 @@ int usb_serial_write(const void *buffer, uint32_t size)
 			}
 			if (!usb_configuration) return sent;
 			yield();
+			tx_noautoflush = 1;
 		}
 		//digitalWriteFast(3, LOW);
 		uint8_t *txdata = txbuffer + (tx_head * TX_SIZE) + (TX_SIZE - tx_available);
@@ -384,6 +388,8 @@ int usb_serial_write(const void *buffer, uint32_t size)
 			size = 0;
 			timer_start_oneshot();
 		}
+		asm("dsb" ::: "memory");
+		tx_noautoflush = 0;
 	}
 	return sent;
 }
@@ -396,6 +402,7 @@ int usb_serial_write_buffer_free(void)
 		if (i == tx_head) continue;
 		if (!(usb_transfer_status(tx_transfer + i) & 0x80)) sum += TX_SIZE;
 	}
+	asm("dsb" ::: "memory");
 	tx_noautoflush = 0;
 	return sum;
 }
@@ -414,6 +421,7 @@ void usb_serial_flush_output(void)
 	usb_transmit(CDC_TX_ENDPOINT, xfer);
 	if (++tx_head >= TX_NUM) tx_head = 0;
 	tx_available = 0;
+	asm("dsb" ::: "memory");
 	tx_noautoflush = 0;
 }
 
