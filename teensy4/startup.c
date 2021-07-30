@@ -572,13 +572,19 @@ void unused_interrupt_vector(void)
 	struct arm_fault_info_struct *info;
 	const uint32_t *p, *end;
 
+	unsigned int lr;
+	asm volatile("mov %0, lr" : "=r"(lr)::);
 	// disallow any nested interrupts
 	__disable_irq();
 	// store crash report info
 	asm volatile("mrs %0, ipsr\n" : "=r" (ipsr) :: "memory");
 	info = (struct arm_fault_info_struct *)0x2027FF80;
 	info->ipsr = ipsr;
-	asm volatile("mrs %0, msp\n" : "=r" (stack) :: "memory");
+	if (lr & 4) {
+		asm volatile("mrs %0, psp\n" : "=r"(stack)::"memory");
+	} else {
+		asm volatile("mrs %0, msp\n" : "=r"(stack)::"memory");
+	}
 	info->cfsr = SCB_CFSR;
 	info->hfsr = SCB_HFSR;
 	info->mmfar = SCB_MMFAR;
