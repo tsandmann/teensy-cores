@@ -1123,9 +1123,9 @@ void ResetHandler(void)
 
   init_rtc();
 
+	startup_late_hook();
 	__libc_init_array();
 
-	startup_late_hook();
 	main();
 	
 	while (1) ;
