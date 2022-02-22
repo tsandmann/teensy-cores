@@ -373,6 +373,7 @@ void usb_isr(void)
 		usb_flightsim_flush_output();
 		#endif
 	}
+	__dsb();
 }
 
 
