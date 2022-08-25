@@ -60,8 +60,9 @@ void startup_middle_hook(void)	__attribute__ ((weak, alias("startup_default_midd
 FLASHMEM void startup_default_late_hook(void) {}
 void startup_late_hook(void)	__attribute__ ((weak, alias("startup_default_late_hook"), section(".flashmem")));
 
-__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns")))
-void ResetHandler(void)
+
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noreturn))
+static void ResetHandlerC(void)
 {
 	unsigned int i;
 
@@ -69,14 +70,15 @@ void ResetHandler(void)
 	IOMUXC_GPR_GPR17 = (uint32_t)&_flexram_bank_config;
 	IOMUXC_GPR_GPR16 = 0x00200007;
 	IOMUXC_GPR_GPR14 = 0x00AA0000;
-	__asm__ volatile("mov sp, %0" : : "r" ((uint32_t)&_estack) : );
-	__asm__ volatile("dsb":::"memory");
-	__asm__ volatile("isb":::"memory");
+	__dsb();
+	__isb();
 #endif
+
 	startup_early_hook(); // must be in FLASHMEM, as ITCM is not yet initialized!
 	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
 	__dsb();
 	__isb();
+
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
 	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
 	//IOMUXC_SW_PAD_CTL_PAD_GPIO_B0_03 = IOMUXC_PAD_DSE(7);
@@ -200,7 +202,13 @@ void ResetHandler(void)
 	while (1) asm("WFI");
 }
 
-
+__attribute__((section(".startup"), naked, noreturn))
+void ResetHandler(void) {
+	__asm__ volatile("mov sp, %0" :: "r" ((uint32_t)&_estack) : );
+	__asm__ volatile("dsb" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
+	ResetHandlerC();
+}
 
 
 // ARM SysTick is used for most Ardiuno timing functions, delay(), millis(),
@@ -284,7 +292,7 @@ __attribute__((section(".startup"))) static void configure_cache(void)
 	SCB_MPU_RASR = SCB_MPU_RASR_TEX(0) | NOACCESS | NOEXEC | SIZE_4G;
 	
 	SCB_MPU_RBAR = 0x00000000 | REGION(i++); // ITCM
-	SCB_MPU_RASR = MEM_NOCACHE | READWRITE | SIZE_512K;
+	SCB_MPU_RASR = MEM_NOCACHE | READONLY | SIZE_512K;
 
 	// TODO: trap regions should be created last, because the hardware gives
 	//  priority to the higher number ones.
