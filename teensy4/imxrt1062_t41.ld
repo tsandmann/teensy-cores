@@ -11,25 +11,19 @@ ENTRY(ImageVectorTable)
 
 SECTIONS
 {
-	.text.headers : {
-		KEEP(*(.flashconfig))
+	.text.headers : ALIGN(4) {
 		FILL(0xFF)
-		. = ORIGIN(FLASH) + 0x1000;
+		KEEP(*(.flashconfig))
+		. = 0x1000;
 		KEEP(*(.ivt))
+		. = 0x1020;
 		KEEP(*(.bootdata))
 		. = ALIGN(1024);
 	} > FLASH
 
-	.text.itcm : {
-		. = . + 32; /* MPU to trap NULL pointer deref */
-		*(.fastrun)
-		*(.text*)
-		. = ALIGN(16);
-	} > ITCM  AT> FLASH
-
-	.text.code : {
-		KEEP(*(.startup))
+	.text.code : ALIGN(4) {
 		*(.flashmem*)
+		KEEP(*(.startup))
 		. = ALIGN(4);
 		KEEP(*(.init))
 		__preinit_array_start = .;
@@ -41,57 +35,66 @@ SECTIONS
 		. = ALIGN(4);
 	} > FLASH
 
-	.text.progmem : {
+	.text.progmem : ALIGN(4) {
 		*(.progmem*)
 		. = ALIGN(4);
 	} > FLASH
 
-	.data.func : {
-		*(.*__func__*)
-		*(.*__PRETTY_FUNCTION__*)
+	.data.func : ALIGN(4) {
+		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.*__func__*)))
+		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.*__PRETTY_FUNCTION__*)))
 		. = ALIGN(4);
 	} > FLASH
-	
-	.data : {
-		*(.endpoint_queue)   
+
+	.text.itcm : ALIGN(32) {
+		. = . + 32; /* MPU to trap NULL pointer deref */
+		*(.fastrun*)
+		*(.text*)
+		. = ALIGN(4);
+	} > ITCM  AT> FLASH
+
+	.data : ALIGN(4) {
+		*(.endpoint_queue)
 		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.rodata*)))
 		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.data*)))
 		KEEP(*(.vectorsram))
+		. = ALIGN(4);
 	} > DTCM  AT> FLASH
 
-	.bss ALIGN(4) : {
+	.bss : ALIGN(4) {
 		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.bss*)))
 		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(COMMON)))
 		. = ALIGN(32);
 		. = . + 32; /* MPU to trap stack overflow */
 	} > DTCM
-	
-	.ARM.exidx : {
+
+	.ARM.exidx : ALIGN(4) {
 		__exidx_start = .;
-		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
+		*(.gnu.linkonce.armexidx.*)
+		*(.ARM.exidx.fastrun*)
+		*(.ARM.exidx.text*)
+		*(.ARM.exidx)
+		*(.ARM.exidx.flashmem*)
+		*(.ARM.exidx.startup*)
 		. = ALIGN(4);
 		__exidx_end = .;
-	} > RAM  AT> FLASH
-	
-	.ARM.extab : {
-	*(.ARM.extab* .gnu.linkonce.armextab.*)
+		*(.ARM.extab* .gnu.linkonce.armextab.*)
 		. = ALIGN(4);
 	} > RAM  AT> FLASH
 
-	.bss.dma (NOLOAD) : {
+	.bss.dma (NOLOAD) : ALIGN(32) {
 		*(.hab_log)
-		*(.dmabuffers)
+		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.dmabuffers)))
 		. = ALIGN(32);
 	} > RAM
 
-	.bss.extram (NOLOAD) : {
+	.bss.extram (NOLOAD) : ALIGN(32) {
 		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.externalram)))
 		. = ALIGN(32);
 	} > ERAM
 
-	.text.csf : {
+	.text.csf : ALIGN(4) {
 		FILL(0xFF)
-		. = ALIGN(1024);
 		KEEP(*(.csf))
 		__text_csf_end = .;
 	} > FLASH
@@ -103,9 +106,9 @@ SECTIONS
 	_sdata = ADDR(.data);
 	_edata = ADDR(.data) + SIZEOF(.data);
 	_sdataload = LOADADDR(.data);
-	
+
 	_sexidx = ADDR(.ARM.exidx);
-	_eexidx = ADDR(.ARM.exidx) + SIZEOF(.ARM.exidx) + SIZEOF(.ARM.extab);
+	_eexidx = ADDR(.ARM.exidx) + SIZEOF(.ARM.exidx);
 	_sexidxload = LOADADDR(.ARM.exidx);
 
 	_sbss = ADDR(.bss);
