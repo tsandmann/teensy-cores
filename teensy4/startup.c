@@ -318,7 +318,7 @@ __attribute__((section(".startup"))) static void configure_cache(void)
 	SCB_MPU_RASR = MEM_CACHE_WBWA | READONLY | SIZE_16M;
 
 	SCB_MPU_RBAR = 0x70000000 | REGION(i++); // FlexSPI2
-	SCB_MPU_RASR = MEM_CACHE_WBWA | READWRITE | NOEXEC | SIZE_16M;
+	SCB_MPU_RASR = MEM_CACHE_WT | READWRITE | NOEXEC | SIZE_16M;
 
 	// TODO: protect access to power supply config
 
