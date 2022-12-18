@@ -32,6 +32,7 @@ SECTIONS
 		__init_array_start = .;
 		KEEP (*(.init_array))
 		__init_array_end = .;
+		*(.text.__libc_init_array)
 		. = ALIGN(4);
 	} > FLASH
 
@@ -68,6 +69,15 @@ SECTIONS
 		. = . + 32; /* MPU to trap stack overflow */
 	} > DTCM
 
+	.bss.dma (NOLOAD) : ALIGN(32) {
+		*(.hab_log)
+		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.dmabuffers)))
+		. = ALIGN(32);
+		_heap_start = . ;
+		. = ABSOLUTE(ORIGIN(RAM) + LENGTH(RAM) - 128 - SIZEOF(.ARM.exidx));
+		_heap_end = . ;
+	} > RAM
+
 	.ARM.exidx : ALIGN(4) {
 		__exidx_start = .;
 		*(.gnu.linkonce.armexidx.*)
@@ -81,12 +91,6 @@ SECTIONS
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
 		. = ALIGN(4);
 	} > RAM  AT> FLASH
-
-	.bss.dma (NOLOAD) : ALIGN(32) {
-		*(.hab_log)
-		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.dmabuffers)))
-		. = ALIGN(32);
-	} > RAM
 
 	.bss.extram (NOLOAD) : ALIGN(32) {
 		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.externalram)))
@@ -113,9 +117,6 @@ SECTIONS
 
 	_sbss = ADDR(.bss);
 	_ebss = ADDR(.bss) + SIZEOF(.bss);
-
-	_heap_start = ADDR(.bss.dma) + SIZEOF(.bss.dma);
-	_heap_end = ORIGIN(RAM) + LENGTH(RAM);
 
 	_extram_start = ADDR(.bss.extram);
 	_extram_end = ADDR(.bss.extram) + SIZEOF(.bss.extram);
