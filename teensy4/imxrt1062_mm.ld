@@ -31,6 +31,7 @@ SECTIONS
 		__init_array_start = .;
 		KEEP (*(.init_array))
 		__init_array_end = .;
+		*(.text.__libc_init_array)
 		. = ALIGN(4);
 	} > FLASH
 
@@ -67,6 +68,15 @@ SECTIONS
 		. = . + 32; /* MPU to trap stack overflow */
 	} > DTCM
 
+	.bss.dma (NOLOAD) : ALIGN(32) {
+		*(.hab_log)
+		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.dmabuffers)))
+		. = ALIGN(32);
+		_heap_start = . ;
+		. = ABSOLUTE(ORIGIN(RAM) + LENGTH(RAM) - 128 - SIZEOF(.ARM.exidx));
+		_heap_end = . ;
+	} > RAM
+
 	.ARM.exidx : ALIGN(4) {
 		__exidx_start = .;
 		*(.gnu.linkonce.armexidx.*)
@@ -80,12 +90,6 @@ SECTIONS
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
 		. = ALIGN(4);
 	} > RAM  AT> FLASH
-
-	.bss.dma (NOLOAD) : ALIGN(32) {
-		*(.hab_log)
-		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.dmabuffers)))
-		. = ALIGN(32);
-	} > RAM
 
 	.text.csf : ALIGN(4) {
 		FILL(0xFF)
@@ -107,9 +111,6 @@ SECTIONS
 
 	_sbss = ADDR(.bss);
 	_ebss = ADDR(.bss) + SIZEOF(.bss);
-
-	_heap_start = ADDR(.bss.dma) + SIZEOF(.bss.dma);
-	_heap_end = ORIGIN(RAM) + LENGTH(RAM);
 
 	_itcm_block_count = (SIZEOF(.text.itcm) + 0x7FFF) >> 15;
 	_flexram_bank_config = 0xAAAAAAAA | ((1 << (_itcm_block_count * 2)) - 1);

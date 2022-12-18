@@ -75,6 +75,7 @@ void rtc_compensate(int adjust)
 __attribute__((weak))
 int _gettimeofday(struct timeval *tv, void *ignore)
 {
+	(void) ignore;
 	uint32_t hi1 = SNVS_HPRTCMR;
 	uint32_t lo1 = SNVS_HPRTCLR;
 	while (1) {
