@@ -73,6 +73,9 @@ SECTIONS
 		*(.hab_log)
 		*(SORT_BY_ALIGNMENT(SORT_BY_NAME(.dmabuffers)))
 		. = ALIGN(32);
+	} > RAM
+
+	.bss.padding (NOLOAD) : ALIGN(4) {
 		_heap_start = . ;
 		. = ABSOLUTE(ORIGIN(RAM) + LENGTH(RAM) - 128 - SIZEOF(.ARM.exidx));
 		_heap_end = . ;
