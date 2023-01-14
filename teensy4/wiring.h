@@ -219,7 +219,7 @@ typedef uint8_t byte;
 uint32_t pulseIn(uint8_t pin, uint8_t state, uint32_t timeout);
 void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, byte val);
 
-void setup(void) __attribute__((section(".flashmem"), noinline));
+void setup(void);
 void loop(void);
 
 void *extmem_malloc(size_t size);
