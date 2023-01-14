@@ -2,4 +2,4 @@
 #include <Arduino.h>
 void serialEventUSB2() __attribute__((weak));
 void serialEventUSB2() {}
-extern const uint8_t _serialEventUSB2_default PROGMEM = 1;	
+const uint8_t _serialEventUSB2_default PROGMEM = 1;	

@@ -38,9 +38,6 @@
 #include "debug/printf.h"
 #include "core_pins.h"
 
-#undef printf
-#define printf(...)
-
 // defined by usb_dev.h -> usb_desc.h
 #if defined(CDC_STATUS_INTERFACE) && defined(CDC_DATA_INTERFACE)
 //#if F_CPU >= 20000000

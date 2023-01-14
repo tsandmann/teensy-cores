@@ -2529,7 +2529,7 @@ static inline void delayNanoseconds(uint32_t nsec)
 extern "C" {
 #endif
 unsigned long rtc_get(void);
-void rtc_set(unsigned long t) __attribute__((noinline));
+void rtc_set(unsigned long t);
 void rtc_compensate(int adjust);
 #ifdef __cplusplus
 }

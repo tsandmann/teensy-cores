@@ -2756,6 +2756,7 @@ void usb_init_serialnumber(void)
 	usb_string_serial_number_default.bLength = i * 2 + 2;
 }
 
+
 // **************************************************************
 //   Descriptors List
 // **************************************************************

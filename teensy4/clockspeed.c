@@ -30,9 +30,8 @@ uint32_t set_arm_clock(uint32_t frequency);
 //  CCM_CBCDR  AHB_PODF
 //  CCM_CBCDR  SEMC_PODF
 
-__attribute__((section(".startup"))) uint32_t set_arm_clock(uint32_t frequency)
+FLASHMEM uint32_t set_arm_clock(uint32_t frequency)
 {
-	printf("set_arm_clock(%u)\r\n", frequency);
 	uint32_t cbcdr = CCM_CBCDR; // pg 1021
 	uint32_t cbcmr = CCM_CBCMR; // pg 1023
 	uint32_t dcdc = DCDC_REG3;

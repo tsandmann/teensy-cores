@@ -33,18 +33,18 @@
 
 #ifdef USB_TRIPLE_SERIAL
 uint8_t yield_active_check_flags = YIELD_CHECK_USB_SERIAL | YIELD_CHECK_USB_SERIALUSB1 | YIELD_CHECK_USB_SERIALUSB2; // default to check USB.
-extern const uint8_t _serialEventUSB2_default PROGMEM;	
-extern const uint8_t _serialEventUSB1_default PROGMEM;	
+extern const uint8_t _serialEventUSB2_default;	
+extern const uint8_t _serialEventUSB1_default;	
 
 #elif defined(USB_DUAL_SERIAL)
 uint8_t yield_active_check_flags = YIELD_CHECK_USB_SERIAL | YIELD_CHECK_USB_SERIALUSB1; // default to check USB.
-extern const uint8_t _serialEventUSB1_default PROGMEM;	
+extern const uint8_t _serialEventUSB1_default;	
 
 #else
 uint8_t yield_active_check_flags = YIELD_CHECK_USB_SERIAL; // default to check USB.
 #endif
 
-extern const uint8_t _serialEvent_default PROGMEM;	
+extern const uint8_t _serialEvent_default;	
 
 void yield(void) __attribute__ ((weak));
 void yield(void)
