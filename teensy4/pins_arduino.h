@@ -156,7 +156,6 @@ static inline uint8_t digitalPinToTimer(uint8_t) __attribute__((always_inline, u
 static inline uint8_t digitalPinToTimer(uint8_t pin)
 {
 	// TODO: does anything meaningful use this?
-  (void) pin;
 	return NOT_ON_TIMER;
 }
 

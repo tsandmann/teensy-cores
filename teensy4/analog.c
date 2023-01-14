@@ -97,7 +97,6 @@ int analogRead(uint8_t pin)
 
 void analogReference(uint8_t type)
 {
-	(void) type;
 }
 
 void analogReadRes(unsigned int bits)

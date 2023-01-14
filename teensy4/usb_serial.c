@@ -38,9 +38,6 @@
 #include "debug/printf.h"
 #include "core_pins.h"
 
-#undef printf
-#define printf(...)
-
 // defined by usb_dev.h -> usb_desc.h
 #if defined(CDC_STATUS_INTERFACE) && defined(CDC_DATA_INTERFACE)
 //#if F_CPU >= 20000000
@@ -155,7 +152,7 @@ static void rx_event(transfer_t *t)
 			// a previous packet is still buffered
 			uint32_t ii = rx_list[head];
 			uint32_t count = rx_count[ii];
-			if (len <= CDC_RX_SIZE_480 - (int32_t) count) {
+			if (len <= CDC_RX_SIZE_480 - count) {
 				// previous buffer has enough free space for this packet's data
 				memcpy(rx_buffer + ii * CDC_RX_SIZE_480 + count,
 					rx_buffer + i * CDC_RX_SIZE_480, len);

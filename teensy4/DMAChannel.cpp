@@ -28,8 +28,6 @@
  * SOFTWARE.
  */
 
-#pragma GCC diagnostic ignored "-Wvolatile"
-
 #include "DMAChannel.h"
 
 // only 16 channels supported, because we don't handle sharing interrupts

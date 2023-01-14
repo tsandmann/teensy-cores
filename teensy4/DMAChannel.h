@@ -33,9 +33,6 @@
 
 #include "imxrt.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvolatile"
-
 // Discussion about DMAChannel is here:
 // http://forum.pjrc.com/threads/25778-Could-there-be-something-like-an-ISR-template-function/page3
 
@@ -591,7 +588,5 @@ void DMAPriorityOrder(DMAChannel &ch1, DMAChannel &ch2, DMAChannel &ch3, DMAChan
 
 
 #endif // __cplusplus
-
-#pragma GCC diagnostic pop
 
 #endif // DMAChannel_h_

@@ -30,7 +30,7 @@
 
 #include <Arduino.h>
 
-extern "C" int main(void) __attribute__((section(".flashmem"), noinline));
+extern "C" int main(void) __attribute__((noinline));
 extern "C" int main(void)
 {
 #ifdef USING_MAKEFILE

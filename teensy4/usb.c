@@ -17,9 +17,6 @@
 #include <string.h>
 #include "debug/printf.h"
 
-#undef printf
-#define printf(...)
-
 //#define LOG_SIZE  20
 //uint32_t transfer_log_head=0;
 //uint32_t transfer_log_count=0;
@@ -417,7 +414,7 @@ transfer_t endpoint0_transfer_ack  __attribute__ ((aligned(32)));;
 
 static uint8_t reply_buffer[8];
 
-static FLASHMEM void endpoint0_setup(uint64_t setupdata)
+FLASHMEM static void endpoint0_setup(uint64_t setupdata)
 {
 	setup_t setup;
 	uint32_t endpoint, dir, ctrl;
@@ -592,7 +589,6 @@ static FLASHMEM void endpoint0_setup(uint64_t setupdata)
 			usb_cdc3_line_rtsdtr = setup.wValue;
 		}
 		#endif
-		__attribute__ ((fallthrough));
 		// fall through to next case, to always send ZLP ACK
 	  case 0x2321: // CDC_SEND_BREAK
 		endpoint0_receive(NULL, 0, 0);

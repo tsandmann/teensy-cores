@@ -111,7 +111,6 @@ int touchRead(uint8_t pin)
 
 int touchRead(uint8_t pin)
 {
-		(void) pin;
         return 0; // no Touch sensing :(
 }
 

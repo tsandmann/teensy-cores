@@ -65,10 +65,10 @@ extern unsigned long _estack;
 
 
 
-extern int main (void) __attribute__((noinline));
+extern int main (void);
 void ResetHandler(void);
 void _init_Teensyduino_internal_(void) __attribute__((noinline));
-void __libc_init_array(void) __attribute__((noinline));
+void __libc_init_array(void);
 
 
 void fault_isr(void)
@@ -667,7 +667,7 @@ const uint8_t flashconfigbytes[16] = {
 #define TIME_T 1349049600 // default 1 Oct 2012 (never used, Arduino sets this)
 #endif
 extern void *__rtc_localtime; // Arduino build process sets this
-extern void rtc_set(unsigned long t) __attribute__((noinline));
+extern void rtc_set(unsigned long t);
 
 
 static void startup_default_early_hook(void) {
