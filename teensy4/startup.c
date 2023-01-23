@@ -66,14 +66,6 @@ static void ResetHandlerC(void)
 {
 	unsigned int i;
 
-#if defined(__IMXRT1062__)
-	IOMUXC_GPR_GPR17 = (uint32_t)&_flexram_bank_config;
-	IOMUXC_GPR_GPR16 = 0x00200007;
-	IOMUXC_GPR_GPR14 = 0x00AA0000;
-	__asm__ volatile("dsb":::"memory");
-	__asm__ volatile("isb":::"memory");
-#endif
-
 	startup_early_hook(); // must be in FLASHMEM, as ITCM is not yet initialized!
 	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
 
@@ -189,9 +181,17 @@ static void ResetHandlerC(void)
 
 __attribute__((section(".startup"), naked, noreturn))
 void ResetHandler(void) {
-	__asm__ volatile("mov sp, %0" :: "r" ((uint32_t)&_estack) : );
+#if defined(__IMXRT1062__)
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR17), "r" (&_flexram_bank_config) : "memory");
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR16), "r" (0x00200007) : "memory");
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR14), "r" (0x00AA0000) : "memory");
 	__asm__ volatile("dsb" ::: "memory");
 	__asm__ volatile("isb" ::: "memory");
+	__asm__ volatile("msr msp, %0" :: "r" (&_estack) : "memory");
+	__asm__ volatile("dsb" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
+#endif // __IMXRT1062__
+
 	ResetHandlerC();
 }
 
