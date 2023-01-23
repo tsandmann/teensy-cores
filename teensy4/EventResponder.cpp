@@ -77,8 +77,7 @@ void EventResponder::triggerEventNotImmediate()
 				_prev->_next = this;
 				lastInterrupt = this;
 			}
-			// SCB_ICSR = SCB_ICSR_PENDSVSET; // set PendSV interrupt
-			event_responder_set_pend_sv();
+			event_responder_set_pend_sv(); // set PendSV interrupt
 		} else {
 			// detached, easy :-)
 		}
@@ -365,16 +364,15 @@ extern "C" void systick_isr_with_timer_events(void)
 	MillisTimer::runFromTimer();
 }
 
-extern "C" __attribute__((weak)) void setup_systick_with_timer_events(void)
+extern "C" __attribute__((weak)) void setup_systick_with_timer_events()
 {
 	SCB_SHPR3 = SCB_SHPR3 | 0x00FF0000; // configure PendSV, lowest priority
 	// Make sure we are using the systic ISR that process this
 	_VectorsRam[15] = systick_isr_with_timer_events;
-	__asm volatile ("dsb" ::: "memory");
-	__asm volatile ("isb" ::: "memory");
+	__asm volatile ("dsb st" ::: "memory");
 }
 
-extern "C" __attribute__((weak)) void event_responder_set_pend_sv(void)
+extern "C" __attribute__((weak)) void event_responder_set_pend_sv()
 {
 	SCB_ICSR = SCB_ICSR_PENDSVSET; // set PendSV interrupt
 }

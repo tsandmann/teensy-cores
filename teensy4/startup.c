@@ -66,18 +66,8 @@ static void ResetHandlerC(void)
 {
 	unsigned int i;
 
-#if defined(__IMXRT1062__)
-	IOMUXC_GPR_GPR17 = (uint32_t)&_flexram_bank_config;
-	IOMUXC_GPR_GPR16 = 0x00200007;
-	IOMUXC_GPR_GPR14 = 0x00AA0000;
-	__dsb();
-	__isb();
-#endif
-
 	startup_early_hook(); // must be in FLASHMEM, as ITCM is not yet initialized!
 	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
-	__dsb();
-	__isb();
 
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
 	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
@@ -91,9 +81,7 @@ static void ResetHandlerC(void)
 	memory_copy(&_sdata, &_sdataload, &_edata);
 	memory_copy(&_sexidx, &_sexidxload, &_eexidx);
 	memory_clear(&_sbss, &_ebss);
-	
-	__dsb();
-	__isb();
+	__asm volatile ("dsb st" ::: "memory");
 
 	// enable FPU
 	SCB_CPACR = 0x00F00000;
@@ -102,11 +90,9 @@ static void ResetHandlerC(void)
 	_VectorsRam[0] = (void*)&_estack;
 	for (i=1; i < NVIC_NUM_INTERRUPTS + 16; i++) _VectorsRam[i] = &unused_interrupt_vector;
 	for (i=0; i < NVIC_NUM_INTERRUPTS; i++) NVIC_SET_PRIORITY(i, 128);
-	__dsb();
-	__isb();
+	__asm volatile ("dsb st" ::: "memory");
 	SCB_VTOR = (uint32_t)_VectorsRam;
-	__dsb();
-	__isb();
+	__asm volatile ("dsb st" ::: "memory");
 
 	reset_PFD();
 
@@ -135,18 +121,14 @@ static void ResetHandlerC(void)
 
 	configure_cache();
 	configure_systick();
-	usb_pll_start();
+	usb_pll_start();	
 	printf("before reset_PFD()\r\n");
 	reset_PFD(); //TODO: is this really needed?
 	printf("reset_PFD() done.\r\n");
-	__dsb();
-	__isb();
+
 #ifdef F_CPU
 	set_arm_clock(F_CPU);
 #endif
-
-	__dsb();
-	__isb();
 
 	// Undo PIT timer usage by ROM startup
 	CCM_CCGR1 |= CCM_CCGR1_PIT(CCM_CCGR_ON);
@@ -186,15 +168,10 @@ static void ResetHandlerC(void)
 
 	while (millis() < TEENSY_INIT_USB_DELAY_BEFORE) ; // wait
 	usb_init();
-
-	__dsb();
-	__isb();
 	while (millis() < TEENSY_INIT_USB_DELAY_AFTER + TEENSY_INIT_USB_DELAY_BEFORE) ; // wait
 	//printf("before C++ constructors\n");
 	startup_late_hook();
 	__libc_init_array();
-	__dsb();
-	__isb();
 	//printf("after C++ constructors\n");
 	//printf("before main\n");
 	main();
@@ -204,9 +181,17 @@ static void ResetHandlerC(void)
 
 __attribute__((section(".startup"), naked, noreturn))
 void ResetHandler(void) {
-	__asm__ volatile("mov sp, %0" :: "r" ((uint32_t)&_estack) : );
+#if defined(__IMXRT1062__)
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR17), "r" (&_flexram_bank_config) : "memory");
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR16), "r" (0x00200007) : "memory");
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR14), "r" (0x00AA0000) : "memory");
 	__asm__ volatile("dsb" ::: "memory");
 	__asm__ volatile("isb" ::: "memory");
+	__asm__ volatile("msr msp, %0" :: "r" (&_estack) : "memory");
+	__asm__ volatile("dsb" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
+#endif // __IMXRT1062__
+
 	ResetHandlerC();
 }
 
@@ -226,8 +211,8 @@ FLASHMEM static void configure_systick(void)
 {
 	_VectorsRam[14] = pendablesrvreq_isr;
 	_VectorsRam[15] = systick_isr;
-	__dsb();
-	__isb();
+	__asm volatile ("dsb st" ::: "memory");
+
 	SYST_RVR = (SYSTICK_EXT_FREQ / 1000) - 1;
 	SYST_CVR = 0;
 	SYST_CSR = SYST_CSR_TICKINT | SYST_CSR_ENABLE;
@@ -325,16 +310,13 @@ FLASHMEM static void configure_cache(void)
 	SCB_MPU_CTRL = SCB_MPU_CTRL_ENABLE;
 
 	// cache enable, ARM DDI0403E, pg 628
-	__dsb();
-	__isb();
+	__asm__ volatile("dsb" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
 	SCB_CACHE_ICIALLU = 0;
 
-	__dsb();
-	__isb();
+	__asm__ volatile("dsb" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
 	SCB_CCR |= (SCB_CCR_IC | SCB_CCR_DC);
-	
-	__dsb();
-	__isb();
 }
 
 #if defined ARDUINO_TEENSY41 && !defined TEENSY_NO_EXTRAM
@@ -493,8 +475,8 @@ FLASHMEM static void configure_external_ram()
 			// One PSRAM chip is present, 8 MByte
 			external_psram_size = 8;
 		}
-		__dsb();
-		__isb();
+		__asm__ volatile("dsb" ::: "memory");
+		__asm__ volatile("isb" ::: "memory");
 		// TODO: zero uninitialized EXTMEM variables
 		// TODO: copy from flash to initialize EXTMEM variables
 		sm_set_pool(&extmem_smalloc_pool, &_extram_end,
@@ -514,8 +496,6 @@ FLASHMEM static void usb_pll_start()
 {
 	while (1) {
 		uint32_t n = CCM_ANALOG_PLL_USB1; // pg 759
-		__dsb();
-		__isb();
 		printf("CCM_ANALOG_PLL_USB1=%08lX\n", n);
 		if (n & CCM_ANALOG_PLL_USB1_DIV_SELECT) {
 			printf("  ERROR, 528 MHz mode!\n"); // never supposed to use this mode!
@@ -561,16 +541,10 @@ FLASHMEM static void reset_PFD()
 {	
 	//Reset PLL2 PFDs, set default frequencies:
 	CCM_ANALOG_PFD_528_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);
-	__isb();
-	CCM_ANALOG_PFD_528 = 0x2018101B; // PFD0:352, PFD1:594, PFD2:396, PFD3:297 MHz
-	__isb();
+	CCM_ANALOG_PFD_528 = 0x2018101B; // PFD0:352, PFD1:594, PFD2:396, PFD3:297 MHz 	
 	//PLL3:
-	CCM_ANALOG_PFD_480_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);
-	__isb();
+	CCM_ANALOG_PFD_480_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);	
 	CCM_ANALOG_PFD_480 = 0x13110D0C; // PFD0:720, PFD1:664, PFD2:508, PFD3:454 MHz
-
-	__dsb();
-	__isb();
 }
 
 extern void usb_isr(void);
@@ -587,7 +561,7 @@ extern void usb_isr(void);
 // Code from :: https://community.nxp.com/thread/389002
 
 
-__attribute__((naked, weak))
+__attribute__((section(".startup"), naked, weak))
 void unused_interrupt_vector(void)
 {
 	uint32_t i, ipsr, crc, count;
