@@ -68,6 +68,7 @@ static void ResetHandlerC(void)
 
 	startup_early_hook(); // must be in FLASHMEM, as ITCM is not yet initialized!
 	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
+	__asm volatile ("dsb" ::: "memory");
 
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
 	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
