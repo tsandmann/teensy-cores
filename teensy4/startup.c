@@ -62,20 +62,23 @@ void startup_late_hook(void)	__attribute__ ((weak, alias("startup_default_late_h
 
 static void ResetHandler2(void);
 
-__attribute__((section(".startup"), naked))
+__attribute__((section(".startup"), naked, noreturn))
 void ResetHandler(void)
 {
-	IOMUXC_GPR_GPR17 = (uint32_t)&_flexram_bank_config;
-	IOMUXC_GPR_GPR16 = 0x00200007;
-	IOMUXC_GPR_GPR14 = 0x00AA0000;
-	__asm__ volatile("mov sp, %0" : : "r" ((uint32_t)&_estack) : );
-	__asm__ volatile("dsb":::"memory");
-	__asm__ volatile("isb":::"memory");
-	ResetHandler2();
-	__builtin_unreachable();
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR17), "r" (&_flexram_bank_config) : "memory");
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR16), "r" (0x00200007) : "memory");
+	__asm__ volatile("str %1, [%0] \n\t" :: "r" (&IOMUXC_GPR_GPR14), "r" (0x00AA0000) : "memory");
+	__asm__ volatile("dsb" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
+	__asm__ volatile("msr msp, %0" :: "r" (&_estack) : "memory");
+	__asm__ volatile("dsb" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
+
+    ResetHandler2();
+    __builtin_unreachable();
 }
 
-__attribute__((section(".startup"), noreturn))
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noreturn))
 static void ResetHandler2(void)
 {
 	unsigned int i;
