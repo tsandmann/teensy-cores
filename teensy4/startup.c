@@ -81,10 +81,10 @@ void ResetHandler(void)
 __attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noreturn))
 static void ResetHandler2(void)
 {
-	unsigned int i;
-	startup_early_hook(); // must be in FLASHMEM, as ITCM is not yet initialized!
 	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
-	__asm volatile ("dsb" ::: "memory");
+	__asm volatile ("dsb st" ::: "memory");
+	__asm volatile ("isb" ::: "memory");
+	startup_early_hook(); // must be in FLASHMEM, as ITCM is not yet initialized!
 
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
 	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
@@ -105,6 +105,7 @@ static void ResetHandler2(void)
 
 	// set up blank interrupt & exception vector table
 	_VectorsRam[0] = (void*)&_estack;
+	unsigned int i;
 	for (i=1; i < NVIC_NUM_INTERRUPTS + 16; i++) _VectorsRam[i] = &unused_interrupt_vector;
 	for (i=0; i < NVIC_NUM_INTERRUPTS; i++) NVIC_SET_PRIORITY(i, 128);
 	__asm volatile ("dsb st" ::: "memory");
@@ -649,8 +650,8 @@ void unused_interrupt_vector(void)
 	while (1) ;
 }
 
-__attribute__((section(".startup"), optimize("O1")))
-static void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), always_inline))
+static inline void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
 {
 	if (dest == src) return;
 	while (dest < dest_end) {
@@ -658,8 +659,8 @@ static void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
 	}
 }
 
-__attribute__((section(".startup"), optimize("O1")))
-static void memory_clear(uint32_t *dest, uint32_t *dest_end)
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), always_inline))
+static inline void memory_clear(uint32_t *dest, uint32_t *dest_end)
 {
 	while (dest < dest_end) {
 		*dest++ = 0;
