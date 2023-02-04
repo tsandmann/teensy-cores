@@ -78,6 +78,7 @@ SECTIONS
 	.bss.padding (NOLOAD) : ALIGN(4) {
 		_heap_start = . ;
 		. = ABSOLUTE(ORIGIN(RAM) + LENGTH(RAM) - 128 - SIZEOF(.ARM.exidx));
+		. = ALIGN(4);
 		_heap_end = . ;
 	} > RAM
 
