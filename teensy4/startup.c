@@ -78,7 +78,7 @@ void ResetHandler(void)
     __builtin_unreachable();
 }
 
-__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noreturn))
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline, noreturn))
 static void ResetHandler2(void)
 {
 	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
@@ -543,9 +543,13 @@ FLASHMEM static void reset_PFD()
 	//Reset PLL2 PFDs, set default frequencies:
 	CCM_ANALOG_PFD_528_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);
 	CCM_ANALOG_PFD_528 = 0x2018101B; // PFD0:352, PFD1:594, PFD2:396, PFD3:297 MHz 	
+	__asm__ volatile("dsb st" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
 	//PLL3:
 	CCM_ANALOG_PFD_480_SET = (1 << 31) | (1 << 23) | (1 << 15) | (1 << 7);	
 	CCM_ANALOG_PFD_480 = 0x13110D0C; // PFD0:720, PFD1:664, PFD2:508, PFD3:454 MHz
+	__asm__ volatile("dsb st" ::: "memory");
+	__asm__ volatile("isb" ::: "memory");
 }
 
 extern void usb_isr(void);
@@ -650,7 +654,7 @@ void unused_interrupt_vector(void)
 	while (1) ;
 }
 
-__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), always_inline))
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline))
 static inline void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
 {
 	if (dest == src) return;
@@ -659,7 +663,7 @@ static inline void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *de
 	}
 }
 
-__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), always_inline))
+__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline))
 static inline void memory_clear(uint32_t *dest, uint32_t *dest_end)
 {
 	while (dest < dest_end) {
