@@ -655,7 +655,7 @@ void unused_interrupt_vector(void)
 }
 
 __attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline))
-static inline void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
+static void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
 {
 	if (dest == src) return;
 	while (dest < dest_end) {
@@ -664,7 +664,7 @@ static inline void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *de
 }
 
 __attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline))
-static inline void memory_clear(uint32_t *dest, uint32_t *dest_end)
+static void memory_clear(uint32_t *dest, uint32_t *dest_end)
 {
 	while (dest < dest_end) {
 		*dest++ = 0;
