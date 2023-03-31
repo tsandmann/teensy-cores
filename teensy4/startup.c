@@ -59,7 +59,7 @@ FLASHMEM void startup_default_middle_hook(void) {}
 void startup_middle_hook(void)	__attribute__ ((weak, alias("startup_default_middle_hook")));
 FLASHMEM void startup_default_late_hook(void) {}
 void startup_late_hook(void)	__attribute__ ((weak, alias("startup_default_late_hook"), section(".flashmem")));
-extern void startup_debug_reset(void) __attribute__((noinline));
+extern void startup_debug_reset(void) __attribute__((weak, noinline, section(".flashmem")));
 FLASHMEM void startup_debug_reset(void) { __asm__ volatile("nop"); }
 
 static void ResetHandler2(void);
