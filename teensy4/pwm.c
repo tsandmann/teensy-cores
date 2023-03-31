@@ -165,9 +165,8 @@ void flexpwmWrite(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channel, u
 	p->MCTRL |= FLEXPWM_MCTRL_LDOK(mask);
 }
 
-void flexpwmFrequency(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channel, float frequency)
+void flexpwmFrequency(IMXRT_FLEXPWM_t *p, unsigned int submodule, uint8_t channel __attribute__((unused)), float frequency)
 {
-	(void) channel;
 	uint16_t mask = 1 << submodule;
 	uint32_t olddiv = p->SM[submodule].VAL1;
 	uint32_t newdiv = (uint32_t)((float)F_BUS_ACTUAL / frequency + 0.5f);

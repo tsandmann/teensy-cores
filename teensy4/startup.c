@@ -59,6 +59,8 @@ FLASHMEM void startup_default_middle_hook(void) {}
 void startup_middle_hook(void)	__attribute__ ((weak, alias("startup_default_middle_hook")));
 FLASHMEM void startup_default_late_hook(void) {}
 void startup_late_hook(void)	__attribute__ ((weak, alias("startup_default_late_hook"), section(".flashmem")));
+extern void startup_debug_reset(void) __attribute__((weak, noinline, section(".flashmem")));
+FLASHMEM void startup_debug_reset(void) { __asm__ volatile("nop"); }
 
 static void ResetHandler2(void);
 
@@ -74,8 +76,8 @@ void ResetHandler(void)
 	__asm__ volatile("dsb" ::: "memory");
 	__asm__ volatile("isb" ::: "memory");
 
-    ResetHandler2();
-    __builtin_unreachable();
+	ResetHandler2();
+	__builtin_unreachable();
 }
 
 __attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline, noreturn))
@@ -188,6 +190,7 @@ static void ResetHandler2(void)
 	usb_init();
 	while (millis() < TEENSY_INIT_USB_DELAY_AFTER + TEENSY_INIT_USB_DELAY_BEFORE) ; // wait
 	//printf("before C++ constructors\n");
+	startup_debug_reset();
 	startup_late_hook();
 	__libc_init_array();
 	//printf("after C++ constructors\n");
@@ -699,51 +702,41 @@ void * _sbrk(int incr)
 }
 
 __attribute__((section(".flashmem"), weak))
-int _read(int file, char *ptr, int len)
+int _read(int file __attribute__((unused)), char *ptr __attribute__((unused)), int len __attribute__((unused)))
 {
-	(void) file; 
-	(void) ptr;
-	(void) len;
 	return 0;
 }
 
 __attribute__((section(".flashmem"), weak))
-int _close(int fd)
+int _close(int fd __attribute__((unused)))
 {
-	(void) fd;
 	return -1;
 }
 
 #include <sys/stat.h>
 
 __attribute__((section(".flashmem"), weak))
-int _fstat(int fd, struct stat *st)
+int _fstat(int fd __attribute__((unused)), struct stat *st)
 {
-	(void) fd;
 	st->st_mode = S_IFCHR;
 	return 0;
 }
 
 __attribute__((section(".flashmem"), weak))
-int _isatty(int fd)
+int _isatty(int fd __attribute__((unused)))
 {
-	(void) fd;
 	return 1;
 }
 
 __attribute__((section(".flashmem"), weak))
-int _lseek(int fd, long long offset, int whence)
+int _lseek(int fd __attribute__((unused)), long long offset __attribute__((unused)), int whence __attribute__((unused)))
 {
-	(void) fd;
-	(void) offset;
-	(void) whence;
 	return -1;
 }
 
 __attribute__((section(".flashmem"), weak))
-void _exit(int status)
+void _exit(int status __attribute__((unused)))
 {
-	(void) status;
 	while (1) asm ("WFI");
 }
 

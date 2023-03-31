@@ -78,7 +78,7 @@ class SPDRemulation;
 class SPCRemulation
 {
 public:
-	inline SPCRemulation & operator = (int val) __attribute__((always_inline)) {
+	inline SPCRemulation & operator = (int val __attribute__((unused))) __attribute__((always_inline)) {
 /*
 		uint32_t ctar, mcr, sim6;
 		//serial_print("SPCR=");
@@ -137,10 +137,9 @@ public:
 		//serial_phex32(SPI0_CTAR0);
 		//serial_print("\n");
 */
-		(void) val;
 		return *this;
 	}
-	inline SPCRemulation & operator |= (int val) __attribute__((always_inline)) {
+	inline SPCRemulation & operator |= (int val __attribute__((unused))) __attribute__((always_inline)) {
 /*
 		uint32_t sim6;
 		//serial_print("SPCR |= ");
@@ -195,10 +194,9 @@ public:
 		//serial_phex32(SPI0_CTAR0);
 		//serial_print("\n");
 */
-		(void) val;
 		return *this;
 	}
-	inline SPCRemulation & operator &= (int val) __attribute__((always_inline)) {
+	inline SPCRemulation & operator &= (int val __attribute__((unused))) __attribute__((always_inline)) {
 /*
 		//serial_print("SPCR &= ");
 		//serial_phex(val);
@@ -242,10 +240,9 @@ public:
 		}
 		if (!(val & (1<<MSTR))) SPI0_MCR &= ~SPI_MCR_MSTR;
 */
-		(void) val;
 		return *this;
 	}
-	inline int operator & (int val) const __attribute__((always_inline)) {
+	inline int operator & (int val __attribute__((unused))) const __attribute__((always_inline)) {
 		int ret = 0;
 /*		
 		//serial_print("SPCR & ");
@@ -275,7 +272,6 @@ public:
 		//serial_phex(ret);
 		//serial_print("\n");
 */
-		(void) val;
 		return ret;
 	}
 	operator int () const __attribute__((always_inline)) {
@@ -302,13 +298,13 @@ public:
 */
 		return ret;
 	}
-	inline void setMOSI(uint8_t) __attribute__((always_inline)) {
+	inline void setMOSI(uint8_t pin __attribute__((unused))) __attribute__((always_inline)) {
 	}
-	inline void setMOSI_soft(uint8_t) __attribute__((always_inline)) {
+	inline void setMOSI_soft(uint8_t pin __attribute__((unused))) __attribute__((always_inline)) {
 	}
-	inline void setMISO(uint8_t) __attribute__((always_inline)) {
+	inline void setMISO(uint8_t pin __attribute__((unused))) __attribute__((always_inline)) {
 	}
-	inline void setSCK(uint8_t) __attribute__((always_inline)) {
+	inline void setSCK(uint8_t pin __attribute__((unused))) __attribute__((always_inline)) {
 	}
 	friend class SPSRemulation;
 	friend class SPIFIFOclass;
@@ -327,7 +323,7 @@ extern SPCRemulation SPCR;
 class SPSRemulation
 {
 public:
-	inline SPSRemulation & operator = (int val) __attribute__((always_inline)) {
+	inline SPSRemulation & operator = (int val __attribute__((unused))) __attribute__((always_inline)) {
 		//serial_print("SPSR=");
 		//serial_phex(val);
 		//serial_print("\n");
@@ -345,27 +341,24 @@ public:
 		//serial_phex32(SPI0_CTAR0);
 		//serial_print("\n");
 */		
-		(void) val;
 		return *this;
 	}
-	inline SPSRemulation & operator |= (int val) __attribute__((always_inline)) {
+	inline SPSRemulation & operator |= (int val __attribute__((unused))) __attribute__((always_inline)) {
 /*
 		//serial_print("SPSR |= ");
 		//serial_phex(val);
 		//serial_print("\n");
 		if (val & (1<<SPI2X)) SPCRemulation::update_ctar(SPI0_CTAR0 |= SPI_CTAR_DBR);
 */
-		(void) val;
 		return *this;
 	}
-	inline SPSRemulation & operator &= (int val) __attribute__((always_inline)) {
+	inline SPSRemulation & operator &= (int val __attribute__((unused))) __attribute__((always_inline)) {
 /*
 		//serial_print("SPSR &= ");
 		//serial_phex(val);
 		//serial_print("\n");
 		if (!(val & (1<<SPI2X))) SPCRemulation::update_ctar(SPI0_CTAR0 &= ~SPI_CTAR_DBR);
 */
-		(void) val;
 		return *this;
 	}
 	inline int operator & (int val) const __attribute__((always_inline)) {
