@@ -28,33 +28,51 @@
  * SOFTWARE.
  */
 
+#ifdef __cplusplus
 #ifndef __INTERVALTIMER_H__
 #define __INTERVALTIMER_H__
 
 #include <stddef.h>
 #include "imxrt.h"
-
-#ifdef __cplusplus
-extern "C" {
+#if TEENSYDUINO >= 159
+#include "inplace_function.h"
 #endif
 
 // IntervalTimer provides access to hardware timers which can run an
-// interrupt function a precise timing intervals.  Up to 4 IntervalTimers
-// may be in use simultaneously.  Many libraries use IntervalTimer, so
-// some of these 4 possible instances may be in use by libraries.
+// interrupt function a precise timing intervals.
+// https://www.pjrc.com/teensy/td_timing_IntervalTimer.html
+// Up to 4 IntervalTimers may be in use simultaneously.  Many
+// libraries use IntervalTimer, so some of these 4 possible
+// instances may be in use by libraries.
 class IntervalTimer {
 private:
-	static const uint32_t MAX_PERIOD = UINT32_MAX / (24000000 / 1000000);
+	static const int32_t MAX_PERIOD = UINT32_MAX / (24000000 / 1000000); // need to change to int32_t to avoid warnings
 public:
 	constexpr IntervalTimer() {
 	}
 	~IntervalTimer() {
 		end();
 	}
+#if TEENSYDUINO >= 159
+	using callback_t = stdext::inplace_function<void(void), 16>;
+#else
+	using callback_t = void (*)(void);
+#endif
+#if TEENSYDUINO >= 159
+	// Start the hardware timer and begin calling the function.  The
+	// interval is specified in microseconds, using integer or float
+	// for precise timing.  Returns true is sucessful, or false if
+	// all hardware timers are already in use.
+	template <typename period_t>
+	bool begin(callback_t funct, period_t period) {
+		uint32_t cycles = cyclesFromPeriod(period);
+		return cycles >= 17 ? beginCycles(funct, cycles) : false;
+	}
+#else
 	// Start the hardware timer and begin calling the function.  The
 	// interval is specified in microseconds.  Returns true is sucessful,
 	// or false if all hardware timers are already in use.
-	bool begin(void (*funct)(), unsigned int microseconds) {
+	bool begin(callback_t funct, unsigned int microseconds) {
 		if (microseconds == 0 || microseconds > MAX_PERIOD) return false;
 		uint32_t cycles = (24000000 / 1000000) * microseconds - 1;
 		if (cycles < 17) return false;
@@ -63,26 +81,26 @@ public:
 	// Start the hardware timer and begin calling the function.  The
 	// interval is specified in microseconds.  Returns true is sucessful,
 	// or false if all hardware timers are already in use.
-	bool begin(void (*funct)(), int microseconds) {
+	bool begin(callback_t funct, int microseconds) {
 		if (microseconds < 0) return false;
 		return begin(funct, (unsigned int)microseconds);
 	}
 	// Start the hardware timer and begin calling the function.  The
 	// interval is specified in microseconds.  Returns true is sucessful,
 	// or false if all hardware timers are already in use.
-	bool begin(void (*funct)(), unsigned long microseconds) {
+	bool begin(callback_t funct, unsigned long microseconds) {
 		return begin(funct, (unsigned int)microseconds);
 	}
 	// Start the hardware timer and begin calling the function.  The
 	// interval is specified in microseconds.  Returns true is sucessful,
 	// or false if all hardware timers are already in use.
-	bool begin(void (*funct)(), long microseconds) {
+	bool begin(callback_t funct, long microseconds) {
 		return begin(funct, (int)microseconds);
 	}
 	// Start the hardware timer and begin calling the function.  The
 	// interval is specified in microseconds.  Returns true is sucessful,
 	// or false if all hardware timers are already in use.
-	bool begin(void (*funct)(), float microseconds) {
+	bool begin(callback_t funct, float microseconds) {
 		if (microseconds <= 0 || microseconds > MAX_PERIOD) return false;
 		uint32_t cycles = (float)(24000000 / 1000000) * microseconds - 0.5f;
 		if (cycles < 17) return false;
@@ -91,9 +109,10 @@ public:
 	// Start the hardware timer and begin calling the function.  The
 	// interval is specified in microseconds.  Returns true is sucessful,
 	// or false if all hardware timers are already in use.
-	bool begin(void (*funct)(), double microseconds) {
+	bool begin(callback_t funct, double microseconds) {
 		return begin(funct, (float)microseconds);
 	}
+#endif // TEENSYDUINO
 	// Change the timer's interval.  The current interval is completed
 	// as previously configured, and then the next interval begins with
 	// with this new setting.
@@ -103,6 +122,18 @@ public:
 		if (cycles < 17) return;
 		if (channel) channel->LDVAL = cycles;
 	}
+	
+#if TEENSYDUINO >= 159
+	// Change the timer's interval.  The current interval is completed
+	// as previously configured, and then the next interval begins with
+	// with this new setting.
+	template <typename period_t>
+	void update(period_t period){
+		uint32_t cycles = cyclesFromPeriod(period);
+		if (cycles < 17) return;
+		if (channel) channel->LDVAL = cycles;
+	}
+#else
 	// Change the timer's interval.  The current interval is completed
 	// as previously configured, and then the next interval begins with
 	// with this new setting.
@@ -131,12 +162,7 @@ public:
 		if (cycles < 17) return;
 		if (channel) channel->LDVAL = cycles;
 	}
-	// Change the timer's interval.  The current interval is completed
-	// as previously configured, and then the next interval begins with
-	// with this new setting.
-	void update(double microseconds) {
-		return update((float)microseconds);
-	}
+#endif // TEENSYDUINO
 	// Stop calling the function. The hardware timer resource becomes available
 	// for use by other IntervalTimer instances.
 	void end();
@@ -168,13 +194,24 @@ private:
 	IMXRT_PIT_CHANNEL_t *channel = nullptr;
 	uint8_t nvic_priority = 128;
 	static uint8_t nvic_priorites[4];
-	bool beginCycles(void (*funct)(), uint32_t cycles);
+	bool beginCycles(callback_t funct, uint32_t cycles);
 
+#if TEENSYDUINO >= 159
+	template <typename period_t>
+	uint32_t cyclesFromPeriod(period_t period) {
+		static_assert(std::is_arithmetic_v<period_t>, "Period must be arithmetic");
+		
+		if (period < 0 || period > MAX_PERIOD)
+			return 0;
+		if constexpr (std::is_integral_v<period_t>)       // handles all integral types
+			return (24000000 / 1000000) * period - 1;
+		if constexpr (std::is_floating_point_v<period_t>) // handles all float types
+			return (float)(24000000 / 1000000) * period - 0.5f;
+
+		//Can't fall through, arithmetic is either integral or floting_point
+	}
+#endif // TEENSYDUINO
 };
 
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
+#endif //__INTERVALTIMER_H__
+#endif //__cplusplus
