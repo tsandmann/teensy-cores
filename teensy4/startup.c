@@ -83,11 +83,35 @@ void ResetHandler(void)
 __attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline, noreturn))
 static void ResetHandler2(void)
 {
-	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
-	__asm volatile ("dsb st" ::: "memory");
-	__asm volatile ("isb" ::: "memory");
+	__asm__ volatile("dsb":::"memory");
+#if 1
+	// Some optimization with LTO won't start without this delay, but why?
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+#endif
 	startup_early_hook(); // must be in FLASHMEM, as ITCM is not yet initialized!
-
+	PMU_MISC0_SET = 1<<3; //Use bandgap-based bias currents for best performance (Page 1175)
+#if 1
+	// Some optimization with LTO won't start without this delay, but why?
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+#endif
 	// pin 13 - if startup crashes, use this to turn on the LED early for troubleshooting
 	//IOMUXC_SW_MUX_CTL_PAD_GPIO_B0_03 = 5;
 	//IOMUXC_SW_PAD_CTL_PAD_GPIO_B0_03 = IOMUXC_PAD_DSE(7);
@@ -199,6 +223,9 @@ static void ResetHandler2(void)
 	
 	while (1) asm("WFI");
 }
+
+
+
 
 // ARM SysTick is used for most Ardiuno timing functions, delay(), millis(),
 // micros().  SysTick can run from either the ARM core clock, or from an
@@ -657,21 +684,42 @@ void unused_interrupt_vector(void)
 	while (1) ;
 }
 
-__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline))
+__attribute__((section(".startup"), noinline))
 static void memory_copy(uint32_t *dest, const uint32_t *src, uint32_t *dest_end)
 {
+#if 0
 	if (dest == src) return;
-	while (dest < dest_end) {
+	do {
 		*dest++ = *src++;
-	}
+	} while (dest < dest_end);
+#else
+	asm volatile(
+	"	cmp	%[src], %[dest]		\n"
+	"	beq.n	2f			\n"
+	"1:	ldr.w	r3, [%[src]], #4	\n"
+	"	str.w	r3, [%[dest]], #4	\n"
+	"	cmp	%[end], %[dest]		\n"
+	"	bhi.n	1b			\n"
+	"2:					\n"
+	: [dest] "+r" (dest), [src] "+r" (src) : [end] "r" (dest_end) : "r3", "memory");
+#endif
 }
 
-__attribute__((section(".startup"), optimize("no-tree-loop-distribute-patterns"), noinline))
+__attribute__((section(".startup"), noinline))
 static void memory_clear(uint32_t *dest, uint32_t *dest_end)
 {
+#if 0
 	while (dest < dest_end) {
 		*dest++ = 0;
 	}
+#else
+	asm volatile(
+	"	ldr	r3, =0			\n"
+	"1:	str.w	r3, [%[dest]], #4	\n"
+	"	cmp	%[end], %[dest]		\n"
+	"	bhi.n	1b			\n"
+	: [dest] "+r" (dest) : [end] "r" (dest_end) : "r3", "memory");
+#endif
 }
 
 
