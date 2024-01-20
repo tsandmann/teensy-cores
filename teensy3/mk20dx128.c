@@ -1275,14 +1275,16 @@ void __cxa_pure_virtual()
 	while (1);
 }
 
+__extension__ typedef int __guard __attribute__((mode (__DI__)));
+
 __attribute__((weak)) 
-int __cxa_guard_acquire (int32_t *g) 
+int __cxa_guard_acquire (__guard *g)
 {
 	return !(*g);
 }
 
 __attribute__((weak)) 
-void __cxa_guard_release(int32_t *g)
+void __cxa_guard_release(__guard *g)
 {
 	*g = 1;
 }
