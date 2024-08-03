@@ -29,12 +29,10 @@
 #define FASTRUN __attribute__ ((section(".fastrun") ))
 #define PROGMEM __attribute__((section(".progmem")))
 #define FLASHMEM __attribute__((section(".flashmem")))
-#define FLASHMEM_T __attribute__((section(".flashmem.template")))
 #define EXTMEM __attribute__((section(".externalram")))
 
 #define PGM_P  const char *
 #define PSTR(str) ({static const char data[] PROGMEM = (str); &data[0];})
-#define PSTR_T(str) ({static const char data[] __attribute__((section(".progmem.template"))) = (str); &data[0];})
 
 #define _SFR_BYTE(n) (n)
 
