@@ -68,16 +68,16 @@ size_t CrashReportClass::printTo(Print& p) const
         p.print("\t(MMARVALID) Accessed Address: 0x");
         p.print(info->mmfar, HEX);
         if (info->mmfar < 32) {
-          p.print(" (nullptr)\n\t  Check code at 0x");
+          p.print(" (nullptr)\r\n\t  Check code at 0x");
           p.print(info->ret, HEX);
-          p.print(" - very likely a bug!\n\t  Run \"addr2line -e mysketch.ino.elf 0x");
+          p.print(" - very likely a bug!\r\n\t  Run \"addr2line -e mysketch.ino.elf 0x");
           p.print(info->ret, HEX);
           p.print("\" for filename & line number.");
             // TODO: in some perfect future, maybe we'll build part of the ELF debug_line
             // section (maybe just the .ino files) into CrashReport and be able to report
             // the actual filename and line number.  Wouldn't that be awesome?!
         } else if ((info->mmfar >= (uint32_t)&_ebss) && (info->mmfar < (uint32_t)&_ebss + 32)) {
-          p.print(" (Stack problem)\n\t  Check for stack overflows, array bounds, etc.");
+          p.print(" (Stack problem)\r\n\t  Check for stack overflows, array bounds, etc.");
         }
         p.println();
       }
@@ -85,7 +85,7 @@ size_t CrashReportClass::printTo(Print& p) const
       if (((_CFSR & 0x100) >> 8) == 1) {
         p.println("\t(IBUSERR) Instruction Bus Error");
       } else  if (((_CFSR & (0x200)) >> 9) == 1) {
-        p.println("\t(PRECISERR) Data bus error(address in BFAR)");
+        p.println("\t(PRECISERR) Data bus error (address in BFAR)");
       } else if (((_CFSR & (0x400)) >> 10) == 1) {
         p.println("\t(IMPRECISERR) Data bus error but address not related to instruction");
       } else if (((_CFSR & (0x800)) >> 11) == 1) {
@@ -103,7 +103,7 @@ size_t CrashReportClass::printTo(Print& p) const
       if (((_CFSR & 0x10000) >> 16) == 1) {
         p.println("\t(UNDEFINSTR) Undefined instruction");
       } else  if (((_CFSR & (0x20000)) >> 17) == 1) {
-        p.println("\t(INVSTATE) Instruction makes illegal use of EPSR)");
+        p.println("\t(INVSTATE) Instruction makes illegal use of EPSR");
       } else if (((_CFSR & (0x40000)) >> 18) == 1) {
         p.println("\t(INVPC) Usage fault: invalid EXC_RETURN");
       } else if (((_CFSR & (0x80000)) >> 19) == 1) {
@@ -131,12 +131,12 @@ size_t CrashReportClass::printTo(Print& p) const
 
     p.print("  Temperature inside the chip was ");
     p.print(info->temp);
-    p.print(" °C\n");
+    p.println(" °C");
 
     // TODO: fault handler should read the CCM & PLL registers to log actual speed at crash
     p.print("  Startup CPU clock speed is ");
     p.print( F_CPU_ACTUAL/1000000);
-    p.print( "MHz\n");
+    p.println( "MHz");
 
 
     //p.print("  MMFAR: ");
